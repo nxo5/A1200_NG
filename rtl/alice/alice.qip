@@ -1,0 +1,8 @@
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "alice.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "alice_clk.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "alice_beam.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "alice_regs.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "alice_dma.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "alice_mmu.vhd"]
+set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "blitter/blitter.qip"]
+set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "copper/copper.qip"]

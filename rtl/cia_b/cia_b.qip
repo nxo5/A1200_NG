@@ -1,0 +1,5 @@
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "cia_b.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "cia_b_io.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "cia_b_timer.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "cia_b_serial.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "cia_b_irq.vhd"]

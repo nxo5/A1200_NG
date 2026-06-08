@@ -1,0 +1,5 @@
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "blitter.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "blitter_addr.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "blitter_shift.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "blitter_alu.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "blitter_fsm.vhd"]

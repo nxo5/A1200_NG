@@ -1,0 +1,5 @@
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "lisa.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "lisa_palette.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "lisa_shifter.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "lisa_sprites.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "lisa_video_mux.vhd"]
