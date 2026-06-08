@@ -1,0 +1,2 @@
+Info (10281): Verilog HDL Declaration information at emu_ports.vh(80): object "BUTTONS" differs only in case from object "buttons" in the same scope File: C:/Users/nxo5/Desktop/A1200_NG/sys/emu_ports.vh Line: 80
+Info (10281): Verilog HDL Declaration information at emu_ports.vh(6): object "RESET" differs only in case from object "reset" in the same scope File: C:/Users/nxo5/Desktop/A1200_NG/sys/emu_ports.vh Line: 6
