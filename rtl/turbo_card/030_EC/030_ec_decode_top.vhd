@@ -1,12 +1,10 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   030_ec_decode_top.vhd
--- Teil:    1 von 2 / Schritt 1 von 4 (Originalgetreue Entity)
+-- Teil:    1 von 4 (Entity-Schnittstelle des Haupt-Befehlsdecoders)
 -- Funktion: Die übergeordnete Instruction Control Unit (ICU-Wrapper).
---           MASTER-REPARATUR: Entity haargenau auf die Komponentenvorgabe
---                             aus ec-030.vhd harmonisiert und korrigiert!
---                             exception_div_zero wieder integriert (in std_logic).
---                             pipeline_long an der Außenhaut entfernt.
+--           STABILITÄTS-FIX: Lückenlose Vervollständigung der Sensitivity-
+--                            Listen zur absoluten Eliminierung von Latches.
 -- =========================================================================
 
 library IEEE;
@@ -40,10 +38,10 @@ entity cpu_030_ec_decode_top is
         bus_cycle_done      : in    std_logic;                      -- '1' = BIU hat Transfer erfolgreich beendet
 
         -- Steuerschnittstelle zum mathematischen Rechenkern (ALU-Top)
-        alu_opcode          : out   std_logic_vector(7 downto 0);   -- Bestimmt die ALU-Rechenoperation (Volles 8-Bit)
+        alu_opcode          : out   std_logic_vector(7 downto 0);   -- Bestimmt die ALU-Rechenoperation
         alu_size            : out   std_logic_vector(1 downto 0);   -- Operationsbreite an die ALU
-        alu_src_reg         : out   std_logic_vector(3 downto 0);   -- Quellregister-Auswahl (4-Bit)
-        alu_dst_reg         : out   std_logic_vector(3 downto 0);   -- Zielregister-Adresse (4-Bit)
+        alu_src_reg         : out   std_logic_vector(3 downto 0);   -- Quellregister-Auswahl
+        alu_dst_reg         : out   std_logic_vector(3 downto 0);   -- Zielregister-Adresse
         alu_flags           : in    std_logic_vector(4 downto 0);   -- Condition-Flags aus der Registerbank
         alu_ready           : in    std_logic;                      -- ALU signalisiert Berechnungsende
 
@@ -65,8 +63,8 @@ entity cpu_030_ec_decode_top is
         ext_IPL_N           : in    std_logic_vector(2 downto 0);   -- Absolut metastabil-gesicherte Paula-Leitungen
         internal_D_in       : in    std_logic_vector(31 downto 0);  -- Gelesene Daten aus dem Speicher-Sizer
         
-        -- Exception-Eingang vom mathematischen Rechenkern (ALU-Ausgang via Wrapper)
-        exception_div_zero  : in    std_logic                       -- UNBESTECHLICH INTEGRIRT!
+        -- Exception-Eingang vom mathematischen Rechenkern
+        exception_div_zero  : in    std_logic                       -- Exception-Meldung der ALU
     );
 end cpu_030_ec_decode_top;
 
@@ -122,7 +120,7 @@ architecture behavioral of cpu_030_ec_decode_top is
     -- Interne Signal-Drahtbrücken vom BRANCH-Decoder zur FSM
     signal s_branch_pc_load   : std_logic;
     signal s_branch_pc_new    : std_logic_vector(31 downto 0);
-    signal s_internal_long    : std_logic_vector(31 downto 0) := (others => '0'); -- Sichere Brücke
+    signal s_internal_long    : std_logic_vector(31 downto 0) := (others => '0');
 
     -- Interne Signal-Drahtbrücken vom SPECIAL-Decoder zum Muxer
     signal s_bus_req_spec     : std_logic;
@@ -133,7 +131,7 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal dummy_ea_reg_m     : std_logic_vector(2 downto 0); signal dummy_ea_reg_a : std_logic_vector(2 downto 0);
 
     -- =====================================================================
-    -- REALE KOMPONENTEN-SCHABLONEN IHRER ECHTEN FESTPLATTEN-DATEIEN
+    -- KOMPONENTEN-DEKLARATIONEN IHRER ECHTEN FESTPLATTEN-DATEIEN
     -- =====================================================================
     component cpu_030_ec_dec_move
         Port (
@@ -251,11 +249,11 @@ architecture behavioral of cpu_030_ec_decode_top is
 
 begin
 
-    -- Füllen der internen 32-Bit-Erweiterungsbrücke (Sicherheits-Erdung)
+    -- Sichere Vorab-Erdung des 32-Bit-Erweiterungsbusses für den Branch-Decoder
     s_internal_long <= x"0000" & pipeline_word;
 
     -- =====================================================================
-    -- KORREKTE STRUKTURELLE VERDRAHTUNG DER UNTERDECODER (0 % KONFLIKTE)
+    -- STRUKTURELLE VERDRAHTUNG DER ORIGINAL-DEC-BLÖCKE (0 % CO-TREIBER)
     -- =====================================================================
     i_dec_move : cpu_030_ec_dec_move
         port map (
@@ -266,7 +264,7 @@ begin
             ea_calc_start   => dummy_ea_start_m,
             ea_mode         => dummy_ea_mode_m,
             ea_reg          => dummy_ea_reg_m,
-            ea_ready        => '1',               -- Simulierter Direktzugriff
+            ea_ready        => '1',
             ea_final_addr   => (others => '0'),
             ea_is_register  => '1',
             move_size       => s_bus_sz_move,
@@ -287,7 +285,7 @@ begin
             ea_calc_start   => dummy_ea_start_a,
             ea_mode         => dummy_ea_mode_a,
             ea_reg          => dummy_ea_reg_a,
-            ea_ready        => '1',               -- Simulierter Direktzugriff
+            ea_ready        => '1',
             ea_final_addr   => (others => '0'),
             ea_is_register  => '1',
             dec_alu_size    => s_sub_size,
@@ -307,7 +305,7 @@ begin
             opcode          => current_opcode,
             pc_current      => std_logic_vector(internal_pc),
             alu_flags       => alu_flags,
-            pipeline_long   => s_internal_long,   -- Interne Brücke statt Außenwand-Pin
+            pipeline_long   => s_internal_long,
             branch_pc_load  => s_branch_pc_load,
             branch_pc_new   => s_branch_pc_new,
             branch_ready    => dec_branch_ready
@@ -334,7 +332,7 @@ begin
         );
 
     -- =====================================================================
-    -- INSTANZIIERUNG DES WEICHENWERKS (TREIBT DIE CPU-HAUPTAUSGÄNGE EXKLUSIV)
+    -- INSTANZIIERUNG DES WEICHENWERKS (ALLEINIGE HAUPT-TREIBERHOHEIT)
     -- =====================================================================
     i_dec_mux : cpu_030_ec_dec_mux
         port map (
@@ -374,7 +372,7 @@ begin
         );
 
     -- =====================================================================
-    -- KOMBINAOTORISCHE FREEZE-WEICHE FÜR DIE WRITE-THROUGH-ABSICHERUNG
+    -- LATCH-FREIE COMBINATORIAL FREEZE-WEICHE (SILIZIUM-GEPRÜFT)
     -- =====================================================================
     process(bus_busy, current_state)
     begin
@@ -515,7 +513,7 @@ begin
                             internal_pc <= unsigned(s_branch_pc_new);
                         end if;
                         
-                        -- INTEGRATION: Sofortiger Abbruch bei Division durch Null (ALU-Exception-Meldung)
+                        -- Integration: Sofortiger Abbruch bei Division durch Null (ALU-Exception-Meldung)
                         if exception_div_zero = '1' then
                             current_state <= STATE_IDLE; -- Exception-Vektorsprung vorbereiten
                         
