@@ -3,8 +3,9 @@
 -- Datei:   030_ec_decode_top.vhd
 -- Teil:    1 von 4 (Entity-Schnittstelle des Haupt-Befehlsdecoders)
 -- Funktion: Die übergeordnete Instruction Control Unit (ICU-Wrapper).
---           STABILITÄTS-FIX: Lückenlose Vervollständigung der Sensitivity-
---                            Listen zur absoluten Eliminierung von Latches.
+--           SIGNAL-REPARATUR: ALU-Ready-Routing durch ein dediziertes 
+--                             internes Koppelnetz ('s_alu_decoder_done')
+--                             elektrisch sauber von der FSM entflochten!
 -- =========================================================================
 
 library IEEE;
@@ -59,11 +60,11 @@ entity cpu_030_ec_decode_top is
         boot_ssp_load       : out   std_logic;                      
         boot_ssp_new        : out   std_logic_vector(31 downto 0);  
 
-        -- Echte, physikalische Interrupt-Eingänge (Vom Gehäuse via BIU-Pipeline)
-        ext_IPL_N           : in    std_logic_vector(2 downto 0);   -- Absolut metastabil-gesicherte Paula-Leitungen
+        -- Echte, physikalische Interrupt-Eingänge (Paula-Leitungen via BIU)
+        ext_IPL_N           : in    std_logic_vector(2 downto 0);   
         internal_D_in       : in    std_logic_vector(31 downto 0);  -- Gelesene Daten aus dem Speicher-Sizer
         
-        -- Exception-Eingang vom mathematischen Rechenkern
+        -- Exception-Eingang vom mathematischen Rechenkern (ALU-Top)
         exception_div_zero  : in    std_logic                       -- Exception-Meldung der ALU
     );
 end cpu_030_ec_decode_top;
@@ -74,7 +75,7 @@ architecture behavioral of cpu_030_ec_decode_top is
     -- INTERNE STATE-MASCHINEN-SIGNALE UND WRITE-THROUGH-FREEZE-DRÄHTE
     -- =====================================================================
     type main_fsm_state is (STATE_BOOT_0, STATE_BOOT_1, STATE_FETCH, STATE_DECODE, 
-                            STATE_EXECUTE, STATE_WRITEBACK, STATE_IDLE);
+                            STATE_EXECUTE, STATE_WRITEBACK, STATE_EXCEPTION, STATE_IDLE);
     signal current_state : main_fsm_state := STATE_BOOT_0;
 
     signal pipeline_freeze   : std_logic := '0';
@@ -96,42 +97,45 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal s_fsm_bus_type        : std_logic_vector(2 downto 0) := (others => '0');
 
     -- Interne Quittungs- und Koppelleitungen der Teildecoder
-    signal dec_move_en        : std_logic := '0'; signal dec_move_ready : std_logic;
-    signal dec_alu_en         : std_logic := '0'; signal dec_alu_ready  : std_logic;
-    signal dec_branch_en      : std_logic := '0'; signal dec_branch_ready : std_logic;
-    signal dec_special_en     : std_logic := '0'; signal dec_special_ready : std_logic;
+    signal dec_move_en          : std_logic := '0'; signal dec_move_ready : std_logic;
+    signal dec_alu_en           : std_logic := '0'; 
+    signal dec_branch_en        : std_logic := '0'; signal dec_branch_ready : std_logic;
+    signal dec_special_en       : std_logic := '0'; signal dec_special_ready : std_logic;
+
+    -- FIX: ECHTES INTERNES ENTFLECHTUNGSNETZ FÜR DAS ALU-READY-ROUTING
+    signal s_alu_decoder_done   : std_logic := '0'; -- Fängt den Untermodul-Ausgang galvanisch ab
 
     -- Interne Signal-Drahtbrücken vom MOVE-Decoder zum Muxer
-    signal s_bus_req_move     : std_logic;
-    signal s_bus_w_move       : std_logic;
-    signal s_bus_sz_move      : std_logic_vector(1 downto 0);
-    signal s_alu_op_move      : std_logic_vector(7 downto 0);
-    signal s_alu_src_move     : std_logic_vector(3 downto 0);
-    signal s_alu_dst_move     : std_logic_vector(3 downto 0);
+    signal s_bus_req_move       : std_logic;
+    signal s_bus_w_move         : std_logic;
+    signal s_bus_sz_move        : std_logic_vector(1 downto 0);
+    signal s_alu_op_move        : std_logic_vector(7 downto 0);
+    signal s_alu_src_move       : std_logic_vector(3 downto 0);
+    signal s_alu_dst_move       : std_logic_vector(3 downto 0);
 
     -- Interne Signal-Drahtbrücken vom ALU-Decoder zum Muxer
-    signal s_bus_req_alu      : std_logic;
-    signal s_bus_w_alu        : std_logic;
-    signal s_alu_op_alu       : std_logic_vector(7 downto 0);
-    signal s_alu_src_alu      : std_logic_vector(3 downto 0);
-    signal s_alu_dst_alu      : std_logic_vector(3 downto 0);
-    signal s_sub_size         : std_logic_vector(1 downto 0);
+    signal s_bus_req_alu        : std_logic;
+    signal s_bus_w_alu          : std_logic;
+    signal s_alu_op_alu         : std_logic_vector(7 downto 0);
+    signal s_alu_src_alu        : std_logic_vector(3 downto 0);
+    signal s_alu_dst_alu        : std_logic_vector(3 downto 0);
+    signal s_sub_size           : std_logic_vector(1 downto 0);
 
     -- Interne Signal-Drahtbrücken vom BRANCH-Decoder zur FSM
-    signal s_branch_pc_load   : std_logic;
-    signal s_branch_pc_new    : std_logic_vector(31 downto 0);
-    signal s_internal_long    : std_logic_vector(31 downto 0) := (others => '0');
+    signal s_branch_pc_load     : std_logic;
+    signal s_branch_pc_new      : std_logic_vector(31 downto 0);
+    signal s_internal_long      : std_logic_vector(31 downto 0) := (others => '0');
 
     -- Interne Signal-Drahtbrücken vom SPECIAL-Decoder zum Muxer
-    signal s_bus_req_spec     : std_logic;
+    signal s_bus_req_spec       : std_logic;
 
     -- Dummy-Leitungen für ungenutzte Ports der Sub-Decoder
-    signal dummy_ea_start_m   : std_logic; signal dummy_ea_start_a : std_logic;
-    signal dummy_ea_mode_m    : std_logic_vector(2 downto 0); signal dummy_ea_mode_a : std_logic_vector(2 downto 0);
-    signal dummy_ea_reg_m     : std_logic_vector(2 downto 0); signal dummy_ea_reg_a : std_logic_vector(2 downto 0);
+    signal dummy_ea_start_m     : std_logic; signal dummy_ea_start_a : std_logic;
+    signal dummy_ea_mode_m      : std_logic_vector(2 downto 0); signal dummy_ea_mode_a : std_logic_vector(2 downto 0);
+    signal dummy_ea_reg_m       : std_logic_vector(2 downto 0); signal dummy_ea_reg_a : std_logic_vector(2 downto 0);
 
     -- =====================================================================
-    -- KOMPONENTEN-DEKLARATIONEN IHRER ECHTEN FESTPLATTEN-DATEIEN
+    -- UNANTASBARE DEKLARATIONEN IHRER ORIGINALEN FESTPLATTEN-SCHABLONEN
     -- =====================================================================
     component cpu_030_ec_dec_move
         Port (
@@ -294,7 +298,7 @@ begin
             dec_alu_op      => s_alu_op_alu,
             dec_alu_src_reg => s_alu_src_alu,
             dec_alu_dst_reg => s_alu_dst_alu,
-            dec_alu_ready   => dec_alu_ready
+            dec_alu_ready   => s_alu_decoder_done  -- REPARATUR: Anbindung an das Koppelnetz!
         );
 
     i_dec_branch : cpu_030_ec_dec_branch
@@ -505,7 +509,7 @@ begin
                         end if;
 
                     -- =====================================================
-                    -- EXECUTE PHASE: ZYKLUSTREUE SCHALTUNG UND BRANCH-LOAD
+                    -- EXECUTE PHASE: VERRIEGELUNG & EXCEPTION-ABSICHERUNG
                     -- =====================================================
                     when STATE_EXECUTE =>
                         -- Falls der Branch-Decoder einen Sprungtreffer meldet, PC neu laden
@@ -513,13 +517,29 @@ begin
                             internal_pc <= unsigned(s_branch_pc_new);
                         end if;
                         
-                        -- Integration: Sofortiger Abbruch bei Division durch Null (ALU-Exception-Meldung)
+                        -- Unbestechlicher Trap-Einstieg bei Division durch Null
                         if exception_div_zero = '1' then
-                            current_state <= STATE_IDLE; -- Exception-Vektorsprung vorbereiten
+                            current_state <= STATE_EXCEPTION; 
                         
-                        -- Reguläres Befehlsende über die Ready-Leitungen abfangen
-                        elsif alu_ready = '1' or dec_special_ready = '1' or dec_branch_ready = '1' or dec_move_ready = '1' or dec_alu_ready = '1' then
+                        -- KORREKTUR: Abfrage auf das interne, entflochtene Koppelnetz s_alu_decoder_done!
+                        elsif alu_ready = '1' or dec_special_ready = '1' or dec_branch_ready = '1' or dec_move_ready = '1' or s_alu_decoder_done = '1' then
                             current_state <= STATE_WRITEBACK;
+                        end if;
+
+                    -- =====================================================
+                    -- EXCEPTION PHASE: RESTRUKTURIERTER MOTOROLA-TRAP-VEKTOR
+                    -- =====================================================
+                    when STATE_EXCEPTION =>
+                        s_fsm_running_mode <= '0'; -- FSM übernimmt Bus-Hoheit
+                        s_fsm_bus_req      <= '1';
+                        s_fsm_bus_write    <= '0';
+                        -- Motorola Vektor 5 (Division durch Null) liegt bei Adresse 0x00000014
+                        s_fsm_bus_addr     <= x"00000014"; 
+                        s_fsm_bus_type     <= "111";   -- CPU Space Cycle / Interrupt-Ack-Stil
+                        
+                        if bus_cycle_done = '1' then
+                            internal_pc   <= unsigned(internal_D_in); -- Springe zur Trap-Routine
+                            current_state <= STATE_FETCH;
                         end if;
 
                     -- =====================================================
