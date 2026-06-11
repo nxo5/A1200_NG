@@ -3,10 +3,9 @@
 -- Datei:   030_ec_decode_top.vhd
 -- Teil:    1 von 4 (Entity-Schnittstelle des Haupt-Befehlsdecoders)
 -- Funktion: Die übergeordnete Instruction Control Unit (ICU-Wrapper).
---           HARDWARE-HÄRTUNG: Der Exception-Vektorsprung bei Division 
---                             durch Null wurde vollständig ausgebaut!
---                             Die FSM wartet nun unbestechlich auf die 
---                             synchrone Quittung (bus_cycle_done) der BIU.
+--           SILIZIUM-HÄRTUNG: Einbau eines synchronen 32-Bit Data-Hold-Latches.
+--                             Friert Sizer-Daten bei bus_cycle_done = '1'
+--                             ein, um Hold-Time-Verletzungen auszuschließen.
 -- =========================================================================
 
 library IEEE;
@@ -63,7 +62,7 @@ entity cpu_030_ec_decode_top is
 
         -- Echte, physikalische Interrupt-Eingänge (Paula-Leitungen via BIU)
         ext_IPL_N           : in    std_logic_vector(2 downto 0);   
-        internal_D_in       : in    std_logic_vector(31 downto 0);  -- Gelesene Daten aus dem Speicher-Sizer
+        internal_D_in       : in    std_logic_vector(31 downto 0);  -- Kombinatorische Daten vom Bus-Sizer
         
         -- Exception-Eingang vom mathematischen Rechenkern (ALU-Top)
         exception_div_zero  : in    std_logic                       -- Exception-Meldung der ALU
@@ -82,6 +81,9 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal pipeline_freeze   : std_logic := '0';
     signal internal_pc       : unsigned(31 downto 0) := x"00F80000";
     signal current_opcode     : std_logic_vector(15 downto 0) := (others => '0');
+
+    -- SILIZIUM-SICHERUNG: Das synchrone 32-Bit Daten-Verriegelungs-Register
+    signal s_data_hold_latch    : std_logic_vector(31 downto 0) := (others => '0');
 
     -- Aktivitäts-Meldungen für das Weichenwerk (Aus der FSM gesteuert)
     signal s_move_active         : std_logic := '0';
@@ -136,7 +138,7 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal dummy_ea_reg_m       : std_logic_vector(2 downto 0); signal dummy_ea_reg_a : std_logic_vector(2 downto 0);
 
     -- =====================================================================
-    -- DEKLARATIONEN IHRER ORIGINALEN FESTPLATTEN-SCHABLONEN
+    -- ORIGINALGETREUE SCHABLONEN IHRER FILIAL-DEC-DATEIEN
     -- =====================================================================
     component cpu_030_ec_dec_move
         Port (
@@ -299,7 +301,7 @@ begin
             dec_alu_op      => s_alu_op_alu,
             dec_alu_src_reg => s_alu_src_alu,
             dec_alu_dst_reg => s_alu_dst_alu,
-            dec_alu_ready   => s_alu_decoder_done  -- Anbindung an das Koppelnetz
+            dec_alu_ready   => s_alu_decoder_done
         );
 
     i_dec_branch : cpu_030_ec_dec_branch
@@ -412,6 +414,7 @@ begin
             boot_pc_new          <= (others => '0');
             boot_ssp_load        <= '0';
             boot_ssp_new         <= (others => '0');
+            s_data_hold_latch    <= (others => '0');
             
             -- Muxer-Steuerleitungen initialisieren
             s_fsm_running_mode   <= '0';
@@ -478,7 +481,6 @@ begin
                             cache_cpu_req  <= '0';
                             current_state  <= STATE_DECODE;
                         elsif cache_miss = '1' then
-                            -- Cache-Miss im Prefetch: Zeilen-Füllung über Weichenwerk erzwingen
                             s_special_active <= '1';
                             current_state    <= STATE_DECODE; 
                         end if;
@@ -513,16 +515,12 @@ begin
                     -- EXECUTE PHASE: VERRIEGELUNG & EXCEPTION-ABSICHERUNG
                     -- =====================================================
                     when STATE_EXECUTE =>
-                        -- Falls der Branch-Decoder einen Sprungtreffer meldet, PC neu laden
                         if dec_branch_en = '1' and s_branch_pc_load = '1' then
                             internal_pc <= unsigned(s_branch_pc_new);
                         end if;
                         
-                        -- Unbestechlicher Trap-Einstieg bei Division durch Null
                         if exception_div_zero = '1' then
                             current_state <= STATE_EXCEPTION; 
-                        
-                        -- Abfrage auf das interne, entflochtene Koppelnetz s_alu_decoder_done
                         elsif alu_ready = '1' or dec_special_ready = '1' or dec_branch_ready = '1' or dec_move_ready = '1' or s_alu_decoder_done = '1' then
                             current_state <= STATE_WRITEBACK;
                         end if;
@@ -531,16 +529,17 @@ begin
                     -- EXCEPTION PHASE: RESTRUKTURIERTER MOTOROLA-TRAP-VEKTOR
                     -- =====================================================
                     when STATE_EXCEPTION =>
-                        s_fsm_running_mode <= '0'; -- FSM übernimmt Bus-Hoheit
+                        s_fsm_running_mode <= '0'; 
                         s_fsm_bus_req      <= '1';
                         s_fsm_bus_write    <= '0';
-                        -- Motorola Vektor 5 (Division durch Null) liegt bei Adresse 0x00000014
-                        s_fsm_bus_addr     <= x"00000014"; 
-                        s_fsm_bus_type     <= "111";   -- CPU Space Cycle
+                        s_fsm_bus_addr     <= x"00000014"; -- Vektor 5 (Division durch Null)
+                        s_fsm_bus_type     <= "111";   
                         
                         if bus_cycle_done = '1' then
-                            internal_pc   <= unsigned(internal_D_in); -- Springe zur Trap-Routine
-                            current_state <= STATE_FETCH;
+                            -- HARDWARE-SICHERUNG: Daten taktgenau im Latch einfrieren!
+                            s_data_hold_latch <= internal_D_in;
+                            internal_pc       <= unsigned(internal_D_in); 
+                            current_state     <= STATE_FETCH;
                         end if;
 
                     -- =====================================================
@@ -552,7 +551,6 @@ begin
                         dec_branch_en  <= '0';
                         dec_special_en <= '0';
                         
-                        -- Falls kein Sprung stattfand, PC linear um 2 Bytes vorrücken
                         if current_opcode(15 downto 12) /= "0110" or s_branch_pc_load = '0' then
                             internal_pc <= internal_pc + 2; 
                         end if;
