@@ -4,6 +4,7 @@
 # Funktion: Lokale Quartus IP-Projektliste für den 68EC030 CPU-Kern.
 #           Bündelt alle modularen Unterdateien dieses Ordners.
 #           SICHERUNG: Cache-Untermodule verifiziert und lückenlos erhalten!
+#           ERWEITERUNG: Die 5 neuen entflochtenen FSM- und Cache-Zellen eingepflegt.
 # =========================================================================
 
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec.vhd"]
@@ -13,6 +14,11 @@ set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_de
 # ====== SYSTEMSTEUERUNGS-SUBMODULE (ENTFLECHTUNG) ======
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_fsm.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_mux.vhd"]
+
+# ====== NEUE FSM- UNTERDATEIEN (HAUPTDECODER-AUFSPALTUNG) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_boot_fsm.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_exec_fsm.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_trap_unit.vhd"]
 
 # ====== 1. MOVE-DECODER (DATENTRANSFER) ======
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_move.vhd"]
@@ -57,3 +63,7 @@ set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_ca
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_cache_ctrl.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_cache_tags.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_cache_addr.vhd"]
+
+# ====== NEUE CACHE-UNTERDATEIEN (CACHE-SUBSYSTEM-AUFSPALTUNG) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_cache_clear_unit.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_cache_ctrl_fsm.vhd"]
