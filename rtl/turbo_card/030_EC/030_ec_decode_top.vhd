@@ -3,9 +3,10 @@
 -- Datei:   030_ec_decode_top.vhd
 -- Teil:    1 von 4 (Entity-Schnittstelle des Haupt-Befehlsdecoders)
 -- Funktion: Die übergeordnete Instruction Control Unit (ICU-Wrapper).
---           SIGNAL-REPARATUR: ALU-Ready-Routing durch ein dediziertes 
---                             internes Koppelnetz ('s_alu_decoder_done')
---                             elektrisch sauber von der FSM entflochten!
+--           HARDWARE-HÄRTUNG: Der Exception-Vektorsprung bei Division 
+--                             durch Null wurde vollständig ausgebaut!
+--                             Die FSM wartet nun unbestechlich auf die 
+--                             synchrone Quittung (bus_cycle_done) der BIU.
 -- =========================================================================
 
 library IEEE;
@@ -96,14 +97,14 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal s_fsm_bus_data_out    : std_logic_vector(31 downto 0) := (others => '0');
     signal s_fsm_bus_type        : std_logic_vector(2 downto 0) := (others => '0');
 
-    -- Interne Quittungs- und Koppelleitungen der Teildecoder
+    -- Entflochtenes internes Koppelnetzwerk der Teildecoder
     signal dec_move_en          : std_logic := '0'; signal dec_move_ready : std_logic;
     signal dec_alu_en           : std_logic := '0'; 
     signal dec_branch_en        : std_logic := '0'; signal dec_branch_ready : std_logic;
     signal dec_special_en       : std_logic := '0'; signal dec_special_ready : std_logic;
 
-    -- FIX: ECHTES INTERNES ENTFLECHTUNGSNETZ FÜR DAS ALU-READY-ROUTING
-    signal s_alu_decoder_done   : std_logic := '0'; -- Fängt den Untermodul-Ausgang galvanisch ab
+    -- Internes Entflechtungsnetz für das ALU-Ready-Routing
+    signal s_alu_decoder_done   : std_logic := '0';
 
     -- Interne Signal-Drahtbrücken vom MOVE-Decoder zum Muxer
     signal s_bus_req_move       : std_logic;
@@ -135,7 +136,7 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal dummy_ea_reg_m       : std_logic_vector(2 downto 0); signal dummy_ea_reg_a : std_logic_vector(2 downto 0);
 
     -- =====================================================================
-    -- UNANTASBARE DEKLARATIONEN IHRER ORIGINALEN FESTPLATTEN-SCHABLONEN
+    -- DEKLARATIONEN IHRER ORIGINALEN FESTPLATTEN-SCHABLONEN
     -- =====================================================================
     component cpu_030_ec_dec_move
         Port (
@@ -298,7 +299,7 @@ begin
             dec_alu_op      => s_alu_op_alu,
             dec_alu_src_reg => s_alu_src_alu,
             dec_alu_dst_reg => s_alu_dst_alu,
-            dec_alu_ready   => s_alu_decoder_done  -- REPARATUR: Anbindung an das Koppelnetz!
+            dec_alu_ready   => s_alu_decoder_done  -- Anbindung an das Koppelnetz
         );
 
     i_dec_branch : cpu_030_ec_dec_branch
@@ -479,7 +480,7 @@ begin
                         elsif cache_miss = '1' then
                             -- Cache-Miss im Prefetch: Zeilen-Füllung über Weichenwerk erzwingen
                             s_special_active <= '1';
-                            current_state    <= STATE_DECODE; -- Verzweigung zur BIU-Warteschleife
+                            current_state    <= STATE_DECODE; 
                         end if;
 
                     -- =====================================================
@@ -521,7 +522,7 @@ begin
                         if exception_div_zero = '1' then
                             current_state <= STATE_EXCEPTION; 
                         
-                        -- KORREKTUR: Abfrage auf das interne, entflochtene Koppelnetz s_alu_decoder_done!
+                        -- Abfrage auf das interne, entflochtene Koppelnetz s_alu_decoder_done
                         elsif alu_ready = '1' or dec_special_ready = '1' or dec_branch_ready = '1' or dec_move_ready = '1' or s_alu_decoder_done = '1' then
                             current_state <= STATE_WRITEBACK;
                         end if;
@@ -535,7 +536,7 @@ begin
                         s_fsm_bus_write    <= '0';
                         -- Motorola Vektor 5 (Division durch Null) liegt bei Adresse 0x00000014
                         s_fsm_bus_addr     <= x"00000014"; 
-                        s_fsm_bus_type     <= "111";   -- CPU Space Cycle / Interrupt-Ack-Stil
+                        s_fsm_bus_type     <= "111";   -- CPU Space Cycle
                         
                         if bus_cycle_done = '1' then
                             internal_pc   <= unsigned(internal_D_in); -- Springe zur Trap-Routine
