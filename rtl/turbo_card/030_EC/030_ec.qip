@@ -4,12 +4,13 @@
 # Funktion: Lokale Quartus IP-Projektliste für den 68EC030 CPU-Kern.
 #           Bündelt alle modularen Unterdateien dieses Ordners.
 #           SICHERUNG: Cache-Untermodule verifiziert und lückenlos erhalten!
-#           ERWEITERUNG: Die 5 neuen entflochtenen FSM- und Cache-Zellen eingepflegt.
+#           ERWEITERUNG: Neue geteilte Adress-Matrix (030_ec_dec_ea_shared.vhd) verankert.
 # =========================================================================
 
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_decode_top.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_ea.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_ea_shared.vhd"]
 
 # ====== SYSTEMSTEUERUNGS-SUBMODULE (ENTFLECHTUNG) ======
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_fsm.vhd"]
