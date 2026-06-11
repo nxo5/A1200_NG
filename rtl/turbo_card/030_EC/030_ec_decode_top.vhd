@@ -1,11 +1,11 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   030_ec_decode_top.vhd
--- Sektion: Teil 1 von 5 (Entity-Schnittstelle, Sektion A)
+-- Teil:    1 von 5 (Vollständige Entity-Schnittstelle)
 -- Funktion: Die übergeordnete Instruction Control Unit (ICU-Wrapper).
---           KONSOLIDIERTE REPARATUR-FASSUNG: All-Fix von Zeile 1 an.
---           - Semikolon-Loch bei bus_cycle_done restlos geschlossen.
---           - Alle s_boot_en- und s_boot_done-Koppelnetze deklariert.
+--           KONSOLIDIERTER NEUSTART: 
+--           - Alle Vektor-Syntaxfehler (downto 1) in den Ports eliminiert.
+--           - Schnittstellen zu 100% auf standardkonforme 32-Bit-Typen saniert.
 --           - Geteilte Adress-Matrix (030_ec_dec_ea_shared) fest integriert.
 -- =========================================================================
 
@@ -37,9 +37,9 @@ entity cpu_030_ec_decode_top is
         bus_cycle_size      : out   std_logic_vector(1 downto 0);   -- Transferbreite (00=B, 01=W, 10=L)
         bus_cycle_type      : out   std_logic_vector(2 downto 0);   -- FC-Funktionscodes (z.B. "111"=CPU-Space)
         bus_busy            : in    std_logic;                      -- '1' = BIU besetzt (STARTET DEN WRITE-THROUGH FREEZE!)
-        bus_cycle_done      : in    std_logic;                      -- FIX: Das trennende Semikolon schließt die Lücke!
+        bus_cycle_done      : in    std_logic;                      -- Das trennende Semikolon steht unbestechlich!
 
-		          -- Steuerschnittstelle zum mathematischen Rechenkern (ALU-Top)
+        -- Steuerschnittstelle zum mathematischen Rechenkern (ALU-Top)
         alu_opcode          : out   std_logic_vector(7 downto 0);   -- Fixierter 8-Bit Opcode-Vektor
         alu_size            : out   std_logic_vector(1 downto 0);   -- Operationsbreite an die ALU
         alu_src_reg         : out   std_logic_vector(3 downto 0);   -- Quellregister-Auswahl
@@ -78,23 +78,23 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal s_master_state       : integer range 0 to 2 := 0; -- 0=Boot, 1=Exec, 2=Trap
     signal s_internal_long      : std_logic_vector(31 downto 0) := (others => '0');
 
-    -- OPTIMIERUNG HEBEL 1: Standardkonforme 31-Bit Array-Deklaration für den Programmzähler
-    signal s_internal_pc        : unsigned(31 downto 1) := to_unsigned(8060928, 31); -- x"00F80000" shifted right 1
+    -- KORREKTUR: Vollwertige 32-Bit-Deklaration zur Eliminierung aller Indexierungs-Fehler
+    signal s_internal_pc        : unsigned(31 downto 0) := x"00F80000"; 
 
     -- Internes latch-freies Freeze-Netzwerk
     signal pipeline_freeze      : std_logic := '0';
 
     -- Sub-Aktivierungssignale der Teil-Zustandsmaschinen
-    signal s_boot_en            : std_logic := '1'; -- KOPPELNETZ-FIX: Bestens deklariert!
-    signal s_boot_done          : std_logic := '0'; -- KOPPELNETZ-FIX: Bestens deklariert!
+    signal s_boot_en            : std_logic := '1'; 
+    signal s_boot_done          : std_logic := '0'; 
     signal s_exec_en            : std_logic := '0';
     signal s_trap_en            : std_logic := '0'; 
     signal s_trap_done          : std_logic := '0';
 
-    -- Symmetrische Array-Bereichs-Deklarationen für die Rückführungen
-    signal s_pc_boot            : unsigned(31 downto 1);
-    signal s_pc_exec            : unsigned(31 downt 0);
-    signal s_pc_trap            : unsigned(31 downt 0);
+    -- KORREKTUR: Symmetrische 32-Bit-Bereiche für alle Sub-Rückführungen
+    signal s_pc_boot            : unsigned(31 downto 0);
+    signal s_pc_exec            : unsigned(31 downto 0);
+    signal s_pc_trap            : unsigned(31 downto 0);
 
     -- Bus-Drahtbrücken von den neuen Sub-Modulen zum Weichenwerk
     signal s_bus_req_boot       : std_logic; 
@@ -161,42 +161,81 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal s_bus_req_spec       : std_logic;
 
 	     -- =====================================================================
-    -- COMPONENTEN-DEKLARATIONEN DER MASTER-SUBMODULE (31-BIT PC)
+    -- COMPONENTEN-DEKLARATIONEN DER MASTER-SUBMODULE (31-BIT PC OPTIMIERUNG VIA PROCESS)
     -- =====================================================================
     component cpu_030_ec_dec_boot_fsm
         Port (
-            CLK                 : in    std_logic; RESET_N : in std_logic;
-            boot_en             : in    std_logic; boot_busy : in std_logic; boot_done : out std_logic;
-            internal_pc_in      : in    unsigned(31 downto 0); internal_pc_out : out unsigned(31 downt 0);
+            CLK                 : in    std_logic; 
+				RESET_N 				  : in 	 std_logic;
+            boot_en             : in    std_logic; 
+				boot_busy 			  : in 	 std_logic; 
+				boot_done 			  : out 	 std_logic;
+            internal_pc_in      : in    unsigned(31 downto 0); 
+				internal_pc_out 	  : out 	 unsigned(31 downto 0);
             internal_D_in       : in    std_logic_vector(31 downto 0);
-            fsm_bus_req         : out   std_logic; fsm_bus_write : out std_logic; fsm_bus_addr : out std_logic_vector(31 downto 0); fsm_bus_type : out std_logic_vector(2 downto 0);
-            boot_ssp_load       : out   std_logic; boot_ssp_new : out std_logic_vector(31 downto 0);
-            boot_pc_load        : out   std_logic; boot_pc_new : out std_logic_vector(31 downto 0)
+            fsm_bus_req         : out   std_logic; 
+				fsm_bus_write 		  : out 	 std_logic; 
+				fsm_bus_addr 		  : out 	 std_logic_vector(31 downto 0); 
+				fsm_bus_type 		  : out 	 std_logic_vector(2 downto 0);
+            boot_ssp_load       : out   std_logic; 
+				boot_ssp_new 		  : out 	 std_logic_vector(31 downto 0);
+            boot_pc_load        : out   std_logic; 
+				boot_pc_new 		  : out 	 std_logic_vector(31 downto 0)
         );
     end component;
 
     component cpu_030_ec_dec_exec_fsm
         Port (
-            CLK                 : in    std_logic; RESET_N : in std_logic;
-            exec_en             : in    std_logic; exec_busy : in std_logic; exec_irq_pending : in std_logic; exec_trap_pending : in std_logic; exec_trap_trigger : out std_logic;
-            pipeline_word       : in    std_logic_vector(15 downto 0); pipeline_req : out std_logic; cache_cpu_req : out std_logic; cache_hit : in std_logic; cache_miss : in std_logic;
-            internal_pc_in      : in    unsigned(31 downto 0); internal_pc_out : out unsigned(31 downt 1);
-            s_fsm_running_mode  : out   std_logic; s_move_active : out std_logic; s_alu_active : out std_logic; s_special_active : out std_logic;
-            dec_move_en         : out   std_logic; dec_move_ready : in std_logic; dec_alu_en : out std_logic; s_alu_decoder_done : in std_logic;
-            dec_branch_en       : out   std_logic; dec_branch_ready : in std_logic; dec_special_en : out std_logic; dec_special_ready : in std_logic;
-            s_branch_pc_load    : in    std_logic; s_branch_pc_new : in std_logic_vector(31 downto 0);
-            s_cache_inhibit_act : out   std_logic; bus_cycle_done : in std_logic
+            CLK                 : in    std_logic; 
+				RESET_N 				  : in    std_logic;
+            exec_en             : in    std_logic; 
+				exec_busy 			  : in    std_logic; 
+				exec_irq_pending    : in    std_logic; 
+				exec_trap_pending   : in    std_logic; 
+				exec_trap_trigger   : out   std_logic;
+            pipeline_word       : in    std_logic_vector(15 downto 0); 
+				pipeline_req 		  : out 	 std_logic; 
+				cache_cpu_req 		  : out 	 std_logic; 
+				cache_hit 			  : in 	 std_logic; 
+				cache_miss 			  : in 	 std_logic;
+            internal_pc_in      : in    unsigned(31 downto 0); 
+				internal_pc_out 	  : out 	 unsigned(31 downto 0);
+            s_fsm_running_mode  : out   std_logic; 
+				s_move_active 		  : out 	 std_logic; 
+				s_alu_active 		  : out 	 std_logic; 
+				s_special_active 	  : out 	 std_logic;
+            dec_move_en         : out   std_logic; 
+				dec_move_ready 	  : in 	 std_logic; 
+				dec_alu_en 			  : out   std_logic; 
+				s_alu_decoder_done  : in 	 std_logic;
+            dec_branch_en       : out   std_logic; 
+				dec_branch_ready 	  : in 	 std_logic; 
+				dec_special_en 	  : out 	 std_logic; 
+				dec_special_ready   : in 	 std_logic;
+            s_branch_pc_load    : in    std_logic; 
+				s_branch_pc_new 	  : in 	 std_logic_vector(31 downto 0);
+            s_cache_inhibit_act : out   std_logic; 
+				bus_cycle_done 	  : in 	 std_logic
         );
     end component;
 
     component cpu_030_ec_dec_trap_unit
         Port (
-            CLK                 : in    std_logic; RESET_N : in std_logic;
-            trap_en             : in    std_logic; trap_busy : in std_logic; trap_done : out std_logic;
-            exception_div_zero  : in    std_logic; s_irq_latch : in std_logic_vector(2 downto 0);
-            internal_D_in       : in    std_logic_vector(31 downto 0); s_data_hold_latch : out std_logic_vector(31 downto 0); 
-            internal_pc_out     : out   unsigned(31 downto 1);
-            fsm_running_mode    : out   std_logic; fsm_bus_req : out std_logic; fsm_bus_write : out std_logic; fsm_bus_addr : out std_logic_vector(31 downto 0); fsm_bus_type : out std_logic_vector(2 downto 0);
+            CLK                 : in    std_logic; 
+				RESET_N 				  : in 	 std_logic;
+            trap_en             : in    std_logic; 
+				trap_busy 			  : in 	 std_logic; 
+				trap_done 			  : out 	 std_logic;
+            exception_div_zero  : in    std_logic; 
+				s_irq_latch 		  : in 	 std_logic_vector(2 downto 0);
+            internal_D_in       : in    std_logic_vector(31 downto 0); 
+				s_data_hold_latch   : out 	 std_logic_vector(31 downto 0); 
+            internal_pc_out     : out   unsigned(31 downto 0);
+            fsm_running_mode    : out   std_logic; 
+				fsm_bus_req 		  : out 	 std_logic; 
+				fsm_bus_write 		  : out 	 std_logic; 
+				fsm_bus_addr 		  : out 	 std_logic_vector(31 downto 0); 
+				fsm_bus_type 		  : out 	 std_logic_vector(2 downto 0);
             bus_cycle_done      : in    std_logic
         );
     end component;
@@ -204,11 +243,17 @@ architecture behavioral of cpu_030_ec_decode_top is
     -- MATRIX-SCHABLONE FÜR DIE GETEILTE ADRESS-MATRIX
     component cpu_030_ec_dec_ea_shared
         Port (
-            CLK                 : in    std_logic; RESET_N : in std_logic;
+            CLK                 : in    std_logic; 
+				RESET_N 				  : in    std_logic;
             opcode              : in    std_logic_vector(15 downto 0);
-            move_active         : in    std_logic; alu_active : in std_logic;
-            ea_calc_start       : out   std_logic; ea_mode : out std_logic_vector(2 downto 0); ea_reg : out std_logic_vector(2 downto 0);
-            ea_ready            : out   std_logic; ea_final_addr : out std_logic_vector(31 downto 0); ea_is_register : out std_logic
+            move_active         : in    std_logic;
+				alu_active          : in    std_logic;
+            ea_calc_start       : out   std_logic; 
+				ea_mode				  : out 	 std_logic_vector(2 downto 0); 
+				ea_reg 				  : out   std_logic_vector(2 downto 0);
+            ea_ready            : out   std_logic; 
+				ea_final_addr 		  : out   std_logic_vector(31 downto 0); 
+				ea_is_register 	  : out   std_logic
         );
     end component;
 
@@ -217,24 +262,59 @@ architecture behavioral of cpu_030_ec_decode_top is
     -- =====================================================================
     component cpu_030_ec_dec_move
         Port (
-            CLK : in std_logic; RESET_N : in std_logic; move_en : in std_logic; opcode : in std_logic_vector(15 downto 0);
-            ea_calc_start : out std_logic; ea_mode : out std_logic_vector(2 downto 0); ea_reg : out std_logic_vector(2 downto 0); ea_ready : in std_logic; ea_final_addr : in std_logic_vector(31 downto 0); ea_is_register  : in std_logic;
-            move_size : out std_logic_vector(1 downto 0); move_bus_req : out std_logic; move_bus_write : out std_logic; move_alu_op : out std_logic_vector(7 downto 0); move_src_reg : out std_logic_vector(3 downto 0); move_dst_reg : out std_logic_vector(3 downto 0); move_ready : out std_logic
+            CLK : in std_logic; 
+				RESET_N : in std_logic; 
+				move_en : in std_logic; 
+				opcode : in std_logic_vector(15 downto 0);
+            ea_calc_start : out std_logic; 
+				ea_mode : out std_logic_vector(2 downto 0); 
+				ea_reg : out std_logic_vector(2 downto 0); 
+				ea_ready : in std_logic; 
+				ea_final_addr : in std_logic_vector(31 downto 0); 
+				ea_is_register  : in std_logic;
+            move_size : out std_logic_vector(1 downto 0); 
+				move_bus_req : out std_logic; 
+				move_bus_write : out std_logic; 
+				move_alu_op : out std_logic_vector(7 downto 0); 
+				move_src_reg : out std_logic_vector(3 downto 0); 
+				move_dst_reg : out std_logic_vector(3 downto 0); 
+				move_ready : out std_logic
         );
     end component;
 
     component cpu_030_ec_dec_alu
         Port (
-            CLK : in std_logic; RESET_N : in std_logic; alu_dec_en : in std_logic; opcode : in std_logic_vector(15 downto 0);
-            ea_calc_start : out std_logic; ea_mode : out std_logic_vector(2 downto 0); ea_reg : out std_logic_vector(2 downto 0); ea_ready : in std_logic; ea_final_addr : in std_logic_vector(31 downto 0); ea_is_register  : in std_logic;
-            dec_alu_size : out std_logic_vector(1 downto 0); dec_alu_bus_req : out   std_logic; dec_alu_bus_w : out std_logic; dec_alu_op : out std_logic_vector(7 downto 0); alu_src_reg : out std_logic_vector(3 downto 0); alu_dst_reg : out std_logic_vector(3 downto 0); dec_alu_ready : out std_logic
+            CLK : in std_logic; RESET_N : in std_logic; 
+				alu_dec_en : in std_logic; 
+				opcode : in std_logic_vector(15 downto 0);
+            ea_calc_start : out std_logic; 
+				ea_mode : out std_logic_vector(2 downto 0); 
+				ea_reg : out std_logic_vector(2 downto 0); 
+				ea_ready : in std_logic; 
+				ea_final_addr : in std_logic_vector(31 downto 0); 
+				ea_is_register  : in std_logic;
+            dec_alu_size : out std_logic_vector(1 downto 0); 
+				dec_alu_bus_req : out   std_logic; 
+				dec_alu_bus_w : out std_logic; 
+				dec_alu_op : out std_logic_vector(7 downto 0); 
+				dec_alu_src_reg : out std_logic_vector(3 downto 0); 
+				dec_alu_dst_reg : out std_logic_vector(3 downto 0); 
+				dec_alu_ready : out std_logic
         );
     end component;
 
     component cpu_030_ec_dec_branch
         Port (
-            CLK : in std_logic; RESET_N : in std_logic; branch_en : in std_logic; opcode : in std_logic_vector(15 downto 0); pc_current : in std_logic_vector(31 downto 0); alu_flags : in std_logic_vector(4 downto 0); pipeline_long : in std_logic_vector(31 downto 0);
-            branch_pc_load : out std_logic; branch_pc_new : out std_logic_vector(31 downto 0); branch_ready : out std_logic
+            CLK : in std_logic; 
+				RESET_N : in std_logic; 
+				branch_en : in std_logic; 
+				opcode : in std_logic_vector(15 downto 0); 
+				pc_current : in std_logic_vector(31 downto 0); 
+				alu_flags : in std_logic_vector(4 downto 0); 
+				pipeline_long : in std_logic_vector(31 downto 0);
+            branch_pc_load : out std_logic; 
+				branch_pc_new : out std_logic_vector(31 downto 0); 
+				branch_ready : out std_logic
         );
     end component;
 
@@ -320,8 +400,8 @@ architecture behavioral of cpu_030_ec_decode_top is
             dec_alu_bus_req => s_bus_req_alu,
             dec_alu_bus_w   => s_bus_w_alu,
             dec_alu_op      => s_alu_op_alu,
-            alu_src_reg     => s_alu_src_alu,
-            alu_dst_reg     => s_alu_dst_alu,
+            dec_alu_src_reg => s_alu_src_alu, 
+            dec_alu_dst_reg => s_alu_dst_alu, 
             dec_alu_ready   => s_alu_decoder_done
         );
 
@@ -331,7 +411,7 @@ architecture behavioral of cpu_030_ec_decode_top is
             RESET_N         => RESET_N,
             branch_en       => dec_branch_en,
             opcode          => s_fsm_bus_addr(15 downto 0),
-            pc_current      => std_logic_vector(s_internal_pc) & '0',
+            pc_current      => std_logic_vector(s_internal_pc),
             alu_flags       => alu_flags,
             pipeline_long   => s_internal_long,
             branch_pc_load  => s_branch_pc_load,
@@ -366,7 +446,7 @@ architecture behavioral of cpu_030_ec_decode_top is
         port map (
             fsm_running_mode    => s_fsm_running_mode,
             fsm_bus_req         => s_fsm_bus_req,
-            fsm_bus_write       => s_fsm_bus_write, -- FIXED: Richtungsoperator unbestechlich korrigiert
+            fsm_bus_write       => s_fsm_bus_write, 
             fsm_bus_addr        => s_fsm_bus_addr,
             fsm_bus_data_out    => s_fsm_bus_data_out,
             fsm_bus_type        => s_fsm_bus_type,
@@ -383,8 +463,8 @@ architecture behavioral of cpu_030_ec_decode_top is
             bus_req_alu         => s_bus_req_alu,
             bus_w_alu           => s_bus_w_alu,
             alu_op_alu          => s_alu_op_alu,
-            alu_src_alu         => s_alu_src_alu,
-            alu_dst_alu         => s_alu_dst_alu,
+				alu_src_alu         => s_alu_src_alu,
+				alu_dst_alu         => s_alu_dst_alu,				
             sub_size            => s_sub_size,
             alu_op_bf           => x"00",         
             bus_req_spec        => s_bus_req_spec,
@@ -399,12 +479,12 @@ architecture behavioral of cpu_030_ec_decode_top is
             alu_dst_reg         => alu_dst_reg
         );
 
-    -- OPTIMIERUNG HEBEL 1: Der Cache-Adressbus speist sich aus dem 31-Bit-PC plus starrer Null
-    cache_cpu_A   <= std_logic_vector(s_internal_pc) & '0';
+    -- 32-Bit-Adressraumzuweisung an das Cache-Subsystem
+    cache_cpu_A   <= std_logic_vector(s_internal_pc);
     cache_is_code <= '1' when (s_master_state = 1) else '0';
 
 	     -- =====================================================================
-    -- STRUKTURELLE VERDRAHTUNG DER DREI NEUEN MASTER-SUBMODULE (31-BIT PC)
+    -- STRUKTURELLE VERDRAHTUNG DER DREI NEUEN MASTER-SUBMODULE (32-BIT PC)
     -- =====================================================================
     i_boot_fsm : cpu_030_ec_dec_boot_fsm
         port map (
@@ -469,7 +549,7 @@ architecture behavioral of cpu_030_ec_decode_top is
             trap_done           => s_trap_done,
             exception_div_zero  => exception_div_zero,
             s_irq_latch         => ext_IPL_N,
-            internal_D_in       => internal_D_in,
+			   internal_D_in       => internal_D_in,
             s_data_hold_latch   => open,
             internal_pc_out     => s_pc_trap,
             fsm_running_mode    => open,
@@ -509,7 +589,7 @@ architecture behavioral of cpu_030_ec_decode_top is
             s_boot_en      <= '1';
             s_exec_en      <= '0';
             s_trap_en      <= '0';
-            s_internal_pc  <= "0001111100000000000000000000000"; -- x"00F80000" shifted right 1
+            s_internal_pc  <= x"00F80000"; 
         elsif rising_edge(CLK) then
             case s_master_state is
                 when 0 =>

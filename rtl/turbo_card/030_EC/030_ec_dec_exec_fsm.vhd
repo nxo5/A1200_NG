@@ -1,10 +1,10 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   030_ec_dec_exec_fsm.vhd
--- Teil:    1 von 2 (Entity-Schnittstelle)
+-- Sektion: Vollständiger All-Fix-Code (32-Bit PC Symmetrie)
 -- Funktion: Sub-Modul der ICU. Verwaltet exklusiv die regulären Phasen
 --           FETCH, DECODE, EXECUTE und WRITEBACK des 68EC030-Fließbands.
---           FPGA-REFACORING (HEBEL 1): Schnittstelle auf 31-Bit PC angepasst!
+--           SYMMETRIE-FIX: Ports und Logik vollständig auf 32-Bit saniert!
 -- =========================================================================
 
 library IEEE;
@@ -31,9 +31,9 @@ entity cpu_030_ec_dec_exec_fsm is
         cache_hit           : in    std_logic;                      
         cache_miss          : in    std_logic;                      
         
-        -- OPTIMIERUNG HEBEL 1: PC-Schnittstellen auf carry-schonende 31 Bit verjüngt
-        internal_pc_in      : in    unsigned(31 downto 1);          
-        internal_pc_out     : out   unsigned(31 downto 1);          
+        -- KORREKTUR: Symmetrische 32-Bit PC-Ports passend zum Hauptdecoder
+        internal_pc_in      : in    unsigned(31 downto 0);          
+        internal_pc_out     : out   unsigned(31 downto 0);          
 
         -- Ausgänge an den zentralen Multiplexer (Aktivitätsleitungen)
         s_fsm_running_mode  : out   std_logic;
@@ -62,24 +62,19 @@ entity cpu_030_ec_dec_exec_fsm is
 end cpu_030_ec_dec_exec_fsm;
 
 architecture behavioral of cpu_030_ec_dec_exec_fsm is
-
     type exec_state_type is (ST_IDLE, ST_FETCH, ST_DECODE, ST_EXECUTE, ST_WRITEBACK);
     signal current_state : exec_state_type := ST_IDLE;
     
     signal r_opcode           : std_logic_vector(15 downto 0) := (others => '0');
     signal r_cache_inhibit    : std_logic := '0';
-
-    -- SIGNAL-FIX: Interner Schattendraht bricht die verbotene Ausgangs-Rücklesung auf
     signal s_dec_branch_en_i  : std_logic := '0';
-
 begin
 
-    -- Permanente, latenzfreie Brücken an die physische Außenhaut des Moduls
     s_cache_inhibit_act <= r_cache_inhibit;
     dec_branch_en       <= s_dec_branch_en_i;
 
     -- =====================================================================
-    -- TAKTGESTEUERTER BEFEHLS-PREFETCH- UND EXECUTE-PROZESS (31-BIT PC)
+    -- TAKTGESTEUERTER BEFEHLS-PREFETCH- UND EXECUTE-PROZESS (32-BIT PC)
     -- =====================================================================
     process(CLK, RESET_N)
     begin
@@ -87,7 +82,7 @@ begin
             current_state       <= ST_IDLE;
             pipeline_req        <= '0';
             cache_cpu_req       <= '0';
-            internal_pc_out     <= "0001111100000000000000000000000"; -- x"00F80000" shifted right 1
+            internal_pc_out     <= x"00F80000";
             s_fsm_running_mode  <= '1';
             s_move_active       <= '0';
             s_alu_active        <= '0';
@@ -112,9 +107,6 @@ begin
                             current_state <= ST_FETCH;
                         end if;
 
-                    -- =====================================================
-                    -- ST_FETCH: BEFEHL AUS DEM CACHE ODER IRQ-ABSTIEG PRÜFEN
-                    -- =====================================================
                     when ST_FETCH =>
                         s_fsm_running_mode <= '1';
                         s_move_active      <= '0';
@@ -134,17 +126,14 @@ begin
                             cache_cpu_req <= '0';
                             current_state <= ST_DECODE;
                         elsif cache_miss = '1' then
-                            -- OPTIMIERUNG: Bit-Erweiterung für die Adressraum-Prüfung (31 downto 23 entspricht 31 downto 24 bei 32-Bit)
-                            if internal_pc_in(31 downto 23) = "000000000" then
+                            -- HEBEL 1 OPTIMIERUNG: Bit 0 wird für die Adressraum-Prüfung ignoriert
+                            if internal_pc_in(31 downto 24) = x"00" then
                                 r_cache_inhibit <= '1';
                             end if;
                             s_special_active <= '1';
                             current_state    <= ST_DECODE;
                         end if;
 
-                    -- =====================================================
-                    -- ST_DECODE: OPERATIONS-KLASSIFIZIERUNG
-                    -- =====================================================
                     when ST_DECODE =>
                         dec_move_en       <= '0';
                         dec_alu_en        <= '0';
@@ -168,13 +157,10 @@ begin
                             current_state <= ST_EXECUTE;
                         end if;
 
-                    -- =====================================================
-                    -- ST_EXECUTE: QUITTUNGSEINZUG DER DECODER ODER TRAPS
-                    -- =====================================================
                     when ST_EXECUTE =>
-                        -- OPTIMIERUNG: Extrahiere Bits 31 downto 1 für das 31-Bit PC-Register bei Sprungbefehlen
                         if s_dec_branch_en_i = '1' and s_branch_pc_load = '1' then
-                            internal_pc_out <= unsigned(s_branch_pc_new(31 downto 1));
+                            -- Sprungadresse direkt als 32-Bit übernehmen, Bit 0 wird im Hauptdecoder auf 0 gezwungen
+                            internal_pc_out <= unsigned(s_branch_pc_new);
                         end if;
 
                         if exec_trap_pending = '1' then
@@ -186,18 +172,15 @@ begin
                             current_state <= ST_WRITEBACK;
                         end if;
 
-                    -- =====================================================
-                    -- ST_WRITEBACK: BEFEHLSFINALE & PC-VORSCHUB
-                    -- =====================================================
                     when ST_WRITEBACK =>
                         dec_move_en       <= '0';
                         dec_alu_en        <= '0';
                         s_dec_branch_en_i <= '0';
                         dec_special_en    <= '0';
 
-                        -- OPTIMIERUNG: +1 auf 31-Bit Ebene entspricht +2 auf 32-Bit Ebene
+                        -- HEBEL 1 OPTIMIERUNG: Zyklustreuer +2 Byte Vorschub im 32-Bit Raster
                         if r_opcode(15 downto 12) /= "0110" or s_branch_pc_load = '0' then
-                            internal_pc_out <= internal_pc_in + 1;
+                            internal_pc_out <= internal_pc_in + 2;
                         end if;
                         
                         current_state <= ST_FETCH;
@@ -212,5 +195,4 @@ begin
             end if;
         end if;
     end process;
-
 end behavioral;
