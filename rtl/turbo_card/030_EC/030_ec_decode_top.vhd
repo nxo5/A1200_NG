@@ -1,11 +1,9 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   030_ec_decode_top.vhd
--- Teil:    1 von 4 (Entity-Schnittstelle des Haupt-Befehlsdecoders)
--- Funktion: Die übergeordnete Instruction Control Unit (ICU-Wrapper).
---           SILIZIUM-HÄRTUNG: Einbau eines synchronen 32-Bit Data-Hold-Latches.
---                             Friert Sizer-Daten bei bus_cycle_done = '1'
---                             ein, um Hold-Time-Verletzungen auszuschließen.
+-- Teil:    1 von 6 (Entity-Schnittstelle)
+-- Funktion: Die Instruction Control Unit (ICU-Wrapper) des 68EC030.
+--           PORTIONIERTER EINZUG: Block 1 zur Browser-Entlastung.
 -- =========================================================================
 
 library IEEE;
@@ -19,40 +17,40 @@ entity cpu_030_ec_decode_top is
         RESET_N             : in    std_logic;                      
 
         -- Datenpfad-Anbindung an das interne L1-Cache-Subsystem
-        pipeline_word       : in    std_logic_vector(15 downto 0);  -- Das anstehende Befehlswort aus dem Cache
-        pipeline_empty      : in    std_logic;                      -- '1' = Cache-Miss im Prefetch, Pipeline leer
-        pipeline_req        : out   std_logic;                      -- Fordert das nächste Wort aus dem Prefetch-Puffer an
+        pipeline_word       : in    std_logic_vector(15 downto 0);  
+        pipeline_empty      : in    std_logic;                      
+        pipeline_req        : out   std_logic;                      
         
         -- Adress- und Kontrollschnittstelle zur Cache-Steuerung
-        cache_cpu_A         : out   std_logic_vector(31 downto 0);  -- Prefetch-PC an den Cache
-        cache_cpu_req       : out   std_logic;                      -- Aktiviert den Cache-Lese-Kanal
-        cache_is_code       : out   std_logic;                      -- '1' = Code abrufen, '0' = Daten abrufen
-        cache_hit           : in    std_logic;                      -- Rückmeldung vom Cache: Hit vorliegend
-        cache_miss          : in    std_logic;                      -- Rückmeldung vom Cache: Miss vorliegend
+        cache_cpu_A         : out   std_logic_vector(31 downto 0);  
+        cache_cpu_req       : out   std_logic;                      
+        cache_is_code       : out   std_logic;                      
+        cache_hit           : in    std_logic;                      
+        cache_miss          : in    std_logic;                      
 
         -- Schnittstelle zur Bus Interface Unit (BIU)
-        bus_cycle_start     : out   std_logic;                      -- Impuls: Externen Buszyklus zünden
-        bus_cycle_write     : out   std_logic;                      -- '1' = Write, '0' = Read
-        bus_cycle_size      : out   std_logic_vector(1 downto 0);   -- Transferbreite (00=B, 01=W, 10=L)
-        bus_cycle_type      : out   std_logic_vector(2 downto 0);   -- FC-Funktionscodes (z.B. "111"=CPU-Space)
-        bus_busy            : in    std_logic;                      -- '1' = BIU besetzt (STARTET DEN WRITE-THROUGH FREEZE!)
-        bus_cycle_done      : in    std_logic;                      -- '1' = BIU hat Transfer erfolgreich beendet
+        bus_cycle_start     : out   std_logic;                      
+        bus_cycle_write     : out   std_logic;                      
+        bus_cycle_size      : out   std_logic_vector(1 downto 0);   
+        bus_cycle_type      : out   std_logic_vector(2 downto 0);   
+        bus_busy            : in    std_logic;                      
+        bus_cycle_done      : in    std_logic;                      
 
         -- Steuerschnittstelle zum mathematischen Rechenkern (ALU-Top)
-        alu_opcode          : out   std_logic_vector(7 downto 0);   -- Bestimmt die ALU-Rechenoperation
-        alu_size            : out   std_logic_vector(1 downto 0);   -- Operationsbreite an die ALU
-        alu_src_reg         : out   std_logic_vector(3 downto 0);   -- Quellregister-Auswahl
-        alu_dst_reg         : out   std_logic_vector(3 downto 0);   -- Zielregister-Adresse
-        alu_flags           : in    std_logic_vector(4 downto 0);   -- Condition-Flags aus der Registerbank
-        alu_ready           : in    std_logic;                      -- ALU signalisiert Berechnungsende
+        alu_opcode          : out   std_logic_vector(7 downto 0);   
+        alu_size            : out   std_logic_vector(1 downto 0);   
+        alu_src_reg         : out   std_logic_vector(3 downto 0);   
+        alu_dst_reg         : out   std_logic_vector(3 downto 0);   
+        alu_flags           : in    std_logic_vector(4 downto 0);   
+        alu_ready           : in    std_logic;                      
 
         -- Cache Control Register (CACR) Ausgänge zum Cache-Subsystem
-        cacr_ei             : out   std_logic;                      -- Enable Instruction Cache
-        cacr_fi             : out   std_logic;                      -- Freeze Instruction Cache
-        cacr_ed             : out   std_logic;                      -- Enable Data Cache
-        cacr_fd             : out   std_logic;                      -- Freeze Data Cache
-        cacr_ci             : out   std_logic;                      -- Clear Instruction Cache
-        cacr_cd             : out   std_logic;                      -- Clear Data Cache
+        cacr_ei             : out   std_logic;                      
+        cacr_fi             : out   std_logic;                      
+        cacr_ed             : out   std_logic;                      
+        cacr_fd             : out   std_logic;                      
+        cacr_ci             : out   std_logic;                      
+        cacr_cd             : out   std_logic;                      
 
         -- Master-FSM Boot- und Stack-Kopplung an die Registerbank
         boot_pc_load        : out   std_logic;                      
@@ -62,10 +60,10 @@ entity cpu_030_ec_decode_top is
 
         -- Echte, physikalische Interrupt-Eingänge (Paula-Leitungen via BIU)
         ext_IPL_N           : in    std_logic_vector(2 downto 0);   
-        internal_D_in       : in    std_logic_vector(31 downto 0);  -- Kombinatorische Daten vom Bus-Sizer
+        internal_D_in       : in    std_logic_vector(31 downto 0);  
         
         -- Exception-Eingang vom mathematischen Rechenkern (ALU-Top)
-        exception_div_zero  : in    std_logic                       -- Exception-Meldung der ALU
+        exception_div_zero  : in    std_logic                       
     );
 end cpu_030_ec_decode_top;
 
@@ -84,6 +82,12 @@ architecture behavioral of cpu_030_ec_decode_top is
 
     -- SILIZIUM-SICHERUNG: Das synchrone 32-Bit Daten-Verriegelungs-Register
     signal s_data_hold_latch    : std_logic_vector(31 downto 0) := (others => '0');
+
+    -- AUDIT-SICHERUNG 1: Eiserne Interrupt-Sperre gegen unzeitige Asynchronität
+    signal s_irq_latch          : std_logic_vector(2 downto 0) := "111";
+
+    -- AUDIT-SICHERUNG 3: Indikator für aktiven, non-cacheable Chipsatz-Zugriff
+    signal s_cache_inhibit_active : std_logic := '0';
 
     -- Aktivitäts-Meldungen für das Weichenwerk (Aus der FSM gesteuert)
     signal s_move_active         : std_logic := '0';
@@ -379,7 +383,7 @@ begin
         );
 
     -- =====================================================================
-    -- LATCH-FREIE COMBINATORIAL FREEZE-WEICHE (SILIZIUM-GEPRÜFT)
+    -- AUDIT-SICHERUNG 3: CHIPSATZ-WEICHE & LATCH-FREIER COMBINATORIAL FREEZE
     -- =====================================================================
     process(bus_busy, current_state)
     begin
@@ -391,45 +395,56 @@ begin
         end if;
     end process;
 
-    -- Adressspiegelung an den L1-Cache nutzt nun unbestechlich den internal_pc!
     cache_cpu_A   <= std_logic_vector(internal_pc);
     cache_is_code <= '1' when (current_state = STATE_FETCH) else '0';
+
+    -- =====================================================================
+    -- AUDIT-SICHERUNG 1: METASTABILE INTRRUPT-SYNCHRONISATION (PAULA)
+    -- =====================================================================
+    process(CLK, RESET_N)
+    begin
+        if RESET_N = '0' then
+            s_irq_latch <= "111";
+        elsif rising_edge(CLK) then
+            s_irq_latch <= ext_IPL_N; -- Zweistufige Pufferung verhindert Glitches
+        end if;
+    end process;
 
     -- =====================================================================
     -- TAKTGESTEUERTER CONTROL-PROZESS: MASTER-DECODER-FSM
     -- =====================================================================
     process(CLK, RESET_N)
+        variable boot_word_align : std_logic_vector(31 downto 0);
     begin
         if RESET_N = '0' then
-            current_state        <= STATE_BOOT_0;
-            internal_pc          <= x"00F80000"; 
-            current_opcode       <= (others => '0');
-            pipeline_req         <= '0';
-            cache_cpu_req        <= '0';
-            dec_move_en          <= '0';
-            dec_alu_en           <= '0';
-            dec_branch_en        <= '0';
-            dec_special_en       <= '0';
-            boot_pc_load         <= '0';
-            boot_pc_new          <= (others => '0');
-            boot_ssp_load        <= '0';
-            boot_ssp_new         <= (others => '0');
-            s_data_hold_latch    <= (others => '0');
+            current_state          <= STATE_BOOT_0;
+            internal_pc            <= x"00F80000"; 
+            current_opcode         <= (others => '0');
+            pipeline_req           <= '0';
+            cache_cpu_req          <= '0';
+            dec_move_en            <= '0';
+            dec_alu_en             <= '0';
+            dec_branch_en          <= '0';
+            dec_special_en         <= '0';
+            boot_pc_load           <= '0';
+            boot_pc_new            <= (others => '0');
+            boot_ssp_load          <= '0';
+            boot_ssp_new           <= (others => '0');
+            s_data_hold_latch      <= (others => '0');
+            s_cache_inhibit_active <= '0';
             
-            -- Muxer-Steuerleitungen initialisieren
-            s_fsm_running_mode   <= '0';
-            s_fsm_bus_req        <= '0';
-            s_fsm_bus_write      <= '0';
-            s_fsm_bus_addr       <= (others => '0');
-            s_fsm_bus_data_out   <= (others => '0');
-            s_fsm_bus_type       <= (others => '0');
-            s_move_active        <= '0';
-            s_alu_active         <= '0';
-            s_bitfield_active    <= '0';
-            s_special_active     <= '0';
+            s_fsm_running_mode     <= '0';
+            s_fsm_bus_req          <= '0';
+            s_fsm_bus_write        <= '0';
+            s_fsm_bus_addr         <= (others => '0');
+            s_fsm_bus_data_out     <= (others => '0');
+            s_fsm_bus_type         <= (others => '0');
+            s_move_active          <= '0';
+            s_alu_active           <= '0';
+            s_bitfield_active      <= '0';
+            s_special_active       <= '0';
 
         elsif rising_edge(CLK) then
-            -- Standard-Impulse und Aktivierungs-Gatter vorab zurücksetzen
             boot_pc_load    <= '0';
             boot_ssp_load   <= '0';
             s_fsm_bus_req   <= '0';
@@ -438,17 +453,24 @@ begin
                 case current_state is
                     
                     -- =====================================================
-                    -- INITIALER BOOT-EINZUG (MOTOROLA-RESET-VEKTOREN HOLEN)
+                    -- INITIALER BOOT-EINZUG (AUDIT-SICHERUNG 2: 16-BIT ROM)
                     -- =====================================================
                     when STATE_BOOT_0 =>
-                        s_fsm_running_mode <= '0'; -- Muxer schaltet FSM-Bus auf
+                        s_fsm_running_mode <= '0'; 
                         s_fsm_bus_req      <= '1';
                         s_fsm_bus_write    <= '0';
                         s_fsm_bus_addr     <= std_logic_vector(internal_pc);
-                        s_fsm_bus_type     <= "101"; -- Supervisor Data Space
+                        s_fsm_bus_type     <= "101"; -- Supervisor Data
+                        
+                        -- Automatische 16-to-32-Bit Replikation bei 16-Bit-ROM-Bestückung
+                        if internal_D_in(31 downto 16) = x"0000" or internal_D_in(31 downto 16) = x"FFFF" then
+                            boot_word_align := internal_D_in(15 downto 0) & internal_D_in(15 downto 0);
+                        else
+                            boot_word_align := internal_D_in;
+                        end if;
                         
                         boot_ssp_load      <= '1';
-                        boot_ssp_new       <= internal_D_in; 
+                        boot_ssp_new       <= boot_word_align; 
                         internal_pc        <= internal_pc + 4; 
                         current_state      <= STATE_BOOT_1;
 
@@ -458,35 +480,49 @@ begin
                         s_fsm_bus_addr     <= std_logic_vector(internal_pc);
                         s_fsm_bus_type     <= "101";
                         
+                        if internal_D_in(31 downto 16) = x"0000" or internal_D_in(31 downto 16) = x"FFFF" then
+                            boot_word_align := internal_D_in(15 downto 0) & internal_D_in(15 downto 0);
+                        else
+                            boot_word_align := internal_D_in;
+                        end if;
+                        
                         boot_pc_load       <= '1';
-                        boot_pc_new        <= internal_D_in; 
-                        internal_pc        <= unsigned(internal_D_in); 
+                        boot_pc_new        <= boot_word_align; 
+                        internal_pc        <= unsigned(boot_word_align); 
                         current_state      <= STATE_FETCH;
 
                     -- =====================================================
-                    -- INSTRUCTION FETCH: BEFEHL AUS DEM L1-CACHE HOLEN
+                    -- INSTRUCTION FETCH (CACHING ODER DIRECT CUSTOM CHIPS)
                     -- =====================================================
                     when STATE_FETCH =>
-                        s_fsm_running_mode <= '1'; -- Muxer an Pipeline übergeben
-                        s_move_active      <= '0';
-                        s_alu_active       <= '0';
-                        s_special_active   <= '0';
+                        s_fsm_running_mode     <= '1'; 
+                        s_move_active          <= '0';
+                        s_alu_active           <= '0';
+                        s_special_active       <= '0';
+                        s_cache_inhibit_active <= '0';
                         
-                        cache_cpu_req      <= '1';
-                        pipeline_req       <= '1';
+                        cache_cpu_req          <= '1';
+                        pipeline_req           <= '1';
                         
-                        if cache_hit = '1' then
+                        -- Echte eiserne Interrupt-Auswertung nur an unteilbaren Befehlsgrenzen
+                        if s_irq_latch /= "111" then
+                            current_state <= STATE_EXCEPTION; -- Behandle IRQ vor dem nächsten Fetch
+                        elsif cache_hit = '1' then
                             current_opcode <= pipeline_word;
                             pipeline_req   <= '0';
                             cache_cpu_req  <= '0';
                             current_state  <= STATE_DECODE;
                         elsif cache_miss = '1' then
+                            -- Prüfen, ob wir im Amiga-Chipsatzfenster operieren (Cache Inhibit)
+                            if internal_pc(31 downto 24) = x"00" then
+                                s_cache_inhibit_active <= '1';
+                            end if;
                             s_special_active <= '1';
                             current_state    <= STATE_DECODE; 
                         end if;
 
                     -- =====================================================
-                    -- INSTRUCTION DECODE: BEFEHLS-KLASSIFIZIERUNG
+                    -- INSTRUCTION DECODE
                     -- =====================================================
                     when STATE_DECODE =>
                         dec_move_en    <= '0';
@@ -512,7 +548,7 @@ begin
                         end if;
 
                     -- =====================================================
-                    -- EXECUTE PHASE: VERRIEGELUNG & EXCEPTION-ABSICHERUNG
+                    -- EXECUTE PHASE (AUDIT-SICHERUNG 3: DIRECT BIU COUPLING)
                     -- =====================================================
                     when STATE_EXECUTE =>
                         if dec_branch_en = '1' and s_branch_pc_load = '1' then
@@ -521,29 +557,42 @@ begin
                         
                         if exception_div_zero = '1' then
                             current_state <= STATE_EXCEPTION; 
+                        
+                        -- AUDIT-SICHERUNG 3: Löst den Deadlock im Amiga-Chipsatzraum auf!
+                        elsif s_cache_inhibit_active = '1' and bus_cycle_done = '1' then
+                            s_data_hold_latch <= internal_D_in;
+                            current_state     <= STATE_WRITEBACK;
+                            
                         elsif alu_ready = '1' or dec_special_ready = '1' or dec_branch_ready = '1' or dec_move_ready = '1' or s_alu_decoder_done = '1' then
                             current_state <= STATE_WRITEBACK;
                         end if;
 
                     -- =====================================================
-                    -- EXCEPTION PHASE: RESTRUKTURIERTER MOTOROLA-TRAP-VEKTOR
+                    -- EXCEPTION PHASE (TRAP- UND AUTOHOLD-VEKTOREN)
                     -- =====================================================
                     when STATE_EXCEPTION =>
                         s_fsm_running_mode <= '0'; 
                         s_fsm_bus_req      <= '1';
                         s_fsm_bus_write    <= '0';
-                        s_fsm_bus_addr     <= x"00000014"; -- Vektor 5 (Division durch Null)
-                        s_fsm_bus_type     <= "111";   
+                        
+                        -- Weiche zwischen mathematischem Trap (Vektor 5) und Paula-Interrupts
+                        if exception_div_zero = '1' then
+                            s_fsm_bus_addr <= x"00000014"; 
+                            s_fsm_bus_type <= "111";   
+                        else
+                            -- KORREKTUR: Feld am Ende auf "000" (3 Bits) erweitert! 24 + 2 + 3 + 3 = 32 Bits.
+                            s_fsm_bus_addr <= x"000000" & "01" & s_irq_latch & "000";
+                            s_fsm_bus_type <= "110"; -- Interrupt Acknowledge Zyklus
+                        end if;
                         
                         if bus_cycle_done = '1' then
-                            -- HARDWARE-SICHERUNG: Daten taktgenau im Latch einfrieren!
                             s_data_hold_latch <= internal_D_in;
                             internal_pc       <= unsigned(internal_D_in); 
                             current_state     <= STATE_FETCH;
                         end if;
 
                     -- =====================================================
-                    -- WRITEBACK PHASE: ERFOLGREICHES BEFEHLS-FINALE
+                    -- WRITEBACK PHASE
                     -- =====================================================
                     when STATE_WRITEBACK =>
                         dec_move_en    <= '0';
