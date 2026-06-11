@@ -1,7 +1,0 @@
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "M68020_pkg.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "M68020_cpu.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "M68020_fetch.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "M68020_decode.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "M68020_ea.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "M68020_execute.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "M68020_bus_ctrl.vhd"]

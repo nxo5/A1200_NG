@@ -1,10 +1,11 @@
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "bram.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "sdram_bridge.vhd"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "M68020_test_board.vhd"]
+# set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "sdram_bridge.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "A1200_top.vhd"]
-set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "cpu/M68020_cpu.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "cia_a/cia_a.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "cia_b/cia_b.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "alice/alice.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "lisa/lisa.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "paula/paula.qip"]
+set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "gayle/gayle.qip"]
+set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "turbo_card" "turbo_card.qip"]
+
+

@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-use work.M68020_pkg.all;
+-- use work.M68020_pkg.all;
 
 entity blitter is
     Port (
