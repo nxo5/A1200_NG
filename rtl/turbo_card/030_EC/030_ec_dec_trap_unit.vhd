@@ -4,7 +4,7 @@
 -- Teil:    1 von 2 (Entity-Schnittstelle)
 -- Funktion: Sub-Modul der ICU. Verwaltet exklusiv die Exception- und
 --           Autovektor-Ablaufsteuerung (STATE_EXCEPTION) des 68EC030.
---           Steuert CPU-Space- und Interrupt-Acknowledge-Buszyklen.
+--           FPGA-REFACORING (HEBEL 1): Schnittstelle auf 31-Bit PC angepasst!
 -- =========================================================================
 
 library IEEE;
@@ -18,18 +18,20 @@ entity cpu_030_ec_dec_trap_unit is
         RESET_N             : in    std_logic;
 
         -- Kontrollkanäle von/zu der übergeordneten ICU
-        trap_en             : in    std_logic;                      -- '1' aktiviert diese Exception-Einheit
-        trap_busy           : in    std_logic;                      -- Blockiert das Weiterziehen bei BIU-Freeze
-        trap_done           : out   std_logic;                      -- Meldet das erfolgreiche Ende des Vektoreinzugs
+        trap_en             : in    std_logic;                      
+        trap_busy           : in    std_logic;                      
+        trap_done           : out   std_logic;                      
 
         -- Statussignale vom Rechenkern und den Interrupt-Leitungen
-        exception_div_zero  : in    std_logic;                      -- Division durch Null aktiv
-        s_irq_latch         : in    std_logic_vector(2 downto 0);   -- Metastabil gepufferte Paula-Leitungen
+        exception_div_zero  : in    std_logic;                      
+        s_irq_latch         : in    std_logic_vector(2 downto 0);   
 
         -- Datenpfad-Anbindung an das Datenlatch und den Speicherbus
         internal_D_in       : in    std_logic_vector(31 downto 0);  
         s_data_hold_latch   : out   std_logic_vector(31 downto 0);  
-        internal_pc_out     : out   unsigned(31 downto 0);          
+        
+        -- OPTIMIERUNG HEBEL 1: PC-Ausgangs-Port auf carry-schonende 31 Bit verjüngt
+        internal_pc_out     : out   unsigned(31 downto 1);          
 
         -- Ausgänge an den zentralen Multiplexer (cpu_030_ec_dec_mux)
         fsm_running_mode    : out   std_logic;
@@ -39,7 +41,7 @@ entity cpu_030_ec_dec_trap_unit is
         fsm_bus_type        : out   std_logic_vector(2 downto 0);
 
         -- Quittungseingang von der Bus Interface Unit (BIU)
-        bus_cycle_done      : in    std_logic                       -- Quittung von der BIU
+        bus_cycle_done      : in    std_logic                       
     );
 end cpu_030_ec_dec_trap_unit;
 
@@ -51,7 +53,7 @@ architecture behavioral of cpu_030_ec_dec_trap_unit is
 begin
 
     -- =====================================================================
-    -- TAKTGESTEUERTER EXCEPTION- UND INTERRUPT-ACK-PROZESS
+    -- TAKTGESTEUERTER EXCEPTION- UND INTERRUPT-ACK-PROZESS (31-BIT PC)
     -- =====================================================================
     process(CLK, RESET_N)
     begin
@@ -59,7 +61,7 @@ begin
             trap_state         <= TRAP_IDLE;
             trap_done          <= '0';
             s_data_hold_latch  <= (others => '0');
-            internal_pc_out    <= x"00F80000";
+            internal_pc_out    <= "0001111100000000000000000000000"; -- x"00F80000" shifted right 1
             fsm_running_mode   <= '1';
             fsm_bus_req        <= '0';
             fsm_bus_write      <= '0';
@@ -90,7 +92,7 @@ begin
                         fsm_bus_addr <= x"00000014"; -- Vektor 5 (Division durch Null)
                         fsm_bus_type <= "111";       -- CPU Space Cycle
                     else
-                        -- SILIZIUM-CORRECTUR: Volle 32-Bit-Verkettung (24 + 2 + 3 + 3 = 32)
+                        -- SILIZIUM-KORREKTUR: Volle 32-Bit-Verkettung (24 + 2 + 3 + 3 = 32)
                         fsm_bus_addr <= x"000000" & "01" & s_irq_latch & "000";
                         fsm_bus_type <= "110";       -- Interrupt Acknowledge Zyklus
                     end if;
@@ -98,7 +100,8 @@ begin
                     if bus_cycle_done = '1' then
                         -- HARDWARE-SICHERUNG: Daten exakt im Latch einfrieren!
                         s_data_hold_latch <= internal_D_in;
-                        internal_pc_out   <= unsigned(internal_D_in); -- Zieladresse der Trap-Routine
+                        -- OPTIMIERUNG: Extrahiere Bits 31 downto 1 für das 31-Bit PC-Register
+                        internal_pc_out   <= unsigned(internal_D_in(31 downto 1)); -- Zieladresse der Routine
                         trap_state        <= TRAP_FINISHED;
                     end if;
 

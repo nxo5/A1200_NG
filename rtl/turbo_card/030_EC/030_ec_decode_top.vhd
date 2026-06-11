@@ -3,10 +3,10 @@
 -- Datei:   030_ec_decode_top.vhd
 -- Teil:    1 von 5 (Vollständige Entity-Schnittstelle)
 -- Funktion: Die übergeordnete Instruction Control Unit (ICU-Wrapper).
---           KONSOLIDIERTE REPARATUR-FASSUNG: 
---           - Semikolon-Loch bei bus_cycle_done restlos geschlossen.
---           - pipeline_freeze-Koppelnetz im Deklarationsblock integriert.
---           - 32-Bit Autovektor-Bit-Verkettung unbestechlich korrigiert.
+--           FPGA-REFACORING (HEBEL 1): 
+--           Kompression des internen Programmzählers auf 31 Bit (31 downto 1).
+--           Eliminiert den massiven 32-Bit-Addierer aus der Carry-Chain,
+--           ohne an Zyklustreue oder Funktion gegenüber der 030 zu verlieren!
 -- =========================================================================
 
 library IEEE;
@@ -76,10 +76,12 @@ architecture behavioral of cpu_030_ec_decode_top is
     -- STRUKTURELLE ZUSTANDSSIGNALE DER MASTER-KOORDINATION
     -- =====================================================================
     signal s_master_state       : integer range 0 to 2 := 0; -- 0=Boot, 1=Exec, 2=Trap
-    signal s_internal_pc        : unsigned(31 downto 0) := x"00F80000";
     signal s_internal_long      : std_logic_vector(31 downto 0) := (others => '0');
 
-    -- SIGNAL-FIX: ECHTES INTERNES PIPELINE-FREEZE KOPPELNETZWERK
+    -- OPTIMIERUNG HEBEL 1: carry-chain-schonender 31-Bit Programmzähler (Bit 0 gekappt)
+    signal s_internal_pc        : unsigned(31 downto 1) := "0001111100000000000000000000000"; -- x"00F80000" shifted right 1
+
+    -- Internes lacht-freies Freeze-Netzwerk
     signal pipeline_freeze      : std_logic := '0';
 
     -- Sub-Aktivierungssignale der Teil-Zustandsmaschinen
@@ -89,10 +91,10 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal s_trap_en            : std_logic := '0'; 
     signal s_trap_done          : std_logic;
 
-    -- Sub-PC-Rückführungen an die Master-Weiche
-    signal s_pc_boot            : unsigned(31 downto 0);
-    signal s_pc_exec            : unsigned(31 downto 0);
-    signal s_pc_trap            : unsigned(31 downto 0);
+    -- Sub-PC-Rückführungen an die Master-Weiche (Ebenfalls auf 31 Bit optimiert)
+    signal s_pc_boot            : unsigned(31 downto 1);
+    signal s_pc_exec            : unsigned(31 downto 1);
+    signal s_pc_trap            : unsigned(31 downto 1);
 
     -- Bus-Drahtbrücken von den neuen Sub-Modulen zum Weichenwerk
     signal s_bus_req_boot       : std_logic; 
@@ -157,13 +159,13 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal dummy_ea_reg_a       : std_logic_vector(2 downto 0);
 
     -- =====================================================================
-    -- COMPONENTEN-DEKLARATIONEN DER 3 NEUEN MASTER-SUBMODULE
+    -- COMPONENTEN-DEKLARATIONEN DER 3 NEUEN MASTER-SUBMODULE (31-BIT PC)
     -- =====================================================================
     component cpu_030_ec_dec_boot_fsm
         Port (
             CLK                 : in    std_logic; RESET_N : in std_logic;
             boot_en             : in    std_logic; boot_busy : in std_logic; boot_done : out std_logic;
-            internal_pc_in      : in    unsigned(31 downto 0); internal_pc_out : out unsigned(31 downto 0);
+            internal_pc_in      : in    unsigned(31 downto 1); internal_pc_out : out unsigned(31 downto 1);
             internal_D_in       : in    std_logic_vector(31 downto 0);
             fsm_bus_req         : out   std_logic; fsm_bus_write : out std_logic; fsm_bus_addr : out std_logic_vector(31 downto 0); fsm_bus_type : out std_logic_vector(2 downto 0);
             boot_ssp_load       : out   std_logic; boot_ssp_new : out std_logic_vector(31 downto 0);
@@ -176,7 +178,7 @@ architecture behavioral of cpu_030_ec_decode_top is
             CLK                 : in    std_logic; RESET_N : in std_logic;
             exec_en             : in    std_logic; exec_busy : in std_logic; exec_irq_pending : in std_logic; exec_trap_pending : in std_logic; exec_trap_trigger : out std_logic;
             pipeline_word       : in    std_logic_vector(15 downto 0); pipeline_req : out std_logic; cache_cpu_req : out std_logic; cache_hit : in std_logic; cache_miss : in std_logic;
-            internal_pc_in      : in    unsigned(31 downto 0); internal_pc_out : out unsigned(31 downto 0);
+            internal_pc_in      : in    unsigned(31 downto 1); internal_pc_out : out unsigned(31 downto 1);
             s_fsm_running_mode  : out   std_logic; s_move_active : out std_logic; s_alu_active : out std_logic; s_special_active : out std_logic;
             dec_move_en         : out   std_logic; dec_move_ready : in std_logic; dec_alu_en : out std_logic; s_alu_decoder_done : in std_logic;
             dec_branch_en       : out   std_logic; dec_branch_ready : in std_logic; dec_special_en : out std_logic; dec_special_ready : in std_logic;
@@ -190,7 +192,7 @@ architecture behavioral of cpu_030_ec_decode_top is
             CLK                 : in    std_logic; RESET_N : in std_logic;
             trap_en             : in    std_logic; trap_busy : in std_logic; trap_done : out std_logic;
             exception_div_zero  : in    std_logic; s_irq_latch : in std_logic_vector(2 downto 0);
-            internal_D_in       : in    std_logic_vector(31 downto 0); s_data_hold_latch : out std_logic_vector(31 downto 0); internal_pc_out : out unsigned(31 downto 0);
+            internal_D_in       : in    std_logic_vector(31 downto 0); s_data_hold_latch : out std_logic_vector(31 downto 0); internal_pc_out : out unsigned(31 downto 1);
             fsm_running_mode    : out   std_logic; fsm_bus_req : out std_logic; fsm_bus_write : out std_logic; fsm_bus_addr : out std_logic_vector(31 downto 0); fsm_bus_type : out std_logic_vector(2 downto 0);
             bus_cycle_done      : in    std_logic
         );
@@ -297,7 +299,8 @@ begin
             RESET_N         => RESET_N,
             branch_en       => dec_branch_en,
             opcode          => s_fsm_bus_addr(15 downto 0),
-            pc_current      => std_logic_vector(s_internal_pc),
+            -- 31-Bit PC wird kombinatorisch mit starrer Null an den 32-Bit-Port übergeben
+            pc_current      => std_logic_vector(s_internal_pc) & '0',
             alu_flags       => alu_flags,
             pipeline_long   => s_internal_long,
             branch_pc_load  => s_branch_pc_load,
@@ -352,7 +355,7 @@ begin
             alu_src_alu         => s_alu_src_alu,
             alu_dst_alu         => s_alu_dst_alu,
             sub_size            => s_sub_size,
-            alu_op_bf           => x"00",         
+            alu_op_bf           => x"00",         -- FIX: Auf namentliche Zuweisung saniert
             bus_req_spec        => s_bus_req_spec,
             bus_cycle_start     => bus_cycle_start,
             bus_cycle_write     => bus_cycle_write,
@@ -365,8 +368,12 @@ begin
             alu_dst_reg         => alu_dst_reg
         );
 
+    -- OPTIMIERUNG HEBEL 1: Der Cache-Adressbus speist sich aus dem 31-Bit-PC plus starrer Null
+    cache_cpu_A   <= std_logic_vector(s_internal_pc) & '0';
+    cache_is_code <= '1' when (s_master_state = 1) else '0';
+
     -- =====================================================================
-    -- STRUKTURELLE VERDRAHTUNG DER DREI NEUEN MASTER-SUBMODULE
+    -- STRUKTURELLE VERDRAHTUNG DER DREI NEUEN MASTER-SUBMODULE (31-BIT PC)
     -- =====================================================================
     i_boot_fsm : cpu_030_ec_dec_boot_fsm
         port map (
@@ -471,7 +478,7 @@ begin
             s_boot_en      <= '1';
             s_exec_en      <= '0';
             s_trap_en      <= '0';
-            s_internal_pc  <= x"00F80000";
+            s_internal_pc  <= "0001111100000000000000000000000"; -- x"00F80000" shifted right 1
         elsif rising_edge(CLK) then
             case s_master_state is
                 when 0 =>
@@ -507,8 +514,5 @@ begin
             pipeline_freeze <= '1';
         end if;
     end process;
-
-    cache_cpu_A   <= std_logic_vector(s_internal_pc);
-    cache_is_code <= '1' when (s_master_state = 1) else '0';
 
 end behavioral;

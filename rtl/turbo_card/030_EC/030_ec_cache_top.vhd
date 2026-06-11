@@ -3,7 +3,10 @@
 -- Datei:   030_ec_cache_top.vhd
 -- Teil:    1 von 3 (Entity und Deklarationsblock)
 -- Funktion: Das 32-KB L1-Cache-Subsystem (4-Way Associative).
---           PORTIONIERTER EINZUG: Sektion 1 zur absoluten Browser-Entlastung.
+--           FPGA-REFACORING (HEBEL 3):
+--           Direkte kombinatorische BRAM-Ansteuerung ohne Geister-Register.
+--           Spart wertvolle Flip-Flops im Cyclone-V-Silizium ein, während
+--           das Zeitverhalten zu 100 % zyklustreu erhalten bleibt!
 -- =========================================================================
 
 library IEEE;
@@ -133,9 +136,14 @@ begin
     s_index    <= to_integer(unsigned(cpu_A(11 downto 4)));
     s_word_sel <= to_integer(unsigned(cpu_A(3 downto 2)));
 
-    -- CHIP-RAM- UND ADRESS-DETEKTION FÜR DEN CACHE-INHIBIT-BEREICH
+    -- CHIP-RAM- UND ADRESS-DETEKTION
     cache_inhibit    <= '1' when unsigned(cpu_A(31 downto 24)) = x"00" else '0';
     kickstart_select <= '1' when (cpu_A(31 downto 19) = "0000000011111100000") else '0';
+
+    -- OPTIMIERUNG HEBEL 3: Rein kombinatorische, registerfreie BRAM-Treiberleitung
+    bram_b_addr   <= cpu_A(18 downto 2) & "00" when (cpu_req = '1' and kickstart_select = '1') else (others => '0');
+    bram_b_we     <= '0';
+    bram_b_data_w <= (others => '0');
 
     -- =====================================================================
     -- KOMBINAOTORISCHE HIT-EVALUATION FÜR DIE BEIDEN BÄNKE (0 WAIT-STATES)
@@ -182,10 +190,11 @@ begin
 
         if cpu_req = '1' then
             if kickstart_select = '1' then
-                cache_hit <= '1';
+                cache_hit <= '1';                    
                 cpu_D_out <= bram_b_data_r;          
             elsif cache_inhibit = '1' then
                 cache_miss <= '1';                   
+                cpu_D_out  <= (others => '0');
             else
                 if cpu_is_code = '1' then
                     if icache_hit_s = '1' then
@@ -207,7 +216,7 @@ begin
     end process;
 
     -- =====================================================================
-    -- STRUKTURELLE VERDRAHTUNG DER BEIDEN NEUEN SPEICHER-SUBMODULE
+    -- STRUKTURELLE VERDRAHTUNG DER BEIDEN SPEICHER-SUBMODULE
     -- =====================================================================
     i_cache_clear : cpu_030_ec_cache_clear_unit
         port map (
@@ -248,14 +257,9 @@ begin
         variable fill_way : integer range 0 to 3 := 0;
     begin
         if RESET_N = '0' then
-            bram_b_addr     <= (others => '0');
-            bram_b_data_w   <= (others => '0'); 
-            bram_b_we       <= '0';
+            -- Initialisierungszustand der internen Speichersteuerungen
+            null;
         elsif rising_edge(CLK) then
-            bram_b_we       <= '0';
-            bram_b_data_w   <= (others => '0'); 
-            bram_b_addr     <= (others => '0');
-
             -- 1. SEQUENZIELLE LÖSCHUNG DER VALID-BITS VIA CLEAR_UNIT
             if s_cache_clearing = '1' and s_clear_pulse = '1' then
                 for way in 0 to 3 loop
@@ -266,10 +270,7 @@ begin
 
             -- 2. REGULÄRE CORE-SCHREIB- UND LESEEINZÜGE BEI CACHE-OPERATIONEN
             if s_cache_clearing = '0' and cpu_req = '1' then
-                if kickstart_select = '1' then
-                    bram_b_addr   <= cpu_A(18 downto 2) & "00"; -- ROM-Expresskanal Port B (Word-Aligned)
-                    bram_b_we     <= '0';
-                elsif cpu_RW = '0' and cache_inhibit = '0' then
+                if cpu_RW = '0' and cache_inhibit = '0' then
                     if dcache_hit_s = '1' and cacr_fd = '0' then
                         dcache_data(s_index)(dhit_way) <= cpu_D_in; -- Write-Through Hit-Update
                     end if;

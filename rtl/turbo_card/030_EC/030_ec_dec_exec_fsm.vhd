@@ -4,7 +4,7 @@
 -- Teil:    1 von 2 (Entity-Schnittstelle)
 -- Funktion: Sub-Modul der ICU. Verwaltet exklusiv die regulären Phasen
 --           FETCH, DECODE, EXECUTE und WRITEBACK des 68EC030-Fließbands.
---           Steuert die Aktivitätsleitungen des Control-Multiplexers.
+--           FPGA-REFACORING (HEBEL 1): Schnittstelle auf 31-Bit PC angepasst!
 -- =========================================================================
 
 library IEEE;
@@ -18,21 +18,22 @@ entity cpu_030_ec_dec_exec_fsm is
         RESET_N             : in    std_logic;
 
         -- Kontrollkanäle von/zu der übergeordneten ICU
-        exec_en             : in    std_logic;                      -- '1' aktiviert dieses Fließband
-        exec_busy           : in    std_logic;                      -- Blockiert das Weiterziehen bei BIU-Freeze
-        exec_irq_pending    : in    std_logic;                      -- Meldet anstehende Paula-Interrupts an Befehlsgrenzen
-        exec_trap_pending   : in    std_logic;                      -- Meldet Division durch Null im Flug
-        exec_trap_trigger   : out   std_logic;                      -- Trigger an Trap-Unit zum Zustandssprung
+        exec_en             : in    std_logic;                      
+        exec_busy           : in    std_logic;                      
+        exec_irq_pending    : in    std_logic;                      
+        exec_trap_pending   : in    std_logic;                      
+        exec_trap_trigger   : out   std_logic;                      
 
-        -- Datenpfad-Kopplung an die Pipeline und den PC
+        -- Datenpfad-Kopplung an die Pipeline und den Cache
         pipeline_word       : in    std_logic_vector(15 downto 0);  
         pipeline_req        : out   std_logic;                      
         cache_cpu_req       : out   std_logic;                      
         cache_hit           : in    std_logic;                      
         cache_miss          : in    std_logic;                      
         
-        internal_pc_in      : in    unsigned(31 downto 0);          
-        internal_pc_out     : out   unsigned(31 downto 0);          
+        -- OPTIMIERUNG HEBEL 1: PC-Schnittstellen auf carry-schonende 31 Bit verjüngt
+        internal_pc_in      : in    unsigned(31 downto 1);          
+        internal_pc_out     : out   unsigned(31 downto 1);          
 
         -- Ausgänge an den zentralen Multiplexer (Aktivitätsleitungen)
         s_fsm_running_mode  : out   std_logic;
@@ -78,7 +79,7 @@ begin
     dec_branch_en       <= s_dec_branch_en_i;
 
     -- =====================================================================
-    -- TAKTGESTEUERTER BEFEHLS-PREFETCH- UND EXECUTE-PROZESS
+    -- TAKTGESTEUERTER BEFEHLS-PREFETCH- UND EXECUTE-PROZESS (31-BIT PC)
     -- =====================================================================
     process(CLK, RESET_N)
     begin
@@ -86,7 +87,7 @@ begin
             current_state       <= ST_IDLE;
             pipeline_req        <= '0';
             cache_cpu_req       <= '0';
-            internal_pc_out     <= x"00F80000";
+            internal_pc_out     <= "0001111100000000000000000000000"; -- x"00F80000" shifted right 1
             s_fsm_running_mode  <= '1';
             s_move_active       <= '0';
             s_alu_active        <= '0';
@@ -133,7 +134,8 @@ begin
                             cache_cpu_req <= '0';
                             current_state <= ST_DECODE;
                         elsif cache_miss = '1' then
-                            if internal_pc_in(31 downto 24) = x"00" then
+                            -- OPTIMIERUNG: Bit-Erweiterung für die Adressraum-Prüfung (31 downto 23 entspricht 31 downto 24 bei 32-Bit)
+                            if internal_pc_in(31 downto 23) = "000000000" then
                                 r_cache_inhibit <= '1';
                             end if;
                             s_special_active <= '1';
@@ -170,9 +172,9 @@ begin
                     -- ST_EXECUTE: QUITTUNGSEINZUG DER DECODER ODER TRAPS
                     -- =====================================================
                     when ST_EXECUTE =>
-                        -- KORREKTUR: Abfrage nutzt nun unbestechlich den internen Schattendraht!
+                        -- OPTIMIERUNG: Extrahiere Bits 31 downto 1 für das 31-Bit PC-Register bei Sprungbefehlen
                         if s_dec_branch_en_i = '1' and s_branch_pc_load = '1' then
-                            internal_pc_out <= unsigned(s_branch_pc_new);
+                            internal_pc_out <= unsigned(s_branch_pc_new(31 downto 1));
                         end if;
 
                         if exec_trap_pending = '1' then
@@ -193,8 +195,9 @@ begin
                         s_dec_branch_en_i <= '0';
                         dec_special_en    <= '0';
 
+                        -- OPTIMIERUNG: +1 auf 31-Bit Ebene entspricht +2 auf 32-Bit Ebene
                         if r_opcode(15 downto 12) /= "0110" or s_branch_pc_load = '0' then
-                            internal_pc_out <= internal_pc_in + 2;
+                            internal_pc_out <= internal_pc_in + 1;
                         end if;
                         
                         current_state <= ST_FETCH;

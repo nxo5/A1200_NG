@@ -4,7 +4,7 @@
 -- Teil:    1 von 2 (Entity-Schnittstelle)
 -- Funktion: Sub-Modul der ICU. Verwaltet exklusiv die Vektor-Einzugsphasen
 --           STATE_BOOT_0 und STATE_BOOT_1 beim CPU-Kaltstart.
---           Inklusive 16-Bit-ROM-Spiegelungsmatrix für das Kickstart.
+--           FPGA-REFACORING (HEBEL 1): Schnittstelle auf 31-Bit PC angepasst!
 -- =========================================================================
 
 library IEEE;
@@ -18,13 +18,13 @@ entity cpu_030_ec_dec_boot_fsm is
         RESET_N             : in    std_logic;
 
         -- Kontrollkanäle von/zu der Haupt-FSM
-        boot_en             : in    std_logic;                      -- '1' aktiviert diese Boot-Zustandsmaschine
-        boot_busy           : in    std_logic;                      -- Blockiert das Weiterziehen bei BIU-Freeze
-        boot_done           : out   std_logic;                      -- Meldet das erfolgreiche Ende des Vektoreinzugs
+        boot_en             : in    std_logic;                      
+        boot_busy           : in    std_logic;                      
+        boot_done           : out   std_logic;                      
 
-        -- Daten- und Adressleitungen zur Systemsteuerung
-        internal_pc_in      : in    unsigned(31 downto 0);          
-        internal_pc_out     : out   unsigned(31 downto 0);          
+        -- OPTIMIERUNG HEBEL 1: PC-Schnittstellen auf carry-schonende 31 Bit verjüngt
+        internal_pc_in      : in    unsigned(31 downto 1);          
+        internal_pc_out     : out   unsigned(31 downto 1);          
         internal_D_in       : in    std_logic_vector(31 downto 0);  -- Gelesene Daten aus dem Bus-Sizer
 
         -- Ausgänge an den zentralen Multiplexer (cpu_030_ec_dec_mux)
@@ -50,7 +50,7 @@ architecture behavioral of cpu_030_ec_dec_boot_fsm is
 begin
 
     -- =====================================================================
-    -- TAKTGESTEUERTER BOOT-PROZESS MITSAMT 16-BIT SPEC-MATRIX
+    -- TAKTGESTEUERTER BOOT-PROZESS MITSAMT 16-BIT SPEC-MATRIX (31-BIT PC)
     -- =====================================================================
     process(CLK, RESET_N)
         variable boot_word_align : std_logic_vector(31 downto 0);
@@ -58,7 +58,7 @@ begin
         if RESET_N = '0' then
             boot_state      <= BOOT_IDLE;
             boot_done       <= '0';
-            internal_pc_out <= x"00F80000";
+            internal_pc_out <= "0001111100000000000000000000000"; -- x"00F80000" shifted right 1
             fsm_bus_req     <= '0';
             fsm_bus_write   <= '0';
             fsm_bus_addr    <= (others => '0');
@@ -86,10 +86,10 @@ begin
                 -- ST_BOOT_0: SUPERVISOR STACK POINTER (SSP) EINLESEN
                 -- =====================================================
                 when ST_BOOT_0 =>
-                    -- KORREKTUR: Ungültige Signalzuweisung restlos entfernt!
                     fsm_bus_req          <= '1';
                     fsm_bus_write        <= '0';
-                    fsm_bus_addr         <= std_logic_vector(internal_pc_in);
+                    -- Rekonstruktion der 32-Bit-Busadresse aus dem 31-Bit PC plus starrer Null
+                    fsm_bus_addr         <= std_logic_vector(internal_pc_in) & '0';
                     fsm_bus_type         <= "101"; -- Supervisor Data Space
 
                     if boot_busy = '0' then
@@ -102,7 +102,8 @@ begin
 
                         boot_ssp_load   <= '1';
                         boot_ssp_new    <= boot_word_align;
-                        internal_pc_out <= internal_pc_in + 4;
+                        -- OPTIMIERUNG: +2 auf 31-Bit Ebene entspricht +4 auf 32-Bit Ebene
+                        internal_pc_out <= internal_pc_in + 2;
                         boot_state      <= ST_BOOT_1;
                     end if;
 
@@ -112,7 +113,7 @@ begin
                 when ST_BOOT_1 =>
                     fsm_bus_req   <= '1';
                     fsm_bus_write <= '0';
-                    fsm_bus_addr  <= std_logic_vector(internal_pc_in);
+                    fsm_bus_addr  <= std_logic_vector(internal_pc_in) & '0';
                     fsm_bus_type  <= "101";
 
                     if boot_busy = '0' then
@@ -124,7 +125,8 @@ begin
 
                         boot_pc_load    <= '1';
                         boot_pc_new     <= boot_word_align;
-                        internal_pc_out <= unsigned(boot_word_align);
+                        -- OPTIMIERUNG: Extrahiere Bits 31 downto 1 für das 31-Bit PC-Register
+                        internal_pc_out <= unsigned(boot_word_align(31 downto 1));
                         boot_state      <= BOOT_FINISHED;
                     end if;
 
