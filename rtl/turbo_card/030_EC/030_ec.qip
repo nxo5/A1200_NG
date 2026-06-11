@@ -1,0 +1,59 @@
+# =========================================================================
+# Projekt: A1200_NG
+# Datei:   030_ec.qip
+# Funktion: Lokale Quartus IP-Projektliste für den 68EC030 CPU-Kern.
+#           Bündelt alle modularen Unterdateien dieses Ordners.
+#           SICHERUNG: Cache-Untermodule verifiziert und lückenlos erhalten!
+# =========================================================================
+
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_decode_top.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_ea.vhd"]
+
+# ====== SYSTEMSTEUERUNGS-SUBMODULE (ENTFLECHTUNG) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_fsm.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_mux.vhd"]
+
+# ====== 1. MOVE-DECODER (DATENTRANSFER) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_move.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_move_op.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_move_size.vhd"]
+
+# ====== 2. ALU-DECODER (ARITHMETIK & LOGIK) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_alu.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_alu_op.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_alu_size.vhd"]
+
+# ====== 3. BRANCH-DECODER (SPRÜNGE & SCHLEIFEN) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_branch.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_branch_cond.vhd"]
+
+# ====== 4. BITFIELD-DECODER (BITFELD-OPERATIONEN) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_bitfield.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_bitfield_op.vhd"]
+
+# ====== 5. SPECIAL-DECODER (SYSTEM- & SONDERBEFEHLE) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_special.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_special_op.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_dec_interrupt.vhd"]
+
+# ====== DAS MODULARISIERTE ALU-SUBSYSTEM (MUSKELPAKET) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_alu_top.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_alu_regs.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_alu_core.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_alu_logic.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_alu_shift.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_alu_bitops.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_alu_muldiv.vhd"]
+
+# ====== DAS MODULARISIERTE BUS-SUBSYSTEM (BUS INTERFACE UNIT) ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_bus_top.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_bus_fsm.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_bus_mux.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_bus_sizer.vhd"]
+
+# ====== DAS NEU STRUKTURIERTE CACHE-SUBSYSTEM ======
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_cache_top.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_cache_ctrl.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_cache_tags.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "030_ec_cache_addr.vhd"]

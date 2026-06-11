@@ -1,0 +1,5 @@
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_regs.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_ide.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_pcmcia.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_reset.vhd"]

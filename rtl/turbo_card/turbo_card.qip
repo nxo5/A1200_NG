@@ -1,0 +1,15 @@
+# =========================================================================
+# Projekt: A1200_NG
+# Datei:   turbo_card.qip
+# Funktion: Übergeordnete Quartus IP-Projektliste für die Turbokarte.
+#           Bündelt die Platinenkomponenten und bindet die CPU-Unterliste ein.
+# =========================================================================
+
+# Lokale Dateien der Turbokarten-Platine
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "turbo_card.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "fastram_bridge.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "turbo_rtc.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "turbo_clk.vhd"]
+
+# Automatische Weiterleitung in den CPU-Unterordner (Hierarchischer Include)
+set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "030_EC" "030_ec.qip"]
