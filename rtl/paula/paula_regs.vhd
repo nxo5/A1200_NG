@@ -1,3 +1,12 @@
+-- =========================================================================
+-- Projekt: A1200_NG
+-- Datei:   paula_regs.vhd
+-- Funktion: Das Custom-Registerfeld und Interrupt-Schaltwerk von PAULA.
+-- BEREINIGUNG SCHRITT 1:
+--   - Erweiterung der Lautstärkeregister (CH0-CH3) von 6 auf 8 Bit! [14.1]
+--   - Verhindert den Vektor-Breitenkonflikt (Width Mismatch) mit der Audio-Engine.
+-- =========================================================================
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -16,20 +25,20 @@ entity paula_regs is
         reg_addr      : in    std_logic_vector(11 downto 0); -- Custom-Reg-Adresse ($DFFXXX)
         reg_data_w    : in    std_logic_vector(31 downto 0); -- Schreibdaten der CPU
         reg_write_en  : in    std_logic;                     -- CPU schreibt in ein Register
-        reg_read_en   : in    std_logic;                     -- NEU: CPU liest aus einem Register
+        reg_read_en   : in    std_logic;                     -- CPU liest aus einem Register
         
         -- =============================================================
         -- 3. INTERNE VERBINDUNGEN ZU DEN DREI BRUDER-MODULEN (AUSGÄNGE)
         -- =============================================================
-        -- Audio-Parameter an paula_audio.vhd
+        -- REPARATUR: Ausgänge auf 8 Bit erweitert zur Vektor-Harmonisierung [14.1]
         aud_period_ch0 : out   std_logic_vector(15 downto 0);
-        aud_volume_ch0 : out   std_logic_vector(5 downto 0);
+        aud_volume_ch0 : out   std_logic_vector(7 downto 0);
         aud_period_ch1 : out   std_logic_vector(15 downto 0);
-        aud_volume_ch1 : out   std_logic_vector(5 downto 0);
+        aud_volume_ch1 : out   std_logic_vector(7 downto 0);
         aud_period_ch2 : out   std_logic_vector(15 downto 0);
-        aud_volume_ch2 : out   std_logic_vector(5 downto 0);
+        aud_volume_ch2 : out   std_logic_vector(7 downto 0);
         aud_period_ch3 : out   std_logic_vector(15 downto 0);
-        aud_volume_ch3 : out   std_logic_vector(5 downto 0);
+        aud_volume_ch3 : out   std_logic_vector(7 downto 0);
         
         -- Floppy-Parameter an paula_floppy.vhd
         dsk_sync_word : out   std_logic_vector(15 downto 0);
@@ -40,7 +49,7 @@ entity paula_regs is
         uart_period   : out   std_logic_vector(14 downto 0);
         uart_data_w   : out   std_logic_vector(8 downto 0);
         uart_tx_start : out   std_logic;
-        uart_read_strobe : out std_logic;                    -- NEU: Sendet Quittungsimpuls an paula_uart
+        uart_read_strobe : out std_logic;                    
         
         -- =============================================================
         -- 4. INTERRUPT-ALARMLEITUNGEN VON DEN BRUDER-MODULEN (EINGÄNGE)
@@ -58,13 +67,15 @@ architecture Behavioral of paula_regs is
 
     -- Interne Hardware-Register für die vier PCM-Audiokanäle
     signal reg_aud0per : std_logic_vector(15 downto 0) := (others => '0');
-    signal reg_aud0vol : std_logic_vector(5 downto 0)  := (others => '0');
     signal reg_aud1per : std_logic_vector(15 downto 0) := (others => '0');
-    signal reg_aud1vol : std_logic_vector(5 downto 0)  := (others => '0');
     signal reg_aud2per : std_logic_vector(15 downto 0) := (others => '0');
-    signal reg_aud2vol : std_logic_vector(5 downto 0)  := (others => '0');
     signal reg_aud3per : std_logic_vector(15 downto 0) := (others => '0');
-    signal reg_aud3vol : std_logic_vector(5 downto 0)  := (others => '0');
+
+    -- REPARATUR: Schattenregister intern ebenfalls auf 8 Bit erweitert [14.1]
+    signal reg_aud0vol : std_logic_vector(7 downto 0) := (others => '0');
+    signal reg_aud1vol : std_logic_vector(7 downto 0) := (others => '0');
+    signal reg_aud2vol : std_logic_vector(7 downto 0) := (others => '0');
+    signal reg_aud3vol : std_logic_vector(7 downto 0) := (others => '0');
 
     -- Interne Kontrollregister für Diskette und UART
     signal reg_dsksync : std_logic_vector(15 downto 0) := x"4489"; 
@@ -91,14 +102,12 @@ begin
     uart_period <= reg_serper;
 
     -- =================================================================
-    -- KORREKTUR: PROZESS ZUR GENERIERUNG DES LESE-STROBES (QUITTUNG)
+    -- GENERIERUNG DES LESE-STROBES (QUITTUNG)
     -- =================================================================
-    -- Erzeugt einen synchronen Impuls, sobald die CPU das serielle 
-    -- Empfangsregister SERDATR ($DFF018) ausliest.
     process(reg_addr, reg_read_en)
     begin
         if reg_read_en = '1' and reg_addr = x"018" then
-            uart_read_strobe <= '1'; -- Zünde das Löschsignal für den UART-Puffer!
+            uart_read_strobe <= '1'; 
         else
             uart_read_strobe <= '0';
         end if;
@@ -121,7 +130,6 @@ begin
         elsif rising_edge(clk_amiga) then
             uart_tx_start <= '0'; 
 
-            -- A: CPU beschreibt ein Paula-Register ($DFF000 bis $DFF03E)
             if reg_write_en = '1' then
                 case reg_addr is
                     when x"030" => uart_data_w   <= reg_data_w(8 downto 0);   
@@ -130,21 +138,22 @@ begin
                     when x"07E" => reg_dsksync   <= reg_data_w(15 downto 0);  
                     when x"024" => reg_dsklen    <= reg_data_w(15 downto 0);  
                     
-                    -- Audio-Kanäle Register-Mapping (Perioden und Lautstärken)
+                    -- Audio-Kanäle Register-Mapping
                     when x"0A4" => reg_aud0per   <= reg_data_w(15 downto 0);  
-                    when x"0A6" => reg_aud0vol   <= reg_data_w(5 downto 0);   
+                    -- REPARATUR: CPU-Schreibdaten (Bits 7..0) direkt in den sanierten 8-Bit-Vektor laden [14.1]
+                    when x"0A6" => reg_aud0vol   <= reg_data_w(7 downto 0);   
                     when x"0B4" => reg_aud1per   <= reg_data_w(15 downto 0);  
-                    when x"0B6" => reg_aud1vol   <= reg_data_w(5 downto 0);   
+                    when x"0B6" => reg_aud1vol   <= reg_data_w(7 downto 0);   
                     when x"0C4" => reg_aud2per   <= reg_data_w(15 downto 0);  
-                    when x"0C6" => reg_aud2vol   <= reg_data_w(5 downto 0);   
+                    when x"0C6" => reg_aud2vol   <= reg_data_w(7 downto 0);   
                     when x"0D4" => reg_aud3per   <= reg_data_w(15 downto 0);  
-                    when x"0D6" => reg_aud3vol   <= reg_data_w(5 downto 0);   
+                    when x"0D6" => reg_aud3vol   <= reg_data_w(7 downto 0);   
                     
                     when others => null;
                 end case;
             end if;
 
-            -- B: HARDWARE-AUTOMATISMUS (Interrupts der Peripherie einfangen)
+            -- HARDWARE-AUTOMATISMUS (Interrupts der Peripherie einfangen)
             if irq_fdd_sync = '1' then
                 intreq_p(0) <= '1'; 
             end if;

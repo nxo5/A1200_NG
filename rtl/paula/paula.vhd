@@ -1,3 +1,13 @@
+-- =========================================================================
+-- Projekt: A1200_NG
+-- Datei:   paula.vhd
+-- Teil:    1 von 2 (Schnittstelle und 8-Bit-Signalbusse)
+-- Funktion: Das Top-Level Gehäuse des Peripherie-Custom-Chips (PAULA).
+-- BEREINIGUNG SCHRITT 3 (A):
+--   - Erweiterung der internen int_aud_volume_chX Signale auf 8 Bit!
+--   - Integration des cck_tick Ports an der Gehäusepforte.
+-- =========================================================================
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -9,6 +19,7 @@ entity paula is
         -- =============================================================
         clk_amiga     : in    std_logic; -- Der synchrone 14,18 MHz Systemtakt
         reset         : in    std_logic; -- Globaler System-Reset
+        cck_tick      : in    std_logic; -- REPARATUR: Der 3,54-MHz Grafik-Herzschlag von Alice!
         
         -- =============================================================
         -- 2. SCHNITTSTELLE ZUM EXTERNEN REGISTERPFAD (CPU / COPPER-BUS)
@@ -16,28 +27,25 @@ entity paula is
         am_addr       : in    std_logic_vector(11 downto 0); -- Custom-Registeradresse ($DFFXXX)
         am_data_w     : in    std_logic_vector(31 downto 0); -- Schreibdaten vom Bus
         am_reg_write  : in    std_logic;                     -- Schreibimpuls der Systemsteuerung
-        am_reg_read   : in    std_logic;                     -- NEU VERDRAHTET: Leseimpuls der Systemsteuerung
+        am_reg_read   : in    std_logic;                     -- Leseimpuls der Systemsteuerung
         
         -- =============================================================
         -- 3. INTERNE SPEICHER- UND DMA-SCHNITTSTELLEN (ZUR ARBITRIERUNG)
         -- =============================================================
-        -- Audio-DMA Kanäle (Zubringer vom RAM)
         aud_dma_data   : in    std_logic_vector(15 downto 0); -- Geladene PCM-Wörter
         aud_dma_load   : in    std_logic_vector(1 downto 0);  -- Kanalauswahl (0-3)
         aud_dma_write  : in    std_logic;                     -- Lade-Impuls
         
-        -- Audio-DMA Bedarfsanforderungen an Alice
         aud_dma_req_ch0: out   std_logic;
         aud_dma_req_ch1: out   std_logic;
         aud_dma_req_ch2: out   std_logic;
         aud_dma_req_ch3: out   std_logic;
         
-        -- Floppy-DMA Kanäle (Datenaustausch mit dem RAM)
         fdd_dma_data_o : out   std_logic_vector(15 downto 0); -- MFM-Lesedaten ans RAM
         fdd_dma_data_i : in    std_logic_vector(15 downto 0); -- MFM-Schreibdaten aus dem RAM
-        fdd_dma_req    : out   std_logic;                     -- DMA-Slot-Anforderung
-        fdd_dma_ack    : in    std_logic;                     -- Slot-Quittierung von Alice
-        fdd_dma_rw     : out   std_logic;                     -- KORREKTUR: Richtungssignal an Alice ('0'=Schreiben)
+        fdd_dma_req    : out   std_logic;                     
+        fdd_dma_ack    : in    std_logic;                     
+        fdd_dma_rw     : out   std_logic;                     -- '1'=Lesen, '0'=Schreiben
         
         -- =============================================================
         -- 4. PHYSISCHE PERIPHERIE-PORTS (EXTERNE GERÄTE)
@@ -58,9 +66,7 @@ end paula;
 
 architecture Behavioral of paula is
 
-    -- -----------------------------------------------------------------
     -- COMPONENTEN-DEKLARATIONEN DER VIER UNTERMODULE
-    -- -----------------------------------------------------------------
     component paula_regs is
         Port (
             clk_amiga      : in    std_logic;
@@ -68,22 +74,22 @@ architecture Behavioral of paula is
             reg_addr       : in    std_logic_vector(11 downto 0);
             reg_data_w     : in    std_logic_vector(31 downto 0);
             reg_write_en   : in    std_logic;
-            reg_read_en    : in    std_logic; -- Erweitert
+            reg_read_en    : in    std_logic; 
             aud_period_ch0 : out   std_logic_vector(15 downto 0);
-            aud_volume_ch0 : out   std_logic_vector(5 downto 0);
+            aud_volume_ch0 : out   std_logic_vector(7 downto 0); -- 8 Bit
             aud_period_ch1 : out   std_logic_vector(15 downto 0);
-            aud_volume_ch1 : out   std_logic_vector(5 downto 0);
+            aud_volume_ch1 : out   std_logic_vector(7 downto 0);
             aud_period_ch2 : out   std_logic_vector(15 downto 0);
-            aud_volume_ch2 : out   std_logic_vector(5 downto 0);
+            aud_volume_ch2 : out   std_logic_vector(7 downto 0);
             aud_period_ch3 : out   std_logic_vector(15 downto 0);
-            aud_volume_ch3 : out   std_logic_vector(5 downto 0);
+            aud_volume_ch3 : out   std_logic_vector(7 downto 0);
             dsk_sync_word  : out   std_logic_vector(15 downto 0);
             dsk_dma_en     : out   std_logic;
             dsk_write_mode : out   std_logic;
             uart_period    : out   std_logic_vector(14 downto 0);
             uart_data_w    : out   std_logic_vector(8 downto 0);
             uart_tx_start  : out   std_logic;
-            uart_read_strobe : out std_logic; -- Erweitert
+            uart_read_strobe : out std_logic; 
             irq_fdd_sync   : in    std_logic;
             irq_uart_rx    : in    std_logic;
             irq_uart_tx    : in    std_logic;
@@ -95,14 +101,15 @@ architecture Behavioral of paula is
         Port (
             clk_amiga       : in    std_logic;
             reset           : in    std_logic;
+            cck_tick        : in    std_logic; 
             aud_period_ch0  : in    std_logic_vector(15 downto 0);
-            aud_volume_ch0  : in    std_logic_vector(5 downto 0);
+            aud_volume_ch0  : in    std_logic_vector(7 downto 0); 
             aud_period_ch1  : in    std_logic_vector(15 downto 0);
-            aud_volume_ch1  : in    std_logic_vector(5 downto 0);
+            aud_volume_ch1  : in    std_logic_vector(7 downto 0);
             aud_period_ch2  : in    std_logic_vector(15 downto 0);
-            aud_volume_ch2  : in    std_logic_vector(5 downto 0);
+            aud_volume_ch2  : in    std_logic_vector(7 downto 0);
             aud_period_ch3  : in    std_logic_vector(15 downto 0);
-            aud_volume_ch3  : in    std_logic_vector(5 downto 0);
+            aud_volume_ch3  : in    std_logic_vector(7 downto 0);
             aud_dma_data    : in    std_logic_vector(15 downto 0);
             aud_dma_load    : in    std_logic_vector(1 downto 0);
             aud_dma_write   : in    std_logic;
@@ -139,7 +146,7 @@ architecture Behavioral of paula is
             uart_period   : in    std_logic_vector(14 downto 0);
             uart_data_w   : in    std_logic_vector(8 downto 0);
             uart_tx_start : in    std_logic;
-            uart_read_strobe : in std_logic; -- Erweitert
+            uart_read_strobe : in std_logic; 
             uart_data_r   : out   std_logic_vector(15 downto 0);
             rxd           : in    std_logic;
             txd           : out   std_logic;
@@ -148,43 +155,32 @@ architecture Behavioral of paula is
         );
     end component;
 
-    -- -----------------------------------------------------------------
     -- CHIPINTERNE BUSBAHNEN UND VERKNÜPFUNGSSIGNALE
-    -- -----------------------------------------------------------------
-    -- Interne Audio-Kontrollleitungen
     signal int_aud_period_ch0 : std_logic_vector(15 downto 0);
-    signal int_aud_volume_ch0 : std_logic_vector(5 downto 0);
     signal int_aud_period_ch1 : std_logic_vector(15 downto 0);
-    signal int_aud_volume_ch1 : std_logic_vector(5 downto 0);
     signal int_aud_period_ch2 : std_logic_vector(15 downto 0);
-    signal int_aud_volume_ch2 : std_logic_vector(5 downto 0);
     signal int_aud_period_ch3 : std_logic_vector(15 downto 0);
-    signal int_aud_volume_ch3 : std_logic_vector(5 downto 0);
 
-    -- Interne Floppy-Kontrollleitungen
+    -- REPARATUR: Interne Signaladern fehlerfrei auf 8 Bit erweitert!
+    signal int_aud_volume_ch0 : std_logic_vector(7 downto 0);
+    signal int_aud_volume_ch1 : std_logic_vector(7 downto 0);
+    signal int_aud_volume_ch2 : std_logic_vector(7 downto 0);
+    signal int_aud_volume_ch3 : std_logic_vector(7 downto 0);
+
     signal int_dsk_sync_word  : std_logic_vector(15 downto 0);
     signal int_dsk_dma_en     : std_logic;
     signal int_dsk_write_mode : std_logic;
-
-    -- Interne UART-Kontrollleitungen
     signal int_uart_period    : std_logic_vector(14 downto 0);
     signal int_uart_data_w    : std_logic_vector(8 downto 0);
     signal int_uart_tx_start  : std_logic;
-    
-    -- NEU VERKABELT: Die interne Lese-Quittungsader
     signal int_uart_read_strobe : std_logic;
-
-    -- Interne Interrupt-Alarmleitungen
     signal int_irq_fdd_sync   : std_logic;
     signal int_irq_uart_rx    : std_logic;
     signal int_irq_uart_tx    : std_logic;
 
-begin
+	 begin
 
     -- KORREKTUR: Den Disketten-Schreib/Lese-Status direkt an Alice übergeben!
-    -- Wenn dsk_write_mode = '1' ist, schreiben wir ins RAM (Alice liest nicht, sondern schreibt)
-    -- Da der dma_rw-Bus an Alice typischerweise '1' für Lesen und '0' für Schreiben erwartet,
-    -- passen wir das Signal hier starr an die Busnorm an.
     fdd_dma_rw <= '0' when int_dsk_write_mode = '1' else '1';
 
     -- =================================================================
@@ -199,9 +195,9 @@ begin
         reg_addr         => am_addr,
         reg_data_w       => am_data_w,
         reg_write_en     => am_reg_write,
-        reg_read_en      => am_reg_read,       -- Neu verdrahtet
+        reg_read_en      => am_reg_read,       
         aud_period_ch0   => int_aud_period_ch0,
-        aud_volume_ch0   => int_aud_volume_ch0,
+        aud_volume_ch0   => int_aud_volume_ch0, -- Mappt jetzt fehlerfrei 8 Bit
         aud_period_ch1   => int_aud_period_ch1,
         aud_volume_ch1   => int_aud_volume_ch1,
         aud_period_ch2   => int_aud_period_ch2,
@@ -214,7 +210,7 @@ begin
         uart_period      => int_uart_period,
         uart_data_w      => int_uart_data_w,
         uart_tx_start    => int_uart_tx_start,
-        uart_read_strobe => int_uart_read_strobe, -- Neu verdrahtet
+        uart_read_strobe => int_uart_read_strobe, 
         irq_fdd_sync     => int_irq_fdd_sync,
         irq_uart_rx      => int_irq_uart_rx,
         irq_uart_tx      => int_irq_uart_tx,
@@ -226,8 +222,9 @@ begin
     port map (
         clk_amiga       => clk_amiga,
         reset           => reset,
+        cck_tick        => cck_tick, -- REPARATUR: Taktader hier fest angelötet! [14.1]
         aud_period_ch0  => int_aud_period_ch0,
-        aud_volume_ch0  => int_aud_volume_ch0,
+        aud_volume_ch0  => int_aud_volume_ch0, -- Mappt jetzt fehlerfrei 8 Bit
         aud_period_ch1  => int_aud_period_ch1,
         aud_volume_ch1  => int_aud_volume_ch1,
         aud_period_ch2  => int_aud_period_ch2,
@@ -270,7 +267,7 @@ begin
         uart_period      => int_uart_period,
         uart_data_w      => int_uart_data_w,
         uart_tx_start    => int_uart_tx_start,
-        uart_read_strobe => int_uart_read_strobe, -- Neu verdrahtet
+        uart_read_strobe => int_uart_read_strobe, 
         uart_data_r      => open,
         rxd              => rxd,
         txd              => txd,

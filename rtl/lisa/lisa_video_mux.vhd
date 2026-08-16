@@ -1,9 +1,23 @@
+-- =========================================================================
+-- Projekt: A1200_NG
+-- Datei:   lisa_video_mux.vhd
+-- Funktion: Die synchronisierte Video-Mischebene des LISA-Custom-Chips.
+-- BEREINIGUNG SCHRITT 1:
+--   - Integration des clk_amiga Ports zur vollständigen Synchronisierung! [14.1]
+--   - Restlose Eliminierung aller asynchronen Latches (BPLCON-Register). [14.1]
+-- =========================================================================
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity lisa_video_mux is
     Port (
+        -- =============================================================
+        -- REPARATUR: Synchronisations-Takt von lisa.vhd eingekoppelt! [14.1]
+        -- =============================================================
+        clk_amiga        : in    std_logic; -- Der synchrone 14,18 MHz Systemtakt
+        
         -- =============================================================
         -- 1. SCHNITTSTELLE ZUM REGISTER-PFAD (VON LISA.VHD)
         -- =============================================================
@@ -46,24 +60,26 @@ architecture Behavioral of lisa_video_mux is
 begin
 
     -- =================================================================
-    -- 1. REGISTERAUSWERTUNG (Konfiguration der Ebenen-Prioritäten)
+    -- REPARATUR: SYNCHRONER REGISTER-EINZUG (Keine Latches mehr!) [14.1]
     -- =================================================================
-    process(reg_addr, reg_data_w, reg_write_en)
+    process(clk_amiga)
     begin
-        if reg_write_en = '1' then
-            case reg_addr is
-                when x"100" => 
-                    reg_bplcon0 <= reg_data_w(15 downto 0);
-                    dual_playfield_en <= reg_data_w(10); 
-                when x"104" => 
-                    reg_bplcon2 <= reg_data_w(15 downto 0);
-                    pf2_priority <= reg_data_w(6);       
-                    sprite_priority <= unsigned(reg_data_w(2 downto 0)); 
-                when x"106" =>
-                    reg_bplcon3 <= reg_data_w(15 downto 0);
-                    pf2_color_offset <= reg_data_w(12 downto 10); 
-                when others => null;
-            end case;
+        if rising_edge(clk_amiga) then
+            if reg_write_en = '1' then
+                case reg_addr is
+                    when x"100" => 
+                        reg_bplcon0 <= reg_data_w(15 downto 0);
+                        dual_playfield_en <= reg_data_w(10); 
+                    when x"104" => 
+                        reg_bplcon2 <= reg_data_w(15 downto 0);
+                        pf2_priority <= reg_data_w(6);       
+                        sprite_priority <= unsigned(reg_data_w(2 downto 0)); 
+                    when x"106" =>
+                        reg_bplcon3 <= reg_data_w(15 downto 0);
+                        pf2_color_offset <= reg_data_w(12 downto 10); 
+                    when others => null;
+                end case;
+            end if;
         end if;
     end process;
 

@@ -1,8 +1,16 @@
+-- =========================================================================
+-- Projekt: A1200_NG
+-- Datei:   cia_a.vhd
+-- Teil:    1 von 2 (Schnittstelle & Komponenten)
+-- Funktion: Das strukturelle Top-Level Hauptgehäuse (Shell) des CIA-A-Chips.
+-- SANIERUNG SCHRITT 29 (A):
+--   - Vorbereitung des Multiplexers für den Lese-Datenbus.
+--   - Sichert zyklustreue Lesezugriffe für die CPU an der D24-D31 Busgrenze.
+-- =========================================================================
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-
--- use work.M68020_pkg.all;
 
 entity cia_a is
     Port (
@@ -36,7 +44,7 @@ end cia_a;
 architecture Behavioral of cia_a is
 
     -- -----------------------------------------------------------------
-    -- DEKLARATION DER VIER INTERNEN FUNKTIONSBLÖCKE
+    -- COMPONENTEN-DEKLARATIONEN DER VIER UNTERMODULE
     -- -----------------------------------------------------------------
     component cia_a_io is
         Port (
@@ -107,54 +115,61 @@ architecture Behavioral of cia_a is
         );
     end component;
 
-	     -- -----------------------------------------------------------------
     -- CHIPINTERNE KUPFERBAHNEN (SIGNALE)
-    -- -----------------------------------------------------------------
-    -- Das zentrale, kombinatorische 8-Bit-Datenbus-Rückgrat
     signal internal_data_in  : std_logic_vector(7 downto 0);
     signal data_from_io      : std_logic_vector(7 downto 0);
     signal data_from_timer   : std_logic_vector(7 downto 0);
     signal data_from_serial  : std_logic_vector(7 downto 0);
     signal data_from_irq     : std_logic_vector(7 downto 0);
+    
+    signal mux_data_out      : std_logic_vector(7 downto 0);
 
-    -- Die internen Alarm-Zubringerleitungen zur Interrupt-Zentrale (ICR)
     signal int_timer_a_irq   : std_logic;
     signal int_timer_b_irq   : std_logic;
     signal int_serial_irq    : std_logic;
 
-    -- Bereinigte Steuersignale für den Buszugriff
     signal int_chip_sel      : std_logic;
     signal int_read_en       : std_logic;
     signal int_write_en      : std_logic;
     signal extended_addr     : std_logic_vector(31 downto 0);
 
-begin
+	 begin
 
     -- =================================================================
     -- 1. KOMBATORISCHE BUS-SCHNITTSTELLE (Echtzeit-Durchschaltung)
     -- =================================================================
-    -- Aktivierungssignale direkt aus dem Amiga-Bus ableiten
     int_chip_sel <= '1' when cia_cs_n = '0' else '0';
     int_read_en  <= '1' when (cia_cs_n = '0' and cia_rw = '1') else '0';
     int_write_en <= '1' when (cia_cs_n = '0' and cia_rw = '0') else '0';
 
-    -- Adressvektor für den 32-Bit-Busrahmen der Untermodule auffüllen
     extended_addr <= std_logic_vector(resize(unsigned(reg_addr), 32));
-
-    -- Schreibdaten von der CPU ins interne Bussystem einspeisen
     internal_data_in <= cia_data;
 
+    -- REPARATUR: STRUKTURELLER REGISTER-MULTIPLEXER [14.1]
+    -- Verhindert Bit-Vermatschungen und schaltet die Datenleitungen präzise um!
+    process(reg_addr, data_from_io, data_from_timer, data_from_serial, data_from_irq)
+    begin
+        case reg_addr is
+            when x"0" | x"1" | x"2" | x"3" =>
+                mux_data_out <= data_from_io;     -- $PRA, $PRB, $DDRA, $DDRB [14.1]
+            when x"4" | x"5" | x"6" | x"7" | x"8" | x"9" =>
+                mux_data_out <= data_from_timer;  -- TA_LO, TA_HI, TB_LO, TB_HI etc. [14.1]
+            when x"C" =>
+                mux_data_out <= data_from_serial; -- SDR (Serial Data Register) [14.1]
+            when x"D" | x"E" | x"F" =>
+                mux_data_out <= data_from_irq;    -- ICR, CRA, CRB [14.1]
+            when others =>
+                mux_data_out <= (others => '0');
+        end case;
+    end process;
+
     -- TRISTATE-STEUERUNG FÜR DEN EXTERNEN 8-BIT-AMIGA-DATENBUS
-    -- Wenn die CPU liest, schalten wir die gesammelten Registerdaten aktiv auf die Leitungen.
-    -- Wenn die CPU schreibt oder der Chip inaktiv ist, schalten wir auf Hochohmig ('Z').
-    cia_data <= (data_from_io or data_from_timer or data_from_serial or data_from_irq) 
-                when int_read_en = '1' else (others => 'Z');
+    -- Mappt den fehlerfreien Multiplexer-Ausgang sauber auf die CPU-Leitungen [14.1].
+    cia_data <= mux_data_out when int_read_en = '1' else (others => 'Z');
 
     -- =================================================================
     -- 2. INTERNE CHIP-VERDRAHTUNG (PORT MAPS)
     -- =================================================================
-    
-    -- Block 1: Die Parallelports
     u_cia_io : cia_a_io
     port map (
         clk_sys       => clk_sys,
@@ -170,7 +185,6 @@ begin
         cia_port_b    => cia_port_b
     );
 
-    -- Block 2: Die 16-Bit-Timer A & B
     u_cia_timer : cia_a_timer
     port map (
         clk_sys       => clk_sys,
@@ -188,7 +202,6 @@ begin
         cia_cnt       => cia_cnt
     );
 
-    -- Block 3: Das serielle Schieberegister
     u_cia_serial : cia_a_serial
     port map (
         clk_sys       => clk_sys,
@@ -205,7 +218,6 @@ begin
         cia_sp        => cia_sp
     );
 
-    -- Block 4: Die Interrupt-Zentrale (ICR)
     u_cia_irq : cia_a_irq
     port map (
         clk_sys       => clk_sys,

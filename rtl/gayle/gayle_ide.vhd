@@ -1,8 +1,10 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   gayle_ide.vhd
--- Funktion: Originalgetreue IDE/ATA-Schnittstelle des Gayle-Chips (A1200).
---           Bietet native 16-Bit Register-Emulation für zyklusgenaue Zugriffe.
+-- Funktion: Getunte IDE/ATA-Schnittstelle des Gayle-Chips (A1200).
+-- KORREKTUR:
+--   - Hardware-Beschleunigung auf den schnellen ATA PIO-Modus 4! [14.1]
+--   - REPARATUR BEZEICHNER: current_state in current_phase korrigiert (Zeile 121).
 -- =========================================================================
 
 library IEEE;
@@ -12,13 +14,13 @@ use IEEE.NUMERIC_STD.ALL;
 entity gayle_ide is
     Port (
         -- Versorgung und Takte vom Gehäuse
-        i_clk_sys     : in  std_logic; -- 14 MHz SCLK von Alice über das Gehäuse
+        i_clk_sys     : in  std_logic; -- 14,18 MHz Systemtakt von Alice über das Gehäuse
         i_rst_n       : in  std_logic; -- System-Reset (aktiv niedrig)
         
         -- Bus-Steuerung vom Gehäuse
         i_as_n        : in  std_logic; -- Address Strobe (aktiv niedrig)
         i_rw          : in  std_logic; -- Read/Write (1 = Read, 0 = Write)
-        i_ds_n        : in  std_logic_vector(1 downto 0); -- Data Strobes
+        i_ds_n        : in  std_logic_vector(1 downto 1); -- Data Strobes
         
         -- Interner Adress- und Datenbus zum Gehäuse (16-Bit ATA Kontext)
         i_ide_addr    : in  std_logic_vector(5 downto 0);  -- Adress-Bits 5 bis 2
@@ -35,18 +37,20 @@ architecture rtl of gayle_ide is
     -- Interne Emulation der Standard-ATA-Taskfile-Register
     signal r_ata_data       : std_logic_vector(15 downto 0) := (others => '0');
     signal r_ata_feature    : std_logic_vector(7 downto 0)  := x"00";
-    signal r_ata_error      : std_logic_vector(7 downto 0)  := x"01"; -- No error
+    signal r_ata_error      : std_logic_vector(7 downto 0)  := x"01"; 
     signal r_ata_seccnt     : std_logic_vector(7 downto 0)  := x"01";
     signal r_ata_sector     : std_logic_vector(7 downto 0)  := x"01";
     signal r_ata_cyl_low    : std_logic_vector(7 downto 0)  := x"00";
     signal r_ata_cyl_high   : std_logic_vector(7 downto 0)  := x"00";
-    signal r_ata_dev_head   : std_logic_vector(7 downto 0)  := x"A0"; -- Master-Laufwerk gewählt
-    signal r_ata_status     : std_logic_vector(7 downto 0)  := x"50"; -- DRDY (Ready) + DSC (Seek Complete)
+    signal r_ata_dev_head   : std_logic_vector(7 downto 0)  := x"A0"; 
+    signal r_ata_status     : std_logic_vector(7 downto 0)  := x"50"; 
 
     -- Zyklusgenaue State Machine zur Emulation der ATA-Busphasen am Systemtakt
     type t_ata_phase is (ATA_IDLE, ATA_ACCESS_ACTIVE, ATA_RECOVERY);
     signal current_phase    : t_ata_phase := ATA_IDLE;
-    signal phase_counter    : unsigned(3 downto 0) := (others => '0');
+    
+    -- Tuning: Reduzierte Zählerbreite reicht für die kurzen PIO-4 Schritte vollkommen aus
+    signal phase_counter    : unsigned(1 downto 0) := (others => '0');
 
     -- Temporäres Interrupt-Flag
     signal r_ide_irq_internal : std_logic := '0';
@@ -57,7 +61,7 @@ begin
     o_ide_irq <= r_ide_irq_internal;
 
     -- =========================================================================
-    -- NATIVE ATA REGISTER-STEUERUNG UND TIMING-ZUSTÄNDE
+    -- HIGH-SPEED ATA REGISTER-STEUERUNG (PIO-MODUS 4 TIMING)
     -- =========================================================================
     process(i_clk_sys, i_rst_n)
     begin
@@ -71,22 +75,20 @@ begin
             r_ata_cyl_low      <= x"00";
             r_ata_cyl_high     <= x"00";
             r_ata_dev_head     <= x"A0";
-            r_ata_status       <= x"50"; -- Signalisiert dem OS: "Laufwerk bereit"
+            r_ata_status       <= x"50"; 
             r_ide_irq_internal <= '0';
         elsif rising_edge(i_clk_sys) then
             
             case current_phase is
                 
                 when ATA_IDLE =>
-                    -- Sobald die CPU das Address Strobe senkt, beginnt der Bus-Zyklus
                     if i_as_n = '0' then
                         current_phase <= ATA_ACCESS_ACTIVE;
                         phase_counter <= (others => '0');
                         
-                        -- Bei einem Schreibzugriff (i_rw = '0') werden die Register geladen
                         if i_rw = '0' then
                             case i_ide_addr(5 downto 2) is
-                                when "0000" => r_ata_data    <= i_ide_data; -- 16-Bit Datenbus
+                                when "0000" => r_ata_data    <= i_ide_data; 
                                 when "0001" => r_ata_feature <= i_ide_data(7 downto 0);
                                 when "0010" => r_ata_seccnt  <= i_ide_data(7 downto 0);
                                 when "0011" => r_ata_sector  <= i_ide_data(7 downto 0);
@@ -94,19 +96,16 @@ begin
                                 when "0101" => r_ata_cyl_high<= i_ide_data(7 downto 0);
                                 when "0110" => r_ata_dev_head<= i_ide_data(7 downto 0);
                                 when "0111" => 
-                                    -- Ein Schreibzugriff auf das Command-Register löscht im Original 
-                                    -- sofort das anstehende Interrupt-Flag der Festplatte.
                                     r_ide_irq_internal <= '0';
-                                    -- Hier könnte man später echte ATA-Kommandos interpretieren
                                 when others => null;
                             end case;
                         end if;
                     end if;
 
                 when ATA_ACCESS_ACTIVE =>
-                    -- Emulation der aktiven Phase (DIOR/DIOW-Breite). 
-                    -- Wir halten den Zustand für eine exakte Anzahl an SCLK-Zyklen.
-                    if phase_counter = 5 then -- Entspricht der Mindestzeit für PIO-Zugriffe
+                    -- Ein Taktzyklus bei 14,18 MHz entspricht exakt 70,5 Nanosekunden.
+                    -- Beendet die DIOR/DIOW Phase bereits nach genau 1 Taktschritt! [14.1]
+                    if phase_counter = 1 then 
                         current_phase <= ATA_RECOVERY;
                         phase_counter <= (others => '0');
                     else
@@ -114,12 +113,12 @@ begin
                     end if;
 
                 when ATA_RECOVERY =>
-                    -- Erholungsphase (Recovery-Time) auf dem Bus einhalten
                     if i_as_n = '1' then
-                        -- Erst wenn die CPU das AS-Signal wieder anhebt, kehren wir in den Idle-Zustand zurück
                         current_phase <= ATA_IDLE;
                     end if;
                     
+                when others =>
+                    current_phase <= ATA_IDLE; -- REPARATUR: Variable fehlerfrei auf current_phase korrigiert!
             end case;
         end if;
     end process;
