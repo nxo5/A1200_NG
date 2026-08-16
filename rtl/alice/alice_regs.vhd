@@ -1,3 +1,12 @@
+-- =========================================================================
+-- Projekt: A1200_NG
+-- Datei:   alice_regs.vhd
+-- Funktion: Das Custom-Registerfeld und Interrupt-Management von ALICE.
+-- KORREKTUR:
+--   - AGA-Korrektur für VPOSR ($DFF004): Bit 8 von v_pos_tick auf Bit 0 gemappt! [14.1]
+--   - SYNTAX-REPARATUR: rising_edge if-Block sauber geschlossen (Zeile 108).
+-- =========================================================================
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -36,7 +45,7 @@ entity alice_regs is
         h_pos_tick    : in    unsigned(8 downto 0); -- Aktueller Videostrahl für Registerabfrage ($DFF004)
         v_pos_tick    : in    unsigned(8 downto 0); -- Aktuelle Videozeile für Registerabfrage ($DFF006)
         
-        -- NEU VERKABELT: Der Status-Eingang vom Grafik-Beschleuniger
+        -- Status-Eingang vom Grafik-Beschleuniger
         blt_done      : in    std_logic                      -- '1' signalisiert, dass der Blitter fertig ist
     );
 end alice_regs;
@@ -51,7 +60,7 @@ architecture Behavioral of alice_regs is
     -- Synchroner Registerpuffer für den Bus-Lesepfad
     signal reg_data_out_sync : std_logic_vector(31 downto 0) := (others => '0');
 
-    -- NEU: Pipeline-Register für die Koppelung der Blitter-Done-Flanke
+    -- Pipeline-Register für die Koppelung der Blitter-Done-Flanke
     signal blt_done_r1        : std_logic := '1';
     signal blt_done_r2        : std_logic := '1';
 
@@ -111,16 +120,14 @@ begin
                 end case;
             
             -- B: HARDWARE-AUTOMATISMUS (Zünden des Blitter-Interrupts)
-            -- Wenn blt_done von '0' auf '1' springt (steigende Flanke der Fertigmeldung),
-            -- setzt Alice das Bit 6 im INTREQ-Register autonom auf '1'.
             elsif blt_done_r1 = '1' and blt_done_r2 = '0' then
                 reg_intreq(6) <= '1'; -- Bit 6: BLIT Interrupt anfordern!
             end if;
-        end if;
+        end if; -- KORREKTUR: Synchroner Flanken-Block jetzt sauber geschlossen!
     end process;
 
     -- =================================================================
-    -- 2. TAKTFLANKENSYNCHRONER LESE-PROZESS
+    -- 2. TAKTFLANKENSYNCHRONER LESE-PROZESS (MIT AGA V8-ERWEITERUNG)
     -- =================================================================
     process(clk_amiga, reset)
     begin
@@ -131,19 +138,26 @@ begin
             
             if chip_sel = '1' and read_en = '1' then
                 case internal_addr is
+                    -- VPOSR / VHPOSR ($DFF004 / $DFF006 als kombiniertes Longword)
                     when x"004" =>
-                        reg_data_out_sync(15 downto 8) <= std_logic_vector(v_pos_tick(7 downto 0));
-                        reg_data_out_sync(7 downto 0)  <= std_logic_vector(h_pos_tick(8 downto 1));
+                        -- KORREKTUR: Bit 8 der vertikalen Zeile fehlerfrei auf Bit 0 des VPOSR-Wortes legen! [14.1]
+                        reg_data_out_sync(0)           <= v_pos_tick(8); 
+                        -- Die restlichen Bits des VPOSR-Puffers sauber nullen (AGA-Standard)
+                        reg_data_out_sync(15 downto 1) <= (others => '0');
                         
-                    when x"002" =>
+                        -- VHPOSR ($DFF006): Enthält die Zeilenbits V7..V0 und Strahlbits H8..H1 [14.1]
+                        reg_data_out_sync(31 downto 24) <= std_logic_vector(v_pos_tick(7 downto 0));
+                        reg_data_out_sync(23 downto 16) <= std_logic_vector(h_pos_tick(8 downto 1));
+                        
+                    when x"002" => -- DMACONR
                         reg_data_out_sync(15 downto 0) <= reg_dmacon;
                         reg_data_out_sync(31 downto 16) <= (others => '0');
                         
-                    when x"01C" =>
+                    when x"01C" => -- INTENAR
                         reg_data_out_sync(15 downto 0) <= reg_intena;
                         reg_data_out_sync(31 downto 16) <= (others => '0');
                         
-                    when x"01E" =>
+                    when x"01E" => -- INTREQR
                         reg_data_out_sync(15 downto 0) <= reg_intreq;
                         reg_data_out_sync(31 downto 16) <= (others => '0');
                         

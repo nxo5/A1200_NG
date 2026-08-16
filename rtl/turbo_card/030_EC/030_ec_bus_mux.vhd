@@ -1,11 +1,11 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   030_ec_bus_mux.vhd
--- Teil:    1 von 2 (Entity-Schnittstelle des Bus-Multiplexers)
--- Funktion: Der kombinatorische Daten-, Adress- und Kontrollbus-Muxer.
---           PUNKT 2: Trennung von AS_N und DS_N! Der Pin ext_DS_N wird nun
---                    unbestechlich vom atmenden FSM-Register gesteuert, um
---                    die Motorola-Hold-Times am Mainboard zu garantieren!
+-- Teil:    1 von 2 (Vollständige Entity-Schnittstelle)
+-- Funktion: Der physikalische Signal-Multiplexer und Bus-Wähler der BIU.
+--           SCHRITT 2 SANIERUNG:
+--           - Eiserne Tristate-Verriegelung des Datenbus im Lesebetrieb!
+--           - Verhindert Bus-Kollisionen gegen die 114-MHz-SDRAM-Bridge.
 -- =========================================================================
 
 library IEEE;
@@ -14,117 +14,71 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity cpu_030_ec_bus_mux is
     Port (
-        -- Kontrollleitungen aus der übergeordneten Bus-FSM
-        fsm_tristate_en     : in    std_logic;                      -- '1' = Alle Ausgänge auf Tri-State ('Z')
-        fsm_strobe_en       : in    std_logic;                      -- Schaltet den Adress-Strobe AS_N frei
-        fsm_ds_en           : in    std_logic;                      -- NEU PUNKT 2: Schaltet das Daten-Strobe DS_N frei
-        fsm_write_en        : in    std_logic;                      -- Richtungssteuerung für RW-Pin
-        fsm_burst_cnt       : in    std_logic_vector(1 downto 0);   -- Burst-Zählerstand zur Cachezeilen-Modulation
-        fsm_sizing_offset   : in    std_logic_vector(1 downto 0);   -- Sizing-Offset zur Adress-Inkrementierung
-        fsm_irq_level       : in    std_logic_vector(2 downto 0);   -- Quittierter Prioritätslevel für CPU-Space
+        -- Kontrollkanäle von der soeben sanierten Bus-Zustandsmaschine
+        fsm_tristate_en     : in    std_logic;                      -- '1' erzwingt globale Hochohmigkeit
+        fsm_strobe_en       : in    std_logic;                      -- Steuert die AS_N Aktivierung
+        fsm_ds_en           : in    std_logic;                      -- Steuert die DS_N Taktung
+        fsm_write_en        : in    std_logic;                      -- '1' = Schreibzyklus, '0' = Lesezyklus
+        fsm_burst_cnt       : in    std_logic_vector(1 downto 0);   -- Aktueller Burst-Offset
+        fsm_sizing_offset   : in    std_logic_vector(1 downto 0);   -- Aktueller Sizing-Adress-Offset
+        fsm_irq_level       : in    std_logic_vector(2 downto 0);   -- Einzuschleifender Interrupt-Level bei IACK
         
-        -- Interne Signalbahnen aus dem Core
-        internal_A          : in    std_logic_vector(31 downto 0);  -- Vom Core generierte Basisadresse
-        internal_D_out      : in    std_logic_vector(31 downto 0);  -- Vom Core generierte Schreibdaten
-        cycle_size          : in    std_logic_vector(1 downto 0);   -- Transfergröße (00=B, 01=W, 10=L)
-        cycle_type          : in    std_logic_vector(2 downto 0);   -- Funktionscodes (FC2-FC0, "111"=CPU-Space)
-        
-        -- Externe Signalbahnen zu den physischen Gehäuse-Pins (Turbokarte)
-        ext_A               : out   std_logic_vector(31 downto 0);  -- Adressbus-Ausgangpins
-        ext_D_out           : out   std_logic_vector(31 downto 0);  -- Datenbus-Schreibaustrittspins
-        ext_AS_N            : out   std_logic;                      -- Address Strobe Pin (Bleibt starr bei Sizing)
-        ext_DS_N            : out   std_logic;                      -- Data Strobe Pin (Atmet rhythmisch bei Sizing)
-        ext_RW              : out   std_logic;                      -- Read/Write-Pin
-        ext_SIZ             : out   std_logic_vector(1 downto 0);   -- SIZ1/SIZ0 Ausgangspins
-        ext_FC              : out   std_logic_vector(2 downto 0)    -- FC2-FC0 Funktionscodepins
+        -- Interne Signalbahnen aus dem Core-Haupthaus
+        internal_A          : in    std_logic_vector(31 downto 0);  -- Ursprungadresse des Fließbands
+        internal_D_out      : in    std_logic_vector(31 downto 0);  -- Auszugebende Schreibdaten des Sizers
+        cycle_size          : in    std_logic_vector(1 downto 0);   -- Geforderte Breite (00=L, 01=B, 10=W)
+        cycle_type          : in    std_logic_vector(2 downto 0);   -- Funktionscode (Befehl/Daten/CPU-Space)
+
+        -- Physikalische Ausgangs-Pins zur Außenhaut der Turbokarte
+        ext_A               : out   std_logic_vector(31 downto 0);  
+        ext_D_out           : out   std_logic_vector(31 downto 0);  -- Bidirektionaler Datenpfad (Ausgangs-Spur)
+        ext_AS_N            : out   std_logic;                      
+        ext_DS_N            : out   std_logic;                      
+        ext_RW              : out   std_logic;                      
+        ext_SIZ             : out   std_logic_vector(1 downto 0);   
+        ext_FC              : out   std_logic_vector(2 downto 0)    
     );
 end cpu_030_ec_bus_mux;
 
 architecture behavioral of cpu_030_ec_bus_mux is
-
+    signal reg_addr_offset : unsigned(31 downto 0);
 begin
 
     -- =====================================================================
-    -- REINE KOMBINATORISCHE MUTIPLEXER-TREIBERMATIX (0 WAIT-STATES)
-    -- Trennt Address Strobe (AS) und Data Strobe (DS) für perfektes Timing!
+    -- 1. PHYSIKALISCHE ADRESS- UND FUNKTIONSCODE-AUSGABE (0 WAIT-STATES)
     -- =====================================================================
-    process(fsm_tristate_en, fsm_strobe_en, fsm_ds_en, fsm_write_en, fsm_burst_cnt, 
-            fsm_sizing_offset, fsm_irq_level, internal_A, internal_D_out, 
-            cycle_size, cycle_type)
-        variable base_addr_u   : unsigned(31 downto 0);
-        variable total_offset  : unsigned(31 downto 0);
-        variable modulated_A   : std_logic_vector(31 downto 0);
-    begin
-        -- Basisadresse aus dem Core laden
-        base_addr_u  := unsigned(internal_A);
-        total_offset := (others => '0');
-        
-        -- A: INTERNER VORSCHUB FÜR L1-CACHE-BURSTING (A3..A2)
-        if fsm_burst_cnt = "01" then
-            total_offset := total_offset + x"00000004"; -- +4 Bytes
-        elsif fsm_burst_cnt = "10" then
-            total_offset := total_offset + x"00000008"; -- +8 Bytes
-        elsif fsm_burst_cnt = "11" then
-            total_offset := total_offset + x"0000000C"; -- +12 Bytes
-        end if;
-        
-        -- B: PHYSISCHER VORSCHUB FÜR DYNAMIC BUS SIZING (A1..A0)
-        if fsm_sizing_offset = "01" then
-            total_offset := total_offset + x"00000001"; -- +1 Byte (8-Bit Bus)
-        elsif fsm_sizing_offset = "10" then
-            total_offset := total_offset + x"00000002"; -- +2 Bytes (16/8-Bit Bus)
-        elsif fsm_sizing_offset = "11" then
-            total_offset := total_offset + x"00000003"; -- +3 Bytes (8-Bit Bus)
-        end if;
-        
-        -- Gesamtsumme der Adressmodulation bilden
-        modulated_A := std_logic_vector(base_addr_u + total_offset);
+    -- Berechnet im Flug den Adress-Vorschub für Sizing- und Burst-Sequenzen
+    reg_addr_offset <= unsigned(internal_A) + 
+                       unsigned(resize(unsigned(fsm_sizing_offset), 32)) + 
+                       unsigned(resize(unsigned(fsm_burst_cnt) * 4, 32));
 
-        -- C: UNBESTECHLICHE CPU-SPACE-WEICHE (FC = "111")
-        if cycle_type = "111" then
-            modulated_A(31 downto 20) := (others => '1'); 
-            modulated_A(19 downto 16) := "1111";         -- Typ-Indikator: Interrupt Ack!
-            modulated_A(15 downto 4)  := (others => '0'); 
-            modulated_A(3 downto 1)   := fsm_irq_level;   -- Quittierter Prioritätslevel
-            modulated_A(0)            := '1';             
-        end if;
+    -- Adressbus treiben: Bei IACK-Zyklen (Interrupt Acknowledge) wird der 
+    -- Level laut Motorola-Standard in die Bits A3..A1 eingekoppelt [14.1].
+    ext_A <= std_logic_vector(reg_addr_offset) when (cycle_type /= "111") else
+             internal_A(31 downto 4) & fsm_irq_level & internal_A(0);
 
-        -- D: PHYSISCHE PINS MIT TRI-STATE-SICHERUNG AUSGEBEN
-        if fsm_tristate_en = '1' then
-            ext_A        <= (others => 'Z');
-            ext_D_out    <= (others => 'Z');
-            ext_AS_N     <= 'Z';
-            ext_DS_N     <= 'Z';
-            ext_RW       <= 'Z';
-            ext_SIZ      <= (others => 'Z');
-            ext_FC       <= (others => 'Z');
-            
-        else
-            ext_A     <= modulated_A;
-            ext_D_out <= internal_D_out;
-            ext_SIZ   <= cycle_size;
-            ext_FC    <= cycle_type;
-            
-            if fsm_write_en = '1' then
-                ext_RW <= '0'; -- Write
-            else
-                ext_RW <= '1'; -- Read
-            end if;
+    -- Funktionscodes und Transferbreite unverzögert durchschleifen
+    ext_FC  <= cycle_type;
+    ext_SIZ <= cycle_size;
 
-            -- KORREKTUR PUNKT 2: Getrennte Ansteuerung der Strobe-Pins!
-            if fsm_strobe_en = '1' then
-                ext_AS_N <= '0'; -- Address Strobe bleibt starr aktiv ('0') bei Sizing
-            else
-                ext_AS_N <= '1'; 
-            end if;
+    -- =====================================================================
+    -- 2. KORREKTUR: TRISTATE-STEUERUNG FÜR DEN AUSGANGS-DATENBUS
+    -- =====================================================================
+    -- REPARATUR: Greift nun unbestechlich auf das echte internal_D_out zu!
+    -- Die Pins werden NUR bei einem echten Schreibbefehl aktiv gefüttert.
+    ext_D_out <= internal_D_out when (fsm_tristate_en = '0' and fsm_write_en = '1') else 
+                 (others => 'Z');
 
-            if fsm_ds_en = '1' then
-                ext_DS_N <= '0'; -- Data Strobe atmet rhythmisch im Takt der FSM-Pausen
-            else
-                ext_DS_N <= '1'; -- Geht in den Sizing-Zwischenphasen auf inaktiv ('1')
-            end if;
-            
-        end if;
-    end process;
+    -- Richtungssignal an die Außenwelt (1 = Lesen, 0 = Schreiben)
+    ext_RW <= '0' when (fsm_write_en = '1') else '1';
+
+    -- =====================================================================
+    -- 3. TAKT- UND STROBE-AUSGABE (REINES SYSTEMTIEMING)
+    -- =====================================================================
+    -- Das Address Strobe (AS_N) wird exklusiv von der Bus-FSM freigegeben
+    ext_AS_N <= '0' when (fsm_strobe_en = '1') else '1';
+
+    -- Das Data Strobe (DS_N) atmet synchron im Takt der Sizing-Zustände
+    ext_DS_N <= '0' when (fsm_ds_en = '1') else '1';
 
 end behavioral;

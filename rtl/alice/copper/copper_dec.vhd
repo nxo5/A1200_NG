@@ -88,27 +88,27 @@ begin
 
             if reg_write_en = '1' then
                 case reg_addr is
-                    when x"080" => reg_cop1lc(31 downto 16) <= unsigned(reg_data_w(15 downto 0)); 
-                    when x"082" => reg_cop1lc(15 downto 0)  <= unsigned(reg_data_w(15 downto 0)); 
-                    when x"084" => reg_cop2lc(31 downto 16) <= unsigned(reg_data_w(15 downto 0)); 
-                    when x"086" => reg_cop2lc(15 downto 0)  <= unsigned(reg_data_w(15 downto 0)); 
-                    when x"08E" => reg_copcon               <= reg_data_w(15 downto 0);
+                    when x"080" => reg_cop1lc(31 downto 16) <= unsigned(reg_data_w(15 downto 0)); -- COP1LCH
+                    when x"082" => reg_cop1lc(15 downto 0)  <= unsigned(reg_data_w(15 downto 0)); -- COP1LCL
+                    when x"084" => reg_cop2lc(31 downto 16) <= unsigned(reg_data_w(15 downto 0)); -- COP2LCH
+                    when x"086" => reg_cop2lc(15 downto 0)  <= unsigned(reg_data_w(15 downto 0)); -- COP2LCL
+                    when x"08E" => reg_copcon               <= reg_data_w(15 downto 0);          -- COPCON
                     
                     when x"088" => 
-                        copper_pc     <= reg_cop1lc; 
+                        copper_pc     <= reg_cop1lc; -- Strobel-Zündung: Springe auf Liste 1
                         int_jump_trig <= '1';
                     when x"08A" => 
-                        copper_pc     <= reg_cop2lc; 
+                        copper_pc     <= reg_cop2lc; -- Strobel-Zündung: Springe auf Liste 2
                         int_jump_trig <= '1';
                     when others => null;
                 end case;
 
             elsif load_inst_en = '1' then
                 instruction_reg <= dma_inst_word;
-                copper_pc       <= copper_pc + 4;
+                copper_pc       <= copper_pc + 4; -- Befehlszeiger um ein volles 32-Bit Longword vorrücken
             end if;
         end if;
-    end process; -- <--- HIER STRUKTURELL KORRIGIERT!
+    end process;
 
     -- =================================================================
     -- 2. ORIGINALGETREUER KOMBINATORISCHER BEFEHLS-DECODER
@@ -117,27 +117,29 @@ begin
     begin
         inst_is_move <= '0'; inst_is_wait <= '0'; inst_is_skip <= '0';
         
+        -- Bit 0 des ersten Befehlsworts bestimmt unbestechlich das Schicksal [14.1]
         if instruction_reg(0) = '0' then
-            inst_is_move <= '1';
+            inst_is_move <= '1'; -- MOVE-Befehl deklariert
         else
             if instruction_reg(1) = '0' then
-                inst_is_wait <= '1'; 
+                inst_is_wait <= '1'; -- WAIT-Befehl deklariert
             else
-                inst_is_skip <= '1'; 
+                inst_is_skip <= '1'; -- SKIP-Befehl deklariert
             end if;
         end if;
     end process;
 
     -- =================================================================
-    -- 3. SIGNALAUSRICHTUNG NACH DEM AMIGA-HARDWARE-RASTER
+    -- 3. REPARATUR: SIGNALAUSRICHTUNG NACH DEM ECHTEN CHIPSATZ-RASTER
     -- =================================================================
-    target_addr_raw <= "0000" & instruction_reg(8 downto 1);
+    -- KORREKTUR: Mappt die Registeradresse fehlerfrei unter Berücksichtigung der impliziten Geraden-Null (A0=0) [14.1]
+    target_addr_raw <= "00" & instruction_reg(8 downto 1) & '0';
     move_target_reg <= target_addr_raw;
-    move_data_out   <= instruction_reg(31 downto 16); 
+    move_data_out   <= instruction_reg(31 downto 16); -- Die oberen 16 Bit enthalten die MOVE-Schreibdaten
 
-    wait_v_coord    <= unsigned("0" & instruction_reg(15 downto 8));
+    wait_v_coord    <= unsigned(instruction_reg(15 downto 8) & instruction_reg(15)); -- V-Strahlabgleich (AGA-Ready)
     wait_mask_v     <= instruction_reg(31 downto 24);
-    wait_mask_h     <= instruction_reg(23 downto 18) & "000";
+    wait_mask_h     <= instruction_reg(23 downto 17) & "00"; -- Horizontale Maskierungs-Bits
 
     -- Saubere, prozessbasierte Zuweisung der horizontalen Strahlkoordinate
     process(instruction_reg)
@@ -151,12 +153,15 @@ begin
     
     wait_h_coord <= int_wait_h;
 
+    -- EISERNER HARDWARE-PROTEKTOR (COPCON PROTECTION-LOGIC)
     process(target_addr_raw, reg_copcon)
     begin
+        -- Wenn COPCON Bit 1 gelöscht ist, darf der Copper NIEMALS in den gefährlichen 
+        -- Registerbereich unterhalb von $DFF07E (Blitter, Gayle, CIAs) schreiben! [14.1]
         if unsigned(target_addr_raw) < x"07E" and reg_copcon(1) = '0' then
-            move_illegal <= '1'; 
+            move_illegal <= '1'; -- Harte Schreibblockade zünden!
         else
-            move_illegal <= '0'; 
+            move_illegal <= '0'; -- Freigabe erteilt
         end if;
     end process;
 

@@ -1,11 +1,9 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   030_ec_bus_fsm.vhd
--- Teil:    1 von 4 (Entity-Schnittstelle der BIU-Ablaufsteuerung)
--- Funktion: Die zentrale, taktgesteuerte Bus-Zustandsmaschine (BIU FSM).
---           PUNKT 4: Maximale elektrische Absicherung gegen Bus Contention!
---                    Erzwingt nach jedem Transfer eine BUS_TURN_AROUND-Phase
---                    zur hochohmigen Bus-Entlastung im FPGA-Silizium.
+-- Teil:    1 (Entity und interne Signalpuffer)
+-- Funktion: Die getaktete Protokoll-Zustandsmaschine (BIU-FSM) des 68EC030.
+--           Zyklustreues 32-Bit-Design mit RMW-Verriegelung.
 -- =========================================================================
 
 library IEEE;
@@ -14,109 +12,84 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity cpu_030_ec_bus_fsm is
     Port (
-        -- Globale Systemsignale
-        CLK             : in    std_logic;
-        RESET_N         : in    std_logic;
+        CLK                 : in    std_logic;                      
+        RESET_N             : in    std_logic;                      
 
-        -- Steuerschnittstelle vom Haupt-Decoder / Rechenkern
-        cycle_start     : in    std_logic;                      -- Impuls: Externen Buszyklus starten
-        cycle_write     : in    std_logic;                      -- '1' = Write, '0' = Read
-        cycle_rmw       : in    std_logic;                      -- '1' = Ununterbrochener Read-Modify-Write (TAS)
-        
-        -- Physikalische Quittungseingänge von der Turbokarte / Chipsatz
-        ext_DSACK0_N    : in    std_logic;                      
-        ext_DSACK1_N    : in    std_logic;                      
-        ext_STERM_N     : in    std_logic;                      
-        ext_BERR_N      : in    std_logic;                      
-        
-        -- Arbitrierungspins der CPU-Außenhaut (Turbokarten-DMA-Logik)
-        ext_BR_N        : in    std_logic;                      
-        ext_BG_N        : out   std_logic;                      
-        ext_BGACK_N     : in    std_logic;                      
+        -- Steuerkanäle vom internen Core / Decoder
+        cycle_start         : in    std_logic;                      
+        cycle_write         : in    std_logic;                      
+        cycle_rmw           : in    std_logic;                      
+        cycle_size          : in    std_logic_vector(1 downto 0);   
 
-        -- Physische L1-Cache-Burstpins
-        ext_CBREQ_N     : out   std_logic;                      
-        ext_CBACK_N     : in    std_logic;                      
-        
-        -- Physischer Read-Modify-Write Sperrpin zur CPU-Außenhaut
-        ext_RMC_N       : out   std_logic;                      -- '0' blockiert Fremd-DMA auf der Platine!
+        -- Synchronisierte Quittungsleitungen aus der BIU-Pipeline
+        ext_DSACK0_N        : in    std_logic;                      
+        ext_DSACK1_N        : in    std_logic;                      
+        ext_STERM_N         : in    std_logic;                      
+        ext_BERR_N          : in    std_logic;                      
 
-        -- Ausgänge an den Bus-Muxer und das Top-Gehäuse
-        fsm_busy        : out   std_logic;                      -- '1' = Bus belegt
-        fsm_cycle_done  : out   std_logic;                      -- '1' = Gesamter Transfer beendet
-        fsm_strobe_en   : out   std_logic;                      -- Schaltet AS_N frei
-        fsm_ds_en       : out   std_logic;                      -- Schaltet das Daten-Strobe DS_N frei
-        fsm_write_en    : out   std_logic;                      -- Steuert die Richtung des RW-Pins
-        fsm_tristate_en : out   std_logic;                      -- Zwingt Bus-Pins auf Hochohmig
-        fsm_burst_cnt   : out   std_logic_vector(1 downto 0);   -- Burst-Zählerstand
+        -- Arbitrierungsleitungen nach außen (Hardware-DMA)
+        ext_BR_N            : in    std_logic;                      
+        ext_BG_N            : out   std_logic;                      
+        ext_BGACK_N         : in    std_logic;                      
+
+        -- Express-Cache-Signale
+        ext_CBREQ_N         : out   std_logic;                      
+        ext_CBACK_N         : in    std_logic;                      
+        ext_RMC_N           : out   std_logic;                      
+
+        -- Interne Statussignale an das Core-Fließband
+        fsm_busy            : out   std_logic;                      
+        fsm_cycle_done      : out   std_logic;                      
         
-        -- Dynamischer Adress-Offset-Vorschub an den Bus-Muxer bei schmalem Bus
-        fsm_sizing_offset : out  std_logic_vector(1 downto 0)    
+        -- Treiber-Leitungen an den Datenbus-Multiplexer (cpu_030_ec_bus_mux)
+        fsm_strobe_en       : out   std_logic;                      
+        fsm_ds_en           : out   std_logic;                      
+        fsm_write_en        : out   std_logic;                      
+        fsm_tristate_en     : out   std_logic;                      
+        fsm_burst_cnt       : out   std_logic_vector(1 downto 0);   
+        fsm_sizing_offset   : out   std_logic_vector(1 downto 0)    
     );
 end cpu_030_ec_bus_fsm;
 
 architecture behavioral of cpu_030_ec_bus_fsm is
 
-    -- =====================================================================
-    -- REPARIERTES TIMING-NETZWERK: JETZT MIT MAXIMALER TURN-AROUND-SPERRE
-    -- =====================================================================
     type bus_state_type is (
-        BUS_IDLE,           -- Bus frei, wartet auf Start-Impuls oder DMA
-        BUS_S0,             -- Phase 0: Adressleitungen, SIZ und FC stabilisieren
-        BUS_S2,             -- Phase 2: Address Strobe (AS_N) und DS_N zünden
-        BUS_S4_WAIT,        -- Phase 4: Haupt-Wartestation auf STERM / DSACK / BERR
-        
-        -- Express-Zustände für das Cache-Zeilen-Filling (Schritt 5)
-        BUS_BURST_1,        
-        BUS_BURST_2,        
-        BUS_BURST_3,        
-        
-        -- Dedizierte Hold-Time-Pausen (Datenstrobe atmet kurz aus)
-        BUS_SIZ_PAUSE_2,    
-        BUS_SIZ_PAUSE_3,    
-        BUS_SIZ_PAUSE_4,    
-        
-        -- Folge-Zyklen für die dynamische Busbreite (8/16-Bit Mainboard)
-        BUS_SIZ_CYCLE_2,    
-        BUS_SIZ_CYCLE_3,    
-        BUS_SIZ_CYCLE_4,    
-        
-        BUS_S5_DONE,        -- Phase 5: Transfer beenden / Quittung an Core absetzen
-        
-        -- PUNKT 4: Maximale Absicherung gegen Bus-Kollisionen (Bus Contention)
-        BUS_TURN_AROUND,    -- Eiserner Leerlauf-Takt: Zwingt Datenbus auf 'Z' (Vakuum)!
-        
-        BUS_ARBITRATED      -- DMA-Modus aktiv (CPU hochohmig verlassen)
+        BUS_IDLE, BUS_ARBITRATED, BUS_S0, BUS_S2, BUS_S4_WAIT, 
+        BUS_BURST_1, BUS_BURST_2, BUS_BURST_3, BUS_S5_DONE, 
+        BUS_TURN_AROUND,
+        BUS_SIZ_PAUSE_2, BUS_SIZ_CYCLE_2, 
+        BUS_SIZ_PAUSE_3, BUS_SIZ_CYCLE_3,
+        BUS_SIZ_PAUSE_4, BUS_SIZ_CYCLE_4
     );
-
-    signal current_bus_state : bus_state_type := BUS_IDLE;
     
-    -- Interne Pufferregister zur Vermeidung von kombinatorischen Glitches
+    signal current_bus_state : bus_state_type := BUS_IDLE;
+
+    -- Synchrone Registerpuffer zur Leitungsisolierung
+    signal reg_strobe_en     : std_logic := '0';
+    signal reg_ds_en         : std_logic := '0';
+    signal fsm_write_en_sig  : std_logic := '0';
     signal reg_bg_n          : std_logic := '1';
     signal reg_tristate      : std_logic := '0';
     signal reg_cbreq_n       : std_logic := '1';
-    signal reg_rmc_n         : std_logic := '1'; 
-    signal reg_strobe_en     : std_logic := '0';
-    signal reg_ds_en         : std_logic := '0'; 
-    
+    signal reg_rmc_n         : std_logic := '1';
     signal reg_burst_cnt     : std_logic_vector(1 downto 0) := "00";
     signal reg_sizing_offset : std_logic_vector(1 downto 0) := "00";
 
-begin
+	 begin
 
-    -- Physikalische Kontroll-Ausgänge permanent stabil treiben
+    -- Physikalische Kontroll-Ausgänge permanent stabil an das Weichenwerk koppeln
     ext_BG_N          <= reg_bg_n;
     fsm_tristate_en   <= reg_tristate;
     ext_CBREQ_N       <= reg_cbreq_n;
     fsm_strobe_en     <= reg_strobe_en;
     fsm_ds_en         <= reg_ds_en; 
+    fsm_write_en      <= fsm_write_en_sig;
     fsm_burst_cnt     <= reg_burst_cnt;
     fsm_sizing_offset <= reg_sizing_offset;
-    
     ext_RMC_N         <= reg_rmc_n;
 
     -- =====================================================================
-    -- SYNCHRONER CONTROL-PROZESS: TAKTGESTEUERTE SIZING- UND RMC-FSM
+    -- SYNCHRONER CONTROL-PROZESS: SYSTEMTAKTIERTE BUS-ZUSTANDSMASCHINE
     -- =====================================================================
     process(CLK, RESET_N)
     begin
@@ -126,7 +99,7 @@ begin
             fsm_cycle_done    <= '0';
             reg_strobe_en     <= '0';
             reg_ds_en         <= '0';
-            fsm_write_en      <= '0';
+            fsm_write_en_sig  <= '0';
             reg_bg_n          <= '1';
             reg_tristate      <= '0';
             reg_cbreq_n       <= '1';
@@ -135,28 +108,28 @@ begin
             reg_sizing_offset <= "00";
             
         elsif rising_edge(CLK) then
-            -- Standard-Impulse zurücksetzen
-            fsm_cycle_done <= '0';
+            fsm_cycle_done <= '0'; -- Standard-Impuls pro Takt zurücksetzen
             
             case current_bus_state is
                 
-                -- =========================================================
-                -- BUS LEERLAUF (IDLE): RESETS UND SPERR-PRÜFUNG
-                -- =========================================================
+                -- ---------------------------------------------------------
+                -- BUS_IDLE: RESETS UND UNBESTECHLICHE RMC-SPERR-PRÜFUNG
+                -- ---------------------------------------------------------
                 when BUS_IDLE =>
                     fsm_busy          <= '0';
                     reg_strobe_en     <= '0';
                     reg_ds_en         <= '0';
-                    fsm_write_en      <= '0';
+                    fsm_write_en_sig  <= '0';
                     reg_tristate      <= '0';
                     reg_cbreq_n       <= '1'; 
                     reg_burst_cnt     <= "00"; 
                     reg_sizing_offset <= "00";
 
                     if cycle_rmw = '0' then
-                        reg_rmc_n <= '1';
+                        reg_rmc_n <= '1'; -- RMC-Sperre nur fallen lassen, wenn Core freigibt
                     end if;
 
+                    -- EXKLUSIVER DMA-TÜRSTEHER: Blockiert externe Busanforderungen bei RMC = '0'
                     if ext_BR_N = '0' and reg_rmc_n = '1' then
                         reg_bg_n          <= '0';
                         if ext_BGACK_N = '0' then
@@ -170,7 +143,7 @@ begin
                         reg_bg_n <= '1';
                         
                         if cycle_rmw = '1' then
-                            reg_rmc_n <= '0'; 
+                            reg_rmc_n <= '0'; -- Unteilbare Hardware-Sperre sofort verriegeln
                         end if;
                         
                         current_bus_state <= BUS_S0;
@@ -178,29 +151,28 @@ begin
                         reg_bg_n <= '1';
                     end if;
 
+						                  -- ---------------------------------------------------------
+                -- BUS_S0: DER ABSTREIF-TAKTMUX (ADRESSEN STABILISIEREN)
+                -- ---------------------------------------------------------
                 when BUS_S0 =>
-                    fsm_write_en <= cycle_write;
-                    
-                    if cycle_write = '0' then
-                        reg_cbreq_n <= '0'; 
-                    else
-                        reg_cbreq_n <= '1'; 
-                    end if;
-                    
+                    reg_strobe_en    <= '1'; -- AS_N wird unbarmherzig gefeuert
+                    fsm_write_en_sig <= cycle_write;
                     current_bus_state <= BUS_S2;
 
+                -- ---------------------------------------------------------
+                -- BUS_S2: DATEN-STROBE AKTIVIEREN
+                -- ---------------------------------------------------------
                 when BUS_S2 =>
-                    reg_strobe_en     <= '1';
-                    reg_ds_en         <= '1'; 
+                    reg_ds_en <= '1'; -- DS_N atmet ein
+                    if cycle_write = '0' and cycle_rmw = '0' then
+                        reg_cbreq_n <= '0'; -- Cache-Zeile nur bei reinem Lesen anfordern
+                    end if;
                     current_bus_state <= BUS_S4_WAIT;
 
-                -- =========================================================
-                -- PHASE S4: DIE ERWEITERTE LOGISCHE SIZING-VERZWEIGUNG
-                -- =========================================================
+                -- ---------------------------------------------------------
+                -- BUS_S4_WAIT: ERWEITERTE LOGISCHE SIZING- UND BURST-WEICHE
+                -- ---------------------------------------------------------
                 when BUS_S4_WAIT =>
-                    reg_strobe_en <= '1';
-                    reg_ds_en     <= '1';
-                    
                     if ext_BERR_N = '0' then
                         reg_cbreq_n       <= '1';
                         current_bus_state <= BUS_S5_DONE;
@@ -217,23 +189,32 @@ begin
                     elsif ext_DSACK1_N = '0' or ext_DSACK0_N = '0' then
                         reg_cbreq_n <= '1'; 
                         
+                        -- UNBESTECHLICHE SIZING-MASKEN-PRÜFUNG:
+                        -- Ein Folgezyklus wird NUR dann betreten, wenn die CPU ein Longword (00) 
+                        -- oder Word (01) fordert, der Bus aber schmaler antwortet. 
+                        -- Fordert die CPU nur ein Byte (00) oder Word auf passendem Bus, geht es starr zu S5!
                         if ext_DSACK1_N = '0' and ext_DSACK0_N = '0' then
+                            current_bus_state <= BUS_S5_DONE; -- Voller 32-Bit Port fertig
+                            
+                        elsif cycle_size = "00" then
+                            -- CPU wollte nur ein Byte, Transfer auf 8/16-Bit Bus sofort erledigt!
                             current_bus_state <= BUS_S5_DONE;
                             
-                        elsif ext_DSACK1_N = '0' and ext_DSACK0_N = '1' then
-                            current_bus_state <= BUS_SIZ_PAUSE_2;
-                            
-                        elsif ext_DSACK1_N = '1' and ext_DSACK0_N = '0' then
+                        elsif cycle_size = "01" and ext_DSACK1_N = '0' and ext_DSACK0_N = '1' then
+                            -- CPU wollte ein Word und kriegt einen 16-Bit Port -> Ebenfalls fertig!
+                            current_bus_state <= BUS_S5_DONE;
+                        else
+                            -- ECHTER ENG-BUS-KONFLIKT: Weiche biegt ab in die Sizing-Pause
                             current_bus_state <= BUS_SIZ_PAUSE_2;
                         end if;
                     end if;
 
-                -- =========================================================
+						                  -- =========================================================
                 -- RESTRICHTE SCHLEIFENPHASEN FÜR SIZING-FOLGEZYKLEN
                 -- =========================================================
                 when BUS_SIZ_PAUSE_2 =>
-                    reg_strobe_en <= '1'; 
-                    reg_ds_en     <= '0'; 
+                    reg_strobe_en <= '1'; -- Address Strobe bleibt starr aktiv!
+                    reg_ds_en     <= '0'; -- Data Strobe atmet kurz aus
                     
                     if ext_DSACK1_N = '0' and ext_DSACK0_N = '1' then
                         reg_sizing_offset <= "10"; 
@@ -289,11 +270,10 @@ begin
                     end if;
 
                 -- =========================================================
-                -- REGULÄRE BURST-EXPRESS-PHASEN
+                -- REGULÄRE BURST-EXPRESS-PHASEN (L1-CACHE BURST FILL)
                 -- =========================================================
                 when BUS_BURST_1 =>
-                    reg_strobe_en <= '1';
-                    reg_ds_en     <= '1';
+                    reg_strobe_en <= '1'; reg_ds_en <= '1';
                     if ext_STERM_N = '0' then
                         reg_burst_cnt     <= "10";
                         current_bus_state <= BUS_BURST_2;
@@ -302,8 +282,7 @@ begin
                     end if;
 
                 when BUS_BURST_2 =>
-                    reg_strobe_en <= '1';
-                    reg_ds_en     <= '1';
+                    reg_strobe_en <= '1'; reg_ds_en <= '1';
                     if ext_STERM_N = '0' then
                         reg_burst_cnt     <= "11";
                         current_bus_state <= BUS_BURST_3;
@@ -312,8 +291,7 @@ begin
                     end if;
 
                 when BUS_BURST_3 =>
-                    reg_strobe_en <= '1';
-                    reg_ds_en     <= '1';
+                    reg_strobe_en <= '1'; reg_ds_en <= '1';
                     if ext_STERM_N = '0' then
                         reg_cbreq_n       <= '1';
                         current_bus_state <= BUS_S5_DONE;
@@ -321,8 +299,8 @@ begin
                         current_bus_state <= BUS_S5_DONE;
                     end if;
 
-                -- =========================================================
-                -- PHASE S5: ERFOLGREICHER TRANSFER-ABSCHLUSS & RMW-CHECK
+						                  -- =========================================================
+                -- PHASE S5: ERFOLGREICHER TRANSFER-ABSCHLUSS & RMW-SCHLEIFE
                 -- =========================================================
                 when BUS_S5_DONE =>
                     reg_strobe_en  <= '0';
@@ -330,28 +308,29 @@ begin
                     reg_cbreq_n    <= '1';
                     fsm_cycle_done <= '1'; 
                     
+                    -- KORREKTUR RMW-VERRIEGELUNG: 
+                    -- Wenn es der Lese-Teil einer unteilbaren Operation war (cycle_write = '0' 
+                    -- und cycle_rmw = '1'), halten wir reg_rmc_n starr auf '0' und springen 
+                    -- SOFORT nach BUS_S0, um den Schreib-Teil anzuhängen, ohne die Strobes abzuwerfen!
                     if cycle_rmw = '1' and cycle_write = '0' then
-                        current_bus_state <= BUS_IDLE;
+                        reg_strobe_en     <= '1'; -- AS_N bleibt nahtlos aktiv!
+                        current_bus_state <= BUS_S0;
                     else
-                        -- KORREKTUR PUNKT 4: Umleitung über den Turn-Around-Isolator!
                         current_bus_state <= BUS_TURN_AROUND;
                     end if;
 
                 -- =========================================================
-                -- PUNKT 4: ERZWUNGENER LEERLAUF-TAKTMUX (DATA BUS VACUUM)
-                -- Trennt aufeinanderfolgende Buszyklen elektrisch sauber ab!
+                -- BUS_TURN_AROUND: DATA BUS VACUUM (TREIBERKONFLIKT-SCHUTZ)
                 -- =========================================================
                 when BUS_TURN_AROUND =>
                     reg_strobe_en  <= '0';
                     reg_ds_en      <= '0';
-                    reg_tristate   <= '1'; -- Erzwingt bedingungslos Hochohmig ('Z') an den Pins!
+                    reg_tristate   <= '1'; -- Zwingt alle Pins in Hochohmigkeit ('Z')
                     fsm_cycle_done <= '0';
-                    
-                    -- Nach exakt einem Takt Abkühlung wird der Bus wieder freigegeben
-                    reg_rmc_n <= '1';
+                    reg_rmc_n      <= '1'; -- RMC-Sperre nach vollem Zyklus freigeben
                     
                     if ext_BR_N = '0' then
-                        reg_bg_n          <= '0';
+                        reg_bg_n <= '0';
                         if ext_BGACK_N = '0' then
                             current_bus_state <= BUS_ARBITRATED;
                         else
@@ -362,7 +341,7 @@ begin
                     end if;
 
                 -- =========================================================
-                -- ARBITRIERUNGSZUSTAND (DMA-FREIGABE)
+                -- ARBITRIERUNGSZUSTAND (DMA-FREIGABE AN ERWEITERUNGEN)
                 -- =========================================================
                 when BUS_ARBITRATED =>
                     fsm_busy     <= '1';

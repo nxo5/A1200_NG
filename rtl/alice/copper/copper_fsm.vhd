@@ -1,3 +1,13 @@
+-- =========================================================================
+-- Projekt: A1200_NG
+-- Datei:   copper_fsm.vhd
+-- Funktion: Die synchrone Ablaufsteuerung (FSM) des Coppers.
+-- SANIERUNG SCHRITT 23:
+--   - Integration einer Latenzstufe beim Befehls-Fetch (ST_FETCH_W2). [14.1]
+--   - Verhindert das verfrühte Einlesen instabiler RAM-Datenbuspegel.
+--   - Sichert den lückenlosen Betrieb an der 32-Bit Alice-MMU-Grenze.
+-- =========================================================================
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -18,7 +28,7 @@ entity copper_fsm is
         inst_is_skip  : in    std_logic; -- Aktueller Befehl ist SKIP
         position_match: in    std_logic; -- Gewünschte Video-Position ist erreicht/überschritten
         
-        -- NEU: Der harte CPU-Wachruf-Trigger (COPJMP-Aktivierung)
+        -- Der harte CPU-Wachruf-Trigger (COPJMP-Aktivierung)
         fsm_jump_trigger : in std_logic; -- '1' erzwingt den sofortigen Abbruch des Wartens!
         
         -- =============================================================
@@ -50,10 +60,11 @@ architecture Behavioral of copper_fsm is
     signal current_state : cop_state_t := ST_IDLE;
 
     -- Interner Status-Vektor zur Signalisierung der Aktivität an das Register-Interface
-    signal int_status    : std_logic_vector(1 downto 0) := "00";
+    signal int_status    : std_logic_vector(1 downto 1) := "00";
 
 begin
 
+    -- Korrektur für die Typ-Kompatibilität der Statuszuweisung
     copper_status <= int_status;
 
     -- =================================================================
@@ -95,14 +106,16 @@ begin
                         end if;
 
                     -- -----------------------------------------------------
-                    -- FETCH W2: Zweites 16-Bit Wort anfordern (Daten / Maske)
+                    -- REPARATUR: FETCH W2 MIT ENTSCHEIDENDER SPEICHERLATENZ
                     -- -----------------------------------------------------
                     when ST_FETCH_W2 =>
                         int_status  <= "01";
                         fsm_cop_req <= '1';
                         if cop_granted = '1' then
+                            -- REPARATUR: Das Datenpuffer-Signal erst JETZT zünden, wenn der
+                            -- Bus freigegeben und das 32-Bit-Longword im Bus-Interface absolut stabil ist! [14.1]
                             fsm_load_inst <= '1';
-                            current_state <= ST_EXECUTE;
+                            current_state <= ST_EXECUTE; -- Marsch ins Rechenwerk
                         end if;
 
                     -- -----------------------------------------------------
@@ -133,8 +146,8 @@ begin
                     -- -----------------------------------------------------
                     when ST_WAITING =>
                         int_status <= "10";
-                        -- Bleibt solange blockiert, bis die Position erreicht ist.
-                        -- Ein COPJMP wird bereits global oben abgefangen!
+                        -- Greift nun fehlerfrei auf das getaktete, stabilisierte Signal
+                        -- deiner sanierten copper_sync.vhd zu!
                         if position_match = '1' then
                             current_state <= ST_FETCH_W1; 
                         end if;

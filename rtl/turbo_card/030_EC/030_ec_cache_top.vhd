@@ -1,12 +1,11 @@
 -- =========================================================================
 -- Projekt: A1200_NG
--- Datei:   030_ec_cache_top.vhd
--- Teil:    1 von 3 (Entity und Deklarationsblock)
+-- Datei:   cpu_030_ec_cache_top.vhd
+-- Teil:    1 von 4 (Bereinigte Entity-Schnittstelle)
 -- Funktion: Das 32-KB L1-Cache-Subsystem (4-Way Associative).
---           FPGA-REFACORING (HEBEL 3):
---           Direkte kombinatorische BRAM-Ansteuerung ohne Geister-Register.
---           Spart wertvolle Flip-Flops im Cyclone-V-Silizium ein, während
---           das Zeitverhalten zu 100 % zyklustreu erhalten bleibt!
+-- KORREKTUREN:
+--   - Umstellung der äußeren M10K-Schnittstellen auf PORT A Hoheit!
+--   - Hinzufügen von bridge_data_r zur Deadlock-Behebung beim Burst-Fill.
 -- =========================================================================
 
 library IEEE;
@@ -15,9 +14,11 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity cpu_030_ec_cache_top is
     Port (
+        -- Globale Systemsynchronisation
         CLK             : in    std_logic;                      
         RESET_N         : in    std_logic;                      
 
+        -- Datenpfad-Anbindung an den CPU-Core / Decoder
         cpu_A           : in    std_logic_vector(31 downto 0);  
         cpu_D_in        : in    std_logic_vector(31 downto 0);  
         cpu_D_out       : out   std_logic_vector(31 downto 0);  
@@ -25,6 +26,7 @@ entity cpu_030_ec_cache_top is
         cpu_req         : in    std_logic;                      
         cpu_is_code     : in    std_logic;                      
 
+        -- Originale Motorola CACR-Steuerleitungen
         cacr_ei         : in    std_logic;                      
         cacr_fi         : in    std_logic;                      
         cacr_ed         : in    std_logic;                      
@@ -32,23 +34,27 @@ entity cpu_030_ec_cache_top is
         cacr_ci         : in    std_logic;                      
         cacr_cd         : in    std_logic;                      
 
+        -- Status-Rückmeldungen an das CPU-Haupthaus
         cache_hit       : out   std_logic;                      
         cache_miss      : out   std_logic;                      
 
-        bram_b_addr     : out   std_logic_vector(18 downto 0);  
-        bram_b_data_w   : out   std_logic_vector(31 downto 0);  
-        bram_b_data_r   : in    std_logic_vector(31 downto 0);  
-        bram_b_we       : out   std_logic;                      
+        -- KORREKTUR PORT A: Physische Leitungen zum Cache-Kanal des BRAMs
+        bram_a_addr     : out   std_logic_vector(18 downto 0);  
+        bram_a_data_w   : out   std_logic_vector(31 downto 0);  
+        bram_a_data_r   : in    std_logic_vector(31 downto 0);  
+        bram_a_we       : out   std_logic;                      
 
+        -- Verbindung zur Fast-RAM-Bridge (DDR-RAM) bei einem Cache Miss
         bridge_req      : out   std_logic;                      
         bridge_burst_en : out   std_logic;                      
-        bridge_ready    : in    std_logic                       
+        bridge_ready    : in    std_logic;                      
+        bridge_data_r   : in    std_logic_vector(31 downto 0)   -- KORREKTUR: Reale Nachladedaten der Bridge!
     );
 end cpu_030_ec_cache_top;
 
 architecture structural of cpu_030_ec_cache_top is
 
-    -- Matrix-Definitionen (Intel M10K Blöcke)
+    -- Matrix-Definitionen (Intel M10K Blöcke erzwingen) [14.1]
     subtype cache_word  is std_logic_vector(31 downto 0);
     type    way_array   is array (0 to 3) of cache_word;
     type    set_matrix  is array (0 to 255) of way_array;
@@ -73,7 +79,7 @@ architecture structural of cpu_030_ec_cache_top is
     signal icache_valid : valid_matrix := (others => (others => '0'));
     signal dcache_valid : valid_matrix := (others => (others => '0'));
 
-    -- Interne Koppeldrähte
+    -- Interne Koppeldrähte für Adresszerlegung
     signal s_tag        : std_logic_vector(19 downto 0); 
     signal s_index      : integer range 0 to 255;        
     signal s_word_sel   : integer range 0 to 3;          
@@ -93,6 +99,7 @@ architecture structural of cpu_030_ec_cache_top is
     signal s_matrix_write   : std_logic;
     signal s_matrix_sel_code: std_logic;
 
+    -- Submodul-Schablonen für Löschung und FSM-Protokoll
     component cpu_030_ec_cache_clear_unit
         Port (
             CLK                 : in    std_logic;
@@ -127,7 +134,7 @@ architecture structural of cpu_030_ec_cache_top is
         );
     end component;
 
-begin
+	 begin
 
     -- =====================================================================
     -- ADRESSZERLEGUNG AM CORE-BUS (KALIBRIERT AUF 256 SETS)
@@ -136,14 +143,15 @@ begin
     s_index    <= to_integer(unsigned(cpu_A(11 downto 4)));
     s_word_sel <= to_integer(unsigned(cpu_A(3 downto 2)));
 
-    -- CHIP-RAM- UND ADRESS-DETEKTION
+    -- CHIP-RAM- UND ADRESS-DETEKTION (Befehl oder Datenraum)
     cache_inhibit    <= '1' when unsigned(cpu_A(31 downto 24)) = x"00" else '0';
     kickstart_select <= '1' when (cpu_A(31 downto 19) = "0000000011111100000") else '0';
 
-    -- OPTIMIERUNG HEBEL 3: Rein kombinatorische, registerfreie BRAM-Treiberleitung
-    bram_b_addr   <= cpu_A(18 downto 2) & "00" when (cpu_req = '1' and kickstart_select = '1') else (others => '0');
-    bram_b_we     <= '0';
-    bram_b_data_w <= (others => '0');
+    -- OPTIMIERUNG HEBEL 3: Rein kombinatorische, registerfreie BRAM-Treiberleitung [14.1]
+    -- KORREKTUR PORT A: Leitet Kickstart-Bypass-Anfragen direkt auf Port A um!
+    bram_a_addr   <= cpu_A(18 downto 2) & "00" when (cpu_req = '1' and kickstart_select = '1') else (others => '0');
+    bram_a_we     <= '0';
+    bram_a_data_w <= (others => '0');
 
     -- =====================================================================
     -- KOMBINAOTORISCHE HIT-EVALUATION FÜR DIE BEIDEN BÄNKE (0 WAIT-STATES)
@@ -182,7 +190,7 @@ begin
     -- =====================================================================
     process(cpu_req, cpu_is_code, icache_hit_s, dcache_hit_s, cache_inhibit, 
             kickstart_select, icache_data, dcache_data, s_index, s_word_sel, 
-            ihit_way, dhit_way, bram_b_data_r)
+            ihit_way, dhit_way, bram_a_data_r)
     begin
         cache_hit  <= '0';
         cache_miss <= '0';
@@ -191,7 +199,7 @@ begin
         if cpu_req = '1' then
             if kickstart_select = '1' then
                 cache_hit <= '1';                    
-                cpu_D_out <= bram_b_data_r;          
+                cpu_D_out <= bram_a_data_r; -- KORREKTUR: Zieht Daten fehlerfrei von Port A!         
             elsif cache_inhibit = '1' then
                 cache_miss <= '1';                   
                 cpu_D_out  <= (others => '0');
@@ -215,7 +223,7 @@ begin
         end if;
     end process;
 
-    -- =====================================================================
+	     -- =====================================================================
     -- STRUKTURELLE VERDRAHTUNG DER BEIDEN SPEICHER-SUBMODULE
     -- =====================================================================
     i_cache_clear : cpu_030_ec_cache_clear_unit
@@ -257,10 +265,10 @@ begin
         variable fill_way : integer range 0 to 3 := 0;
     begin
         if RESET_N = '0' then
-            -- Initialisierungszustand der internen Speichersteuerungen
+            -- Initialisierung der Valid-Matrizen läuft via Clear-Unit-Impuls
             null;
         elsif rising_edge(CLK) then
-            -- 1. SEQUENZIELLE LÖSCHUNG DER VALID-BITS VIA CLEAR_UNIT
+            -- 1. SEQUENZIELLE LÖSCHUNG DER VALID-BITS VIA CLEAR_UNIT (M10K-SCHONUNG)
             if s_cache_clearing = '1' and s_clear_pulse = '1' then
                 for way in 0 to 3 loop
                     icache_valid(s_clear_idx)(way) <= '0';
@@ -272,17 +280,20 @@ begin
             if s_cache_clearing = '0' and cpu_req = '1' then
                 if cpu_RW = '0' and cache_inhibit = '0' then
                     if dcache_hit_s = '1' and cacr_fd = '0' then
-                        dcache_data(s_index)(dhit_way) <= cpu_D_in; -- Write-Through Hit-Update
+                        dcache_data(s_index)(dhit_way) <= cpu_D_in; -- Motorola Write-Through Hit-Update
                     end if;
                 elsif cpu_RW = '1' and cache_inhibit = '0' then
                     if s_matrix_write = '1' then
                         fill_way := to_integer(unsigned(cpu_A(5 downto 4)));
+                        
                         if s_matrix_sel_code = '1' then
-                            icache_data(s_index)(fill_way)  <= bram_b_data_r;
+                            -- KORREKTUR: Speist die echten Daten der DDR Fast-RAM Bridge ein!
+                            icache_data(s_index)(fill_way)  <= bridge_data_r;
                             icache_tags(s_index)(fill_way)  <= s_tag;
                             icache_valid(s_index)(fill_way) <= '1';
                         else
-                            dcache_data(s_index)(fill_way)  <= bram_b_data_r;
+                            -- KORREKTUR: Speist die echten Daten der DDR Fast-RAM Bridge ein!
+                            dcache_data(s_index)(fill_way)  <= bridge_data_r;
                             dcache_tags(s_index)(fill_way)  <= s_tag;
                             dcache_valid(s_index)(fill_way) <= '1';
                         end if;

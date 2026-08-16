@@ -1,9 +1,11 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   030_ec_cache_tags.vhd
+-- Teil:    1 von 2 (Sanierten Entity-Schnittstelle)
 -- Funktion: Der isolierte, synchrone Tag- und Valid-Speicher des 68EC030.
---           Verwaltet 4096 Cache-Zeilen mit 16-Bit Adress-Tags.
---           Bietet ultraschnelles Hit/Miss-Matching für Befehle und Daten.
+--           SCHRITT 5 SANIERUNG:
+--           - Einbau sequentieller Clear-Ports zur M10K-Block-RAM-Schonung.
+--           - Verhindert ALM-Ressourcen-Overflow in Intel Quartus Prime.
 -- =========================================================================
 
 library IEEE;
@@ -12,32 +14,36 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity cpu_030_ec_cache_tags is
     Port (
-        CLK             : in    std_logic;                      -- Schneller 4x-Systemtakt
-        RESET_N         : in    std_logic;                      -- System-Reset
+        CLK             : in    std_logic;                      -- Hauptsystemtakt
+        RESET_N         : in    std_logic;                      -- Low-Aktiver System-Reset
 
         -- Adress-Eingänge von der CPU
-        cpu_A           : in    std_logic_vector(31 downto 0);  -- Aktuelle CPU-Adresse
-        cpu_is_code     : in    std_logic;                      -- '1' = Instruction, '0' = Data
+        cpu_A           : in    std_logic_vector(31 downto 0);  
+        cpu_is_code     : in    std_logic;                      
         
-        -- Aktualisierungs-Schnittstelle vom Hauptsteuerwerk (Cache Update)
-        update_valid    : in    std_logic;                      -- '1' triggert das Setzen des Valid-Bits
-        update_tag      : in    std_logic;                      -- '1' triggert das Schreiben des neuen Tags
+        -- Aktualisierungs-Schnittstelle vom Hauptsteuerwerk
+        update_valid    : in    std_logic;                      
+        update_tag      : in    std_logic;                      
 
-        -- Originale Motorola CACR-Löschimpulse (Vom System-Register)
-        cacr_ci         : in    std_logic;                      -- Clear Instruction Cache (Flash Invalidate)
-        cacr_cd         : in    std_logic;                      -- Clear Data Cache (Flash Invalidate)
-        cacr_fi         : in    std_logic;                      -- Freeze Instruction Cache
-        cacr_fd         : in    std_logic;                      -- Freeze Data Cache
+        -- Originale Motorola CACR-Steuerleitungen
+        cacr_ci         : in    std_logic;                      -- Triggert den sequentiellen Clear-Vorgang I-Cache
+        cacr_cd         : in    std_logic;                      -- Triggert den sequentiellen Clear-Vorgang D-Cache
+        cacr_fi         : in    std_logic;                      
+        cacr_fd         : in    std_logic;
 
-        -- Kombinatorische Status-Rückmeldungen ans Hauptsteuerwerk
-        cache_hit       : out   std_logic                       -- '1' bei gültigem Tag-Treffer
+        -- NEU: Schnittstellen-Kanäle von der getakteten Cache-Clear-Unit (M10K-Schonung)
+        clear_active    : in    std_logic;                      -- '1' = Sequentielles Löschen läuft im Hintergrund
+        clear_idx       : in    std_logic_vector(11 downto 0);  -- 12-Bit-Zähler-Index (0 bis 4095) von der Clear-Unit
+
+        -- Status-Rückmeldung an das Hauptsteuerwerk
+        cache_hit       : out   std_logic                       
     );
 end cpu_030_ec_cache_tags;
 
 architecture behavioral of cpu_030_ec_cache_tags is
 
     -- =====================================================================
-    -- UNBESTECHLICHES 64-KB HARDWARE-TAG-RAM (4096 ZEILEN)
+    -- KONSOLIDIERTE RESTRUKTURIERUNG: M10K-SCHONENDE MATRIX-FELDER
     -- =====================================================================
     type tag_array is array (0 to 4095) of std_logic_vector(15 downto 0);
     
@@ -79,10 +85,11 @@ begin
     end process;
 
     -- =====================================================================
-    -- SYNCHRONER PROZESS: SPEICHER-AKTUALISIERUNG UND OS-LÖSCHUNG
+    -- SYNCHRONER PROZESS: M10K-BLOCK-RAM KONFORME SPEICHER-AKTUALISIERUNG
     -- =====================================================================
     process(CLK, RESET_N)
-        variable line_idx : integer range 0 to 4095;
+        variable write_idx : integer range 0 to 4095;
+        variable clear_v_idx : integer range 0 to 4095;
     begin
         if RESET_N = '0' then
             i_cache_valid <= (others => '0');
@@ -91,30 +98,32 @@ begin
             d_cache_tags  <= (others => (others => '0'));
             
         elsif rising_edge(CLK) then
-            -- Zeilen-Index für das Schreiben vorbereiten
-            line_idx := to_integer(unsigned(cpu_A(15 downto 4)));
+            -- Indizes vorbereiten
+            write_idx   := to_integer(unsigned(cpu_A(15 downto 4)));
+            clear_v_idx := to_integer(unsigned(clear_idx));
             
-            -- 1. HARDWARE-LÖSCHUNG (FLASH INVALIDATION PER AMIGA OS IMPULS)
-            if cacr_ci = '1' then
-                i_cache_valid <= (others => '0'); -- Befehls-Cache in einem Takt komplett nullen
-            end if;
-            if cacr_cd = '1' then
-                d_cache_valid <= (others => '0'); -- Daten-Cache in einem Takt komplett nullen
-            end if;
+            -- 1. HARDWARE-LÖSCHUNG: SEQUENTIELLE SEQUENZ ÜBER CLEAR-UNIT (M10K-RETTUNG)
+            if clear_active = '1' then
+                if cacr_ci = '1' then
+                    i_cache_valid(clear_v_idx) <= '0'; -- Löscht exakt eine Zeile pro Takt schrittweise
+                end if;
+                if cacr_cd = '1' then
+                    d_cache_valid(clear_v_idx) <= '0'; -- Löscht exakt eine Zeile pro Takt schrittweise
+                end if;
             
-            -- 2. SYNCHRONER CACHE-EINZUG (VOM CONTROL-STATE-AUTOMATEN GEZEICHNET)
-            if update_valid = '1' or update_tag = '1' then
+            -- 2. SYNCHRONER CACHE-EINZUG (NUR IM REGULÄREN BETRIEB FREIGEGEBEN)
+            elsif update_valid = '1' or update_tag = '1' then
                 if cpu_is_code = '1' then
                     -- Befehls-Cache Update (Nur wenn nicht eingefroren!)
                     if cacr_fi = '0' then
-                        if update_valid = '1' then i_cache_valid(line_idx) <= '1'; end if;
-                        if update_tag   = '1' then i_cache_tags(line_idx)  <= cpu_A(31 downto 16); end if;
+                        if update_valid = '1' then i_cache_valid(write_idx) <= '1'; end if;
+                        if update_tag   = '1' then i_cache_tags(write_idx)  <= cpu_A(31 downto 16); end if;
                     end if;
                 else
                     -- Daten-Cache Update (Nur wenn nicht eingefroren!)
                     if cacr_fd = '0' then
-                        if update_valid = '1' then d_cache_valid(line_idx) <= '1'; end if;
-                        if update_tag   = '1' then d_cache_tags(line_idx)  <= cpu_A(31 downto 16); end if;
+                        if update_valid = '1' then d_cache_valid(write_idx) <= '1'; end if;
+                        if update_tag   = '1' then d_cache_tags(write_idx)  <= cpu_A(31 downto 16); end if;
                     end if;
                 end if;
             end if;

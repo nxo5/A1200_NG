@@ -1,11 +1,30 @@
-# set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "sdram_bridge.vhd"]
+# =========================================================================
+# Projekt: A1200_NG
+# Konfiguration: Quartus Project Settings File (.qsf) - Mainboard-Ebene
+# ERWEITERUNG: ram_decoder.vhd lückenlos in die Infrastruktur eingepflegt!
+# =========================================================================
+
+# 1. Zentrale Quellcodedateien der Mainboard-Infrastruktur
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "sdram_bridge.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "A1200_top.vhd"]
+
+# Der neue Kapselungs-Custom-Chip für den Turbokarten-Steckplatz
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "ext_bus_bridge.vhd"]
+
+# Das neue port-B-verriegelbare Kickstart-ROM-Speicherbett
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "kickstart.vhd"]
+
+# KORREKTUR: Das neue unbestechliche Adress-Stellwerk mit I/O-Schutz!
+# Mappt Chip- und Zorro-II RAM lückenlos im physischen SDRAM-Riegel zusammen.
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "ram_decoder.vhd"]
+
+# 2. Einbindung des Amiga-Custom-Chipsatzes (Minimig / AGA IP-Cores)
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "cia_a/cia_a.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "cia_b/cia_b.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "alice/alice.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "lisa/lisa.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "paula/paula.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "gayle/gayle.qip"]
+
+# 3. Einbindung der autarken Turbokarten-Infrastruktur (Level 3 Festung)
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "turbo_card" "turbo_card.qip"]
-
-

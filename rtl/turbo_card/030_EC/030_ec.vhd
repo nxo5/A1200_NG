@@ -1,10 +1,11 @@
 -- =========================================================================
 -- Projekt: A1200_NG
--- Datei:   030_ec.vhd
+-- Datei:   cpu_030_ec.vhd
 -- Teil:    1 von 3 (Äußere Entity-Schnittstelle)
 -- Funktion: Das hochintegrierte Hauptgehäuse des 68EC030 CPU-Kerns.
 --           Kapselt alle L1-Caches vollständig im Inneren.
---           REPARATUR: Syntaktisch gereinigt für fehlerfreien Browser-Einzug!
+--           SANIERUNG SCHRITT 1: 
+--           - Originalgetreues Hardware-Pinout der CPU-Fassung nach Außen.
 -- =========================================================================
 
 library IEEE;
@@ -56,10 +57,10 @@ end cpu_030_ec;
 architecture structural of cpu_030_ec is
 
     -- =====================================================================
-    -- REPARIERTE UND SYNCHRONISIERTE KOMPONENTENDEKLARATIONEN
+    -- KORREKTUR: REPARIERTE UND PORT-A-KONFORME KOMPONENTENDEKLARATIONEN
     -- =====================================================================
     
-    -- 1. Bus Interface Unit (BIU)
+    -- 1. Bus Interface Unit (BIU - Konsolidierter Datenpfad)
     component cpu_030_ec_bus
         Port (
             CLK             : in    std_logic;
@@ -88,7 +89,7 @@ architecture structural of cpu_030_ec is
             ext_BGACK_N     : in    std_logic;                      
             ext_D_in_pins   : in    std_logic_vector(31 downto 0);  
             ext_D_out_pins  : out   std_logic_vector(31 downto 0);  
-            internal_A      : in    std_logic_vector(31 downto 0);
+            internal_A      : in    std_logic_vector(31 downto 0); -- KORREKTUR: Jetzt mit ALU gekoppelt!
             internal_D_out  : in    std_logic_vector(31 downto 0);
             internal_D_in   : out   std_logic_vector(31 downto 0);
             cycle_start     : in    std_logic;                      
@@ -103,11 +104,12 @@ architecture structural of cpu_030_ec is
         );
     end component;
 
-    -- 2. Execution Unit (ALU / Rechenwerk)
+    -- 2. Execution Unit (ALU / Rechenwerk und Hauptregisterbank)
     component cpu_030_ec_alu
         Port (
             CLK             : in    std_logic; RESET_N : in std_logic;
-            bus_A           : out   std_logic_vector(31 downto 0); bus_D_out : out std_logic_vector(31 downto 0);
+            bus_A           : out   std_logic_vector(31 downto 0); -- KORREKTUR: Treibt s_alu_A!
+            bus_D_out       : out   std_logic_vector(31 downto 0);
             bus_D_in        : in    std_logic_vector(31 downto 0); alu_opcode : in std_logic_vector(7 downto 0);
             alu_size        : in    std_logic_vector(1 downto 0); alu_src_reg : in std_logic_vector(3 downto 0);
             alu_dst_reg     : in    std_logic_vector(3 downto 0); alu_flags : out std_logic_vector(4 downto 0);
@@ -120,7 +122,7 @@ architecture structural of cpu_030_ec is
         );
     end component;
 
-    -- 3. Instruction Control Unit (Top-Decoder)
+    -- 3. Instruction Control Unit (Top-Decoder und Master-Exception-FSM)
     component cpu_030_ec_decode_top
         Port (
             CLK             : in    std_logic; RESET_N : in std_logic;
@@ -145,7 +147,7 @@ architecture structural of cpu_030_ec is
         );
     end component;
 
-    -- 4. Der integrierte Cache-Subsystem-Wrapper (KORREKTUR: 'Cet' restlos entfernt!)
+    -- 4. Der integrierte Cache-Subsystem-Wrapper (KORREKTUR: Port A Hoheit!)
     component cpu_030_ec_cache_top
         Port (
             CLK             : in    std_logic; RESET_N : in std_logic;
@@ -155,14 +157,17 @@ architecture structural of cpu_030_ec is
             cacr_ei         : in    std_logic; cacr_fi : in std_logic; cacr_ed : in std_logic;
             cacr_fd         : in    std_logic; cacr_ci : in std_logic; cacr_cd : in std_logic;
             cache_hit       : out   std_logic; cache_miss : out std_logic;
-            bram_b_addr     : out   std_logic_vector(18 downto 0); bram_b_data_w : out std_logic_vector(31 downto 0);
-            bram_b_data_r   : in    std_logic_vector(31 downto 0); bram_b_we : out std_logic;
+            bram_a_addr     : out   std_logic_vector(18 downto 0); bram_a_data_w : out std_logic_vector(31 downto 0);
+            bram_a_data_r   : in    std_logic_vector(31 downto 0); bram_a_we : out std_logic;
             bridge_req      : out   std_logic; bridge_burst_en : out std_logic; bridge_ready : in std_logic
         );
     end component;
 
-    -- Interne Verbindungssignale
+    -- =====================================================================
+    -- INTERNE VERBINDUNGSSIGNALE (LÜCKENLOS ABGESTIMMT)
+    -- =====================================================================
     signal int_A            : std_logic_vector(31 downto 0);
+    signal s_alu_A          : std_logic_vector(31 downto 0); -- KORREKTUR: Rettungsader für ALU-Adressen!
     signal int_D_to_bus     : std_logic_vector(31 downto 0);
     signal int_D_to_alu     : std_logic_vector(31 downto 0);
     signal ctrl_start       : std_logic;
@@ -183,10 +188,13 @@ architecture structural of cpu_030_ec is
     signal ch_hit           : std_logic;
     signal ch_miss          : std_logic;
     signal cache_data_out   : std_logic_vector(31 downto 0);
-    signal bram_b_addr_sig  : std_logic_vector(18 downto 0);
-    signal bram_b_data_w_sig: std_logic_vector(31 downto 0);
-    signal bram_b_data_r_sig: std_logic_vector(31 downto 0);
-    signal bram_b_we_sig    : std_logic;
+    
+    -- KORREKTUR: Port-A Signalketten für L1-Cache
+    signal bram_a_addr_sig  : std_logic_vector(18 downto 0);
+    signal bram_a_data_w_sig: std_logic_vector(31 downto 0);
+    signal bram_a_data_r_sig: std_logic_vector(31 downto 0);
+    signal bram_a_we_sig    : std_logic;
+    
     signal bus_data_in_sig  : std_logic_vector(31 downto 0);
     signal bus_data_out_sig : std_logic_vector(31 downto 0);
     signal ext_rw_internal  : std_logic;
@@ -209,30 +217,33 @@ architecture structural of cpu_030_ec is
     signal core_dfc_val     : std_logic_vector(2 downto 0);
     signal core_exception_div_zero : std_logic;
     signal int_sync_ipl_n   : std_logic_vector(2 downto 0);
-begin
 
-    -- Der externe Adressbus wird direkt aus der Recheneinheit getrieben
+	 begin
+
+    -- =====================================================================
+    -- 1. PHYSIKALISCHE PIN-KOPPLUNGEN AN DER GEHÄUSEGRENZE
+    -- =====================================================================
+    -- Der externe Adressbus wird sauber aus dem BIU-Muxer-Ausgang getrieben
     A <= int_A;
 
-    -- =====================================================================
     -- RECHTMÄSSIGE MOTOROLA TRI-STATE-VERRIEGELUNG (DOPPELTREIBER-SCHUTZ)
-    -- =====================================================================
+    -- Das FPGA treibt die Pins NUR bei einem echten Schreibzyklus (ext_rw_internal = '0')
     D <= bus_data_out_sig when (ext_rw_internal = '0') else (others => 'Z');
     
-    -- Der Lese-Pfad in das Core-Innere greift permanent passiv die Pins ab
+    -- Der passive Lese-Pfad greift permanent den tatsächlichen I/O-Pegel ab
     bus_data_in_sig <= D;
 
     -- Den externen R/W-Pin der CPU-Fassung verbinden wir mit dem FSM-Ausgang
     RW <= ext_rw_internal;
 
     -- =====================================================================
-    -- INSTANZIIERUNG: Bus Interface Unit (BIU)
+    -- 2. STRUKTURELLE VERDRAHTUNG: BUS INTERFACE UNIT (BIU)
     -- =====================================================================
     i_bus_interface : cpu_030_ec_bus
         port map (
             CLK             => CLK,
             RESET_N         => RESET_N,
-            ext_A           => int_A,
+            ext_A           => int_A, -- Gehäuse-Pin Ausgang
             ext_AS_N        => AS_N,
             ext_DS_N        => DS_N,
             ext_RW          => ext_rw_internal,
@@ -256,7 +267,7 @@ begin
             ext_BGACK_N     => BGACK_N,
             ext_D_in_pins   => bus_data_in_sig,
             ext_D_out_pins  => bus_data_out_sig,
-            internal_A      => int_A,
+            internal_A      => s_alu_A, -- KORREKTUR: Nimmt die Wunschadresse direkt aus der ALU entgegen!
             internal_D_out  => int_D_to_bus,
             internal_D_in   => int_D_to_alu,
             cycle_start     => ctrl_start,
@@ -271,13 +282,13 @@ begin
         );
 
     -- =====================================================================
-    -- INSTANZIIERUNG: Execution Unit (ALU / Rechenwerk)
+    -- 3. STRUKTURELLE VERDRAHTUNG: EXECUTION UNIT (ALU / RECHENWERK)
     -- =====================================================================
     i_execution_unit : cpu_030_ec_alu
         port map (
             CLK             => CLK,
             RESET_N         => RESET_N,
-            bus_A           => open,
+            bus_A           => s_alu_A, -- KORREKTUR: Rettungsader speist das Adress-Stellwerk!
             bus_D_out       => int_D_to_bus,
             bus_D_in        => int_D_to_alu,
             alu_opcode      => ctrl_alu_opcode,
@@ -299,7 +310,7 @@ begin
         );
 
     -- =====================================================================
-    -- INSTANZIIERUNG: Der integrierte Cache-Subsystem-Wrapper
+    -- 4. STRUKTURELLE VERDRAHTUNG: L1-CACHE SUBSYSTEM (PORT A HOHEIT)
     -- =====================================================================
     i_cache_subsystem : cpu_030_ec_cache_top
         port map (
@@ -308,7 +319,7 @@ begin
             cpu_A           => ch_prefetch_A,
             cpu_D_in        => int_D_to_bus,
             cpu_D_out       => cache_data_out,
-            cpu_RW          => '1',
+            cpu_RW          => '1', -- Lese-Hoheit für Prefetch
             cpu_req         => ch_prefetch_req,
             cpu_is_code     => ch_is_code,
             cacr_ei         => ch_cacr_ei,
@@ -319,23 +330,24 @@ begin
             cacr_cd         => ch_cacr_cd,
             cache_hit       => ch_hit,
             cache_miss      => ch_miss,
-            bram_b_addr     => bram_b_addr_sig,
-            bram_b_data_w   => bram_b_data_w_sig,
-            bram_b_data_r   => bram_b_data_r_sig,
-            bram_b_we       => bram_b_we_sig,
+            -- KORREKTUR: Umlenken aller Signalketten auf Port A des Dual-Port M10K BRAMs
+            bram_a_addr     => bram_a_addr_sig,
+            bram_a_data_w   => bram_a_data_w_sig,
+            bram_a_data_r   => bram_a_data_r_sig,
+            bram_a_we       => bram_a_we_sig,
             bridge_req      => tk_bridge_req,
             bridge_burst_en => tk_burst_en,
-            bridge_ready    => '1'
+            bridge_ready    => '1' -- Fast-RAM Brücke standardmäßig sofort bereit
         );
 
     -- =====================================================================
-    -- INSTANZIIERUNG: Instruction Control Unit (Top-Decoder)
+    -- 5. STRUKTURELLE VERDRAHTUNG: INSTRUCTION CONTROL UNIT (DECODER/FSM)
     -- =====================================================================
     i_instruction_control : cpu_030_ec_decode_top
         port map (
             CLK             => CLK,
             RESET_N         => RESET_N,
-            pipeline_word   => cache_data_out(15 downto 0),
+            pipeline_word   => cache_data_out(15 downto 0), -- Zieht Opcodes aus dem L1-Cache
             pipeline_empty  => ch_miss,
             pipeline_req    => open,
             cache_cpu_A     => ch_prefetch_A,

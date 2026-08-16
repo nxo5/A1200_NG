@@ -1,10 +1,12 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   turbo_card.vhd
--- Teil:    1 von 2 (Entity und Komponentendeklarationen)
+-- Teil:    1 von 2 (Sanierten Entity und CPU-Komponentendeklaration)
 -- Funktion: Das übergeordnete Platinen-Gehäuse (Top-Level der Turbokarte).
---           Verhält sich wie eine echte physische Erweiterungskarte.
---           Verdrahtet CPU, Takt-Chip, RTC und FastRAM-Bridge lokal.
+-- REPARATUR:
+--   - Physikalischen Port IPL_N in der äußeren Entity nachgerüstet!
+--   - Beseitigt den Deklarations-Fehler (Error 10482) beim Binden des Kerns.
+--   - FC-Vektor-Breite (3 Bits) in der CPU-Schablone final fixiert.
 -- =========================================================================
 
 library IEEE;
@@ -28,19 +30,21 @@ entity turbo_card is
         SIZ         : out   std_logic_vector(1 downto 0);   -- Transfer-Größe
         FC          : out   std_logic_vector(2 downto 0);   -- Function Codes
 
-        -- Rückmeldungen vom Mainboard-Chipsatz (Gayle/Alice/CIAs)
+        -- Rückmeldungen vom Mainboard-Chipsatz und Paula-Interrupts
         DSACK0_N    : in    std_logic;                      -- Daten-Ack Bit 0
-        DSACK1_N    : in    std_logic                       -- Daten-Ack Bit 1
+        DSACK1_N    : in    std_logic;                      -- Daten-Ack Bit 1
+        -- REPARATUR: Echter, physikalischer Interrupt-Eingang von Paula nachgerüstet!
+        IPL_N       : in    std_logic_vector(2 downto 0)    -- Interrupt Priority Level
     );
 end turbo_card;
 
 architecture structural of turbo_card is
 
     -- =====================================================================
-    -- KORRIGIERTE KOMPONENTENDEKLARATIONEN (Unsere neuen VHDL-konformen Cores)
+    -- KORRIGIERTE KOMPONENTENDEKLARATIONEN (VHDL-konformer Core)
     -- =====================================================================
     
-    -- Der neue, gereinigte 68EC030 CPU-Kern
+    -- Der sanierten, 32-Bit-gereinigte 68EC030 CPU-Kern
     component cpu_030_ec is
         Port (
             CLK         : in    std_logic;
@@ -51,7 +55,7 @@ architecture structural of turbo_card is
             DS_N        : out   std_logic;
             RW          : out   std_logic;
             SIZ         : out   std_logic_vector(1 downto 0);
-            FC          : out   std_logic_vector(2 downto 0);
+            FC          : out   std_logic_vector(2 downto 0); -- Sanierten 3-Bit Breite!
             OCS_N       : out   std_logic;
             ECS_N       : out   std_logic;
             CIOUT_N     : out   std_logic;
@@ -70,17 +74,15 @@ architecture structural of turbo_card is
         );
     end component;
 
-    -- Der neue, separate Takt-Manager der Turbokarte
+    -- Der separate Takt-Manager der Turbokarte
     component turbo_clk is
         Port (
-            clk_in_14m  : in    std_logic;                      -- Eingang von Alice
-            clk_out_56m : out   std_logic                       -- Multiplizierter CPU-Takt (4x)
+            clk_in_14m  : in    std_logic;                      
+            clk_out_56m : out   std_logic                       
         );
     end component;
 
-    -- =====================================================================
     -- Interne Verbindungssignale (Die Kupferbahnen auf der Turbokarte)
-    -- =====================================================================
     signal local_cpu_clk   : std_logic;                     -- Schneller 4x-Takt (56,56 MHz)
     signal local_addr      : std_logic_vector(31 downto 0);
     signal local_data      : std_logic_vector(31 downto 0);
@@ -95,10 +97,10 @@ architecture structural of turbo_card is
 begin
 
     -- =====================================================================
-    -- Signaldurchreichung zum Amiga-Mainboard (Äußere Pins treiben)
+    -- 1. PHYSIKALISCHE SIGNALDURCHREICHUNG ZUM AMIGA-MAINBOARD
     -- =====================================================================
+    -- Adressbus und Kontrollsignale werden direkt an die Pins weitergeleitet
     A    <= local_addr;
-    D    <= local_data;
     AS_N <= local_as_n;
     DS_N <= local_ds_n;
     RW   <= local_rw;
@@ -106,7 +108,7 @@ begin
     FC   <= local_fc;
 
     -- =====================================================================
-    -- Instanziierung: Lokaler Takt-Manager (Vervielfacher)
+    -- 2. INSTANZIIERUNG: LOKALER TAKT-MANAGER
     -- =====================================================================
     i_turbo_clk : turbo_clk
         port map (
@@ -115,31 +117,35 @@ begin
         );
 
     -- =====================================================================
-    -- Instanziierung: Der neue 68EC030 CPU-Kern
+    -- 3. INSTANZIIERUNG: DER SANIERTEN 68EC030 CPU-KERN
     -- =====================================================================
     i_cpu_core : cpu_030_ec
         port map (
             CLK         => local_cpu_clk,   -- CPU läuft auf schnellem Takt
             RESET_N     => RESET_N,
             A           => local_addr,      -- Lokaler Adressbus
-            D           => local_data,      -- Lokaler, bidirektionaler Datenbus
+            
+            -- REPARATUR FEHLER 13072: Der CPU-Datenbus wird direkt an die physischen 
+            -- Pins des Wrappers gelötet! Verhindert jegliche interne Ringschleifen.
+            D           => D,               
+            
             AS_N        => local_as_n,
             DS_N        => local_ds_n,
             RW          => local_rw,
             SIZ         => local_siz,
             FC          => local_fc,
-            OCS_N       => open,            -- Vorläufig offen
+            OCS_N       => open,            -- Vorläufig offen für spätere Analyse
             ECS_N       => open,
             CIOUT_N     => open,
-            DSACK0_N    => DSACK0_N,        -- Mainboard-Bestätigung durchreichen
+            DSACK0_N    => DSACK0_N,        -- Mainboard-Quittung durchreichen
             DSACK1_N    => DSACK1_N,
-            STERM_N     => '1',             -- Pull-Up (DDR-FastRAM noch inaktiv)
+            STERM_N     => '1',             -- Pull-Up (Lokaler DDR-Controller inaktiv)
             CIIN_N      => '1',             -- Cache Inhibit inaktiv
             HALT_N      => '1',             -- CPU läuft frei
             BERR_N      => '1',             -- Kein Bus-Fehler simuliert
             CBREQ_N     => open,
-            CBACK_N     => '1',             -- Burst-Bestätigung inaktiv
-            IPL_N       => "111",           -- Keine Interrupts aktiv (High-Aktiv maskiert)
+            CBACK_N     => '1',             
+            IPL_N       => IPL_N,           -- Reale Paula-Interrupts durchreichen
             BR_N        => '1',             -- Bus frei
             BG_N        => open,
             BGACK_N     => '1'
