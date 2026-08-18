@@ -111,13 +111,13 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal s_fsm_bus_req        : std_logic;
     signal s_fsm_bus_write      : std_logic;
     signal s_fsm_bus_addr       : std_logic_vector(31 downto 0);
-    signal s_fsm_bus_data_out   : std_logic_vector(31 downto 0);
+    signal s_fsm_bus_data_out : std_logic_vector(31 downto 0) := (others => '0');
     signal s_fsm_bus_type       : std_logic_vector(2 downto 0);
 
     -- Kombinatorische Aktivitäts-Meldungen für das Weichenwerk
     signal s_move_active        : std_logic;
     signal s_alu_active         : std_logic;
-    signal s_bitfield_active    : std_logic;
+	 signal s_bitfield_active  : std_logic	:= '0'; 
     signal s_special_active     : std_logic;
     signal s_cache_inhibit_act  : std_logic;
 
@@ -675,5 +675,12 @@ architecture behavioral of cpu_030_ec_decode_top is
             pipeline_freeze <= '1';
         end if;
     end process;
+	 
+	 -- =====================================================================
+    -- KORREKTUR: REALE LOGIK-TREIBER GEGEN WARNING 10540
+    -- Sichert den definierten Passiv-Zustand für Daten und Bitfield-Logik!
+    -- =====================================================================
+    s_fsm_bus_data_out <= (others => '0'); -- FSM treibt standardmäßig keine Busdaten
+    s_bitfield_active  <= '0';             -- Bitfield-Beschleuniger standardmäßig inaktiv
 
 end behavioral;

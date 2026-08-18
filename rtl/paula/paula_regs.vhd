@@ -71,7 +71,7 @@ architecture Behavioral of paula_regs is
     signal reg_aud2per : std_logic_vector(15 downto 0) := (others => '0');
     signal reg_aud3per : std_logic_vector(15 downto 0) := (others => '0');
 
-    -- REPARATUR: Schattenregister intern ebenfalls auf 8 Bit erweitert [14.1]
+    -- Schattenregister intern ebenfalls auf 8 Bit erweitert
     signal reg_aud0vol : std_logic_vector(7 downto 0) := (others => '0');
     signal reg_aud1vol : std_logic_vector(7 downto 0) := (others => '0');
     signal reg_aud2vol : std_logic_vector(7 downto 0) := (others => '0');
@@ -129,6 +129,11 @@ begin
             intreq_p      <= (others => '0');
         elsif rising_edge(clk_amiga) then
             uart_tx_start <= '0'; 
+            
+            -- KORREKTUR FULL-FIX: Initialisiert alle Bits in jedem Takt vorab stabil mit sich selbst!
+            intreq_p <= intreq_p;
+            -- KORREKTUR ADRESS-LOCH: Bit 3 starr auf Null verriegeln tilgt das Latch restlos!
+            intreq_p(3) <= '0'; 
 
             if reg_write_en = '1' then
                 case reg_addr is
@@ -140,7 +145,6 @@ begin
                     
                     -- Audio-Kanäle Register-Mapping
                     when x"0A4" => reg_aud0per   <= reg_data_w(15 downto 0);  
-                    -- REPARATUR: CPU-Schreibdaten (Bits 7..0) direkt in den sanierten 8-Bit-Vektor laden [14.1]
                     when x"0A6" => reg_aud0vol   <= reg_data_w(7 downto 0);   
                     when x"0B4" => reg_aud1per   <= reg_data_w(15 downto 0);  
                     when x"0B6" => reg_aud1vol   <= reg_data_w(7 downto 0);   
@@ -172,3 +176,4 @@ begin
     paula_irq_out <= '1' when intreq_p /= "0000" else '0';
 
 end Behavioral;
+

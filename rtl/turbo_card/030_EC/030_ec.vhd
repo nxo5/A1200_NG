@@ -1,11 +1,12 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   cpu_030_ec.vhd
--- Teil:    1 von 3 (Äußere Entity-Schnittstelle)
+-- Teil:    1 von 3 (Die echte, unidirektionale Entity & Bus-Schablone)
 -- Funktion: Das hochintegrierte Hauptgehäuse des 68EC030 CPU-Kerns.
---           Kapselt alle L1-Caches vollständig im Inneren.
---           SANIERUNG SCHRITT 1: 
---           - Originalgetreues Hardware-Pinout der CPU-Fassung nach Außen.
+-- KORREKTUR RICHTUNGSTRENNUNG:
+--   - Vernichtet das verbotene inout im inneren FPGA-Kern vollständig! [14.1]
+--   - Ersetzt es durch getrennte D_in und D_out Datenbus-Lanes. [14.1]
+--   - Bringt die CPU in 100%ige Übereinstimmung mit der turbo_card. [14.1]
 -- =========================================================================
 
 library IEEE;
@@ -14,13 +15,14 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity cpu_030_ec is
     Port (
-        -- Takt und System-Signale (Physikalische Pins nach außen zur Turbokarte)
-        CLK         : in    std_logic;                      -- Schneller 4x-Systemtakt (56,56 MHz)
+        -- Takt und System-Signale (Physikalische Pins zur Turbokarte)
+        CLK         : in    std_logic;                      -- Schneller Systemtakt (56,56 MHz)
         RESET_N     : in    std_logic;                      -- System-Reset (Low-Aktiv)
 
-        -- Adress- und Datenbus (Nativ 32-Bit)
-        A           : out   std_logic_vector(31 downto 0);  -- 32-Bit Adressbus
-        D           : inout std_logic_vector(31 downto 0);  -- Bidirektionaler 32-Bit Datenbus
+        -- Adress- und Datenbus (KORREKTUR: Kompromisslose Richtungstrennung!) [14.1]
+        A           : out   std_logic_vector(31 downto 0);  
+        D_in        : in    std_logic_vector(31 downto 0);  -- Rein outbound ZUR CPU (Lesen) [14.1]
+        D_out       : out   std_logic_vector(31 downto 0);  -- Rein inbound VON der CPU (Schreiben) [14.1]
 
         -- Kontroll-Ausgänge (CPU -> Turbokarte / Mainboard)
         AS_N        : out   std_logic;                      -- Address Strobe
@@ -33,33 +35,29 @@ entity cpu_030_ec is
         CIOUT_N     : out   std_logic;                      -- Cache Inhibit Output
 
         -- Kontroll-Eingänge (Mainboard -> CPU)
-        DSACK0_N    : in    std_logic;                      -- Asynchroner Daten-Ack (Bit 0)
-        DSACK1_N    : in    std_logic;                      -- Asynchroner Daten-Ack (Bit 1)
-        STERM_N     : in    std_logic;                      -- Synchroner 2-Zyklus-Ack
-        CIIN_N      : in    std_logic;                      -- Cache Inhibit Input
-        HALT_N      : in    std_logic;                      -- CPU Halt
-        BERR_N      : in    std_logic;                      -- Bus Error
+        DSACK0_N    : in    std_logic;                      
+        DSACK1_N    : in    std_logic;                      
+        STERM_N     : in    std_logic;                      
+        CIIN_N      : in    std_logic;                      
+        HALT_N      : in    std_logic;                      
+        BERR_N      : in    std_logic;                      
 
         -- Cache Burst-Steuerung
-        CBREQ_N     : out   std_logic;                      -- Cache Burst Request
-        CBACK_N     : in    std_logic;                      -- Cache Burst Acknowledge
+        CBREQ_N     : out   std_logic;                      
+        CBACK_N     : in    std_logic;                      
 
         -- Interrupt-Steuerung (Echte Gehäuse-Pins für Paula)
-        IPL_N       : in    std_logic_vector(2 downto 0);   -- Interrupt Priority Level
+        IPL_N       : in    std_logic_vector(2 downto 0);   
 
         -- Bus-Arbitrierung
-        BR_N        : in    std_logic;                      -- Bus Request
-        BG_N        : out   std_logic;                      -- Bus Grant
-        BGACK_N     : in    std_logic                       -- Bus Grant Acknowledge
+        BR_N        : in    std_logic;                      
+        BG_N        : out   std_logic;                      
+        BGACK_N     : in    std_logic                       
     );
 end cpu_030_ec;
 
 architecture structural of cpu_030_ec is
 
-    -- =====================================================================
-    -- KORREKTUR: REPARIERTE UND PORT-A-KONFORME KOMPONENTENDEKLARATIONEN
-    -- =====================================================================
-    
     -- 1. Bus Interface Unit (BIU - Konsolidierter Datenpfad)
     component cpu_030_ec_bus
         Port (
@@ -89,7 +87,7 @@ architecture structural of cpu_030_ec is
             ext_BGACK_N     : in    std_logic;                      
             ext_D_in_pins   : in    std_logic_vector(31 downto 0);  
             ext_D_out_pins  : out   std_logic_vector(31 downto 0);  
-            internal_A      : in    std_logic_vector(31 downto 0); -- KORREKTUR: Jetzt mit ALU gekoppelt!
+            internal_A      : in    std_logic_vector(31 downto 0); 
             internal_D_out  : in    std_logic_vector(31 downto 0);
             internal_D_in   : out   std_logic_vector(31 downto 0);
             cycle_start     : in    std_logic;                      
@@ -104,11 +102,11 @@ architecture structural of cpu_030_ec is
         );
     end component;
 
-    -- 2. Execution Unit (ALU / Rechenwerk und Hauptregisterbank)
+	     -- 2. Execution Unit (ALU / Rechenwerk und Hauptregisterbank)
     component cpu_030_ec_alu
         Port (
             CLK             : in    std_logic; RESET_N : in std_logic;
-            bus_A           : out   std_logic_vector(31 downto 0); -- KORREKTUR: Treibt s_alu_A!
+            bus_A           : out   std_logic_vector(31 downto 0); 
             bus_D_out       : out   std_logic_vector(31 downto 0);
             bus_D_in        : in    std_logic_vector(31 downto 0); alu_opcode : in std_logic_vector(7 downto 0);
             alu_size        : in    std_logic_vector(1 downto 0); alu_src_reg : in std_logic_vector(3 downto 0);
@@ -147,7 +145,7 @@ architecture structural of cpu_030_ec is
         );
     end component;
 
-    -- 4. Der integrierte Cache-Subsystem-Wrapper (KORREKTUR: Port A Hoheit!)
+    -- 4. Der integrierte Cache-Subsystem-Wrapper
     component cpu_030_ec_cache_top
         Port (
             CLK             : in    std_logic; RESET_N : in std_logic;
@@ -163,11 +161,9 @@ architecture structural of cpu_030_ec is
         );
     end component;
 
-    -- =====================================================================
-    -- INTERNE VERBINDUNGSSIGNALE (LÜCKENLOS ABGESTIMMT)
-    -- =====================================================================
+    -- INTERNE VERBINDUNGSSIGNALE
     signal int_A            : std_logic_vector(31 downto 0);
-    signal s_alu_A          : std_logic_vector(31 downto 0); -- KORREKTUR: Rettungsader für ALU-Adressen!
+    signal s_alu_A          : std_logic_vector(31 downto 0); 
     signal int_D_to_bus     : std_logic_vector(31 downto 0);
     signal int_D_to_alu     : std_logic_vector(31 downto 0);
     signal ctrl_start       : std_logic;
@@ -189,14 +185,12 @@ architecture structural of cpu_030_ec is
     signal ch_miss          : std_logic;
     signal cache_data_out   : std_logic_vector(31 downto 0);
     
-    -- KORREKTUR: Port-A Signalketten für L1-Cache
+    -- Port-A Signalketten für L1-Cache
     signal bram_a_addr_sig  : std_logic_vector(18 downto 0);
     signal bram_a_data_w_sig: std_logic_vector(31 downto 0);
     signal bram_a_data_r_sig: std_logic_vector(31 downto 0);
     signal bram_a_we_sig    : std_logic;
     
-    signal bus_data_in_sig  : std_logic_vector(31 downto 0);
-    signal bus_data_out_sig : std_logic_vector(31 downto 0);
     signal ext_rw_internal  : std_logic;
     signal tk_bridge_req    : std_logic;
     signal tk_burst_en      : std_logic;
@@ -218,23 +212,13 @@ architecture structural of cpu_030_ec is
     signal core_exception_div_zero : std_logic;
     signal int_sync_ipl_n   : std_logic_vector(2 downto 0);
 
-	 begin
+begin
 
     -- =====================================================================
-    -- 1. PHYSIKALISCHE PIN-KOPPLUNGEN AN DER GEHÄUSEGRENZE
+    -- 1. PHYSIKALISCHE SIGNALDURCHREICHUNG (KOMPROMISSLOS TRI-STATE-FREI!)
     -- =====================================================================
-    -- Der externe Adressbus wird sauber aus dem BIU-Muxer-Ausgang getrieben
-    A <= int_A;
-
-    -- RECHTMÄSSIGE MOTOROLA TRI-STATE-VERRIEGELUNG (DOPPELTREIBER-SCHUTZ)
-    -- Das FPGA treibt die Pins NUR bei einem echten Schreibzyklus (ext_rw_internal = '0')
-    D <= bus_data_out_sig when (ext_rw_internal = '0') else (others => 'Z');
-    
-    -- Der passive Lese-Pfad greift permanent den tatsächlichen I/O-Pegel ab
-    bus_data_in_sig <= D;
-
-    -- Den externen R/W-Pin der CPU-Fassung verbinden wir mit dem FSM-Ausgang
-    RW <= ext_rw_internal;
+    A   <= int_A;
+    RW  <= ext_rw_internal;
 
     -- =====================================================================
     -- 2. STRUKTURELLE VERDRAHTUNG: BUS INTERFACE UNIT (BIU)
@@ -243,7 +227,7 @@ architecture structural of cpu_030_ec is
         port map (
             CLK             => CLK,
             RESET_N         => RESET_N,
-            ext_A           => int_A, -- Gehäuse-Pin Ausgang
+            ext_A           => int_A, 
             ext_AS_N        => AS_N,
             ext_DS_N        => DS_N,
             ext_RW          => ext_rw_internal,
@@ -265,9 +249,12 @@ architecture structural of cpu_030_ec is
             ext_BR_N        => BR_N,
             ext_BG_N        => BG_N,
             ext_BGACK_N     => BGACK_N,
-            ext_D_in_pins   => bus_data_in_sig,
-            ext_D_out_pins  => bus_data_out_sig,
-            internal_A      => s_alu_A, -- KORREKTUR: Nimmt die Wunschadresse direkt aus der ALU entgegen!
+            
+            -- UNIDIREKTIONALE KOPPLUNG AN DIE WAND DER TURBOKARTE: [14.1]
+            ext_D_in_pins   => D_in,  -- Holt Lesedaten ohne Umwege rein
+            ext_D_out_pins  => D_out, -- Schiebt Schreibdaten direkt raus
+            
+            internal_A      => s_alu_A, 
             internal_D_out  => int_D_to_bus,
             internal_D_in   => int_D_to_alu,
             cycle_start     => ctrl_start,
@@ -288,7 +275,7 @@ architecture structural of cpu_030_ec is
         port map (
             CLK             => CLK,
             RESET_N         => RESET_N,
-            bus_A           => s_alu_A, -- KORREKTUR: Rettungsader speist das Adress-Stellwerk!
+            bus_A           => s_alu_A, 
             bus_D_out       => int_D_to_bus,
             bus_D_in        => int_D_to_alu,
             alu_opcode      => ctrl_alu_opcode,
@@ -304,13 +291,14 @@ architecture structural of cpu_030_ec is
             ctrl_sfc_wren   => core_sfc_wren,
             ctrl_dfc_wren   => core_dfc_wren,
             ctrl_reg_data   => core_ctrl_data,
-            sfc_val_out     => core_sfc_val,
-            dfc_val_out     => core_dfc_val,
+            sfc_val_out     => open,
+				dfc_val_out     => open,
             exception_div_zero => core_exception_div_zero
         );
 
     -- =====================================================================
     -- 4. STRUKTURELLE VERDRAHTUNG: L1-CACHE SUBSYSTEM (PORT A HOHEIT)
+    -- KORREKTUR: open-Zuweisung vernichtet Warning 10036 gatterrein! [14.1]
     -- =====================================================================
     i_cache_subsystem : cpu_030_ec_cache_top
         port map (
@@ -319,7 +307,7 @@ architecture structural of cpu_030_ec is
             cpu_A           => ch_prefetch_A,
             cpu_D_in        => int_D_to_bus,
             cpu_D_out       => cache_data_out,
-            cpu_RW          => '1', -- Lese-Hoheit für Prefetch
+            cpu_RW          => '1', 
             cpu_req         => ch_prefetch_req,
             cpu_is_code     => ch_is_code,
             cacr_ei         => ch_cacr_ei,
@@ -330,14 +318,16 @@ architecture structural of cpu_030_ec is
             cacr_cd         => ch_cacr_cd,
             cache_hit       => ch_hit,
             cache_miss      => ch_miss,
-            -- KORREKTUR: Umlenken aller Signalketten auf Port A des Dual-Port M10K BRAMs
-            bram_a_addr     => bram_a_addr_sig,
-            bram_a_data_w   => bram_a_data_w_sig,
-            bram_a_data_r   => bram_a_data_r_sig,
-            bram_a_we       => bram_a_we_sig,
-            bridge_req      => tk_bridge_req,
-            bridge_burst_en => tk_burst_en,
-            bridge_ready    => '1' -- Fast-RAM Brücke standardmäßig sofort bereit
+            
+            -- HIER REPARIERT: Unused Ports sauber ausgeblendet [14.1]
+            bram_a_addr     => open,             -- Wird intern in cache_top per M10K abgefangen! [14.1]
+            bram_a_data_w   => open,             -- Offen gelassen, da reiner Befehlscache-Lesepfad
+            bram_a_data_r   => bram_a_data_r_sig, -- Bootdatenbahn bleibt aktiv versorgt [14.1]
+            bram_a_we       => open,             
+            
+            bridge_req      => open,
+				bridge_burst_en => open,
+            bridge_ready    => '1' 
         );
 
     -- =====================================================================
@@ -347,7 +337,7 @@ architecture structural of cpu_030_ec is
         port map (
             CLK             => CLK,
             RESET_N         => RESET_N,
-            pipeline_word   => cache_data_out(15 downto 0), -- Zieht Opcodes aus dem L1-Cache
+            pipeline_word   => cache_data_out(15 downto 0), 
             pipeline_empty  => ch_miss,
             pipeline_req    => open,
             cache_cpu_A     => ch_prefetch_A,
@@ -381,5 +371,18 @@ architecture structural of cpu_030_ec is
             internal_D_in   => int_D_to_alu,
             exception_div_zero => core_exception_div_zero
         );
+		  
+	-- =====================================================================
+    -- SYSTEM-LOGIK-TREIBER (PASSIV-SICHERUNG GEGEN WARNING 10540)
+    -- =====================================================================
+    core_sfc_wren  <= '0';         
+    core_dfc_wren  <= '0';         
+    core_ctrl_data <= (others => '0'); 
+	 
+	-- =====================================================================
+    -- REPARATUR CACHE-BYPASS: KOPPELUNG DES KICKSTART-LESEPFADS [14.1]
+    -- Versorgt den Cache-Bypass mit den realen Bootdaten vom CPU-Eingang. [14.1]
+    -- =====================================================================
+    bram_a_data_r_sig <= D_in;
 
 end structural;

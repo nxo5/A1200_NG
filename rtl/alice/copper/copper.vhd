@@ -1,8 +1,16 @@
+-- =========================================================================
+-- Projekt: A1200_NG
+-- Datei:   copper.vhd
+-- Teil:    1 von 2 (Entity-Schnittstelle und Deklarationen)
+-- Funktion: Der programmierbare Synchron-Coprozessor (Copper-Zentrale).
+-- KORREKTUR PORT-MISMATCH:
+--   - Rüstet move_illegal in der äußeren Entity nach zur Tilgung von Error 12002! [14.1]
+--   - Hält alle Takte, Busleitungen und Unterkomponenten fehlerfrei bereit. [14.1]
+-- =========================================================================
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-
--- use work.M68020_pkg.all;
 
 entity copper is
     Port (
@@ -37,7 +45,10 @@ entity copper is
         cop_dma_req   : out   std_logic;                     
         cop_dma_addr  : out   std_logic_vector(31 downto 0); -- Berechnete 32-Bit Adresse des Befehls
         dma_granted   : in    std_logic;                     -- Slot freigegeben
-        dma_data_in   : in    std_logic_vector(31 downto 0)  -- Geladene 32-Bit Befehlsdaten aus dem RAM
+        dma_data_in   : in    std_logic_vector(31 downto 0); -- Geladene 32-Bit Befehlsdaten aus dem RAM
+        
+        -- HIER REPARIERT: Ausgang an das übergeordnete Alice-Dach nachgerüstet! [14.1]
+        move_illegal  : out   std_logic                      -- Signalisierung illegaler MOVE-Befehle [14.1]
     );
 end copper;
 
@@ -79,8 +90,8 @@ architecture Behavioral of copper is
             target_mask_h : in    std_logic_vector(8 downto 0);
             target_mask_v : in    std_logic_vector(8 downto 0);
             blitter_done  : in    std_logic;
-            clk_amiga     : in    std_logic; -- Neu deklariert
-            reset         : in    std_logic; -- Neu deklariert
+            clk_amiga     : in    std_logic; 
+            reset         : in    std_logic; 
             position_match: out   std_logic
         );
     end component;
@@ -101,7 +112,7 @@ architecture Behavioral of copper is
         );
     end component;
 
-    -- -----------------------------------------------------------------
+	 -- -----------------------------------------------------------------
     -- CHIPINTERNE KUPFERBAHNEN (SIGNALE)
     -- -----------------------------------------------------------------
     signal int_is_move        : std_logic;
@@ -162,8 +173,8 @@ begin
         target_mask_h   => int_mask_h,
         target_mask_v   => int_mask_v,
         blitter_done    => blitter_done,
-        clk_amiga       => clk_amiga,       -- Neu verdrahtet
-        reset           => reset,           -- Neu verdrahtet
+        clk_amiga       => clk_amiga,       
+        reset           => reset,           
         position_match  => int_position_match
     );
 
@@ -188,5 +199,11 @@ begin
 
     -- Den berechneten Programmzähler starr an den DMA-Bus von Alice ausgeben
     cop_dma_addr <= std_logic_vector(int_copper_pc);
+
+    -- =====================================================================
+    -- KORREKTUR: BRÜCKENSCHALTUNG ZUR ALICE-HAUPTPLATINE [14.1]
+    -- Reicht das im Decoder ermittelte MOVE_ILLEGAL-Signal fehlerfrei nach außen weiter! [14.1]
+    -- =====================================================================
+    move_illegal <= int_move_illegal;
 
 end Behavioral;

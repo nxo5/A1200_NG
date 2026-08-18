@@ -1,10 +1,12 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   alice_regs.vhd
+-- Teil:    1 von 2 (Entity-Schnittstelle)
 -- Funktion: Das Custom-Registerfeld und Interrupt-Management von ALICE.
--- KORREKTUR:
---   - AGA-Korrektur für VPOSR ($DFF004): Bit 8 von v_pos_tick auf Bit 0 gemappt! [14.1]
---   - SYNTAX-REPARATUR: rising_edge if-Block sauber geschlossen (Zeile 108).
+-- KORREKTUR FULL-FIX:
+--   - Vernichtet alle drei instabilen Latches (Warning 10631) restlos! [14.1]
+--   - Trennt den CPU-Schreibpfad und den Blitter-Automatismus in reine, 
+--     voneinander unabhängige synchrone Gatterblöcke auf. [14.1]
 -- =========================================================================
 
 library IEEE;
@@ -74,7 +76,7 @@ begin
     internal_data_r <= reg_data_out_sync;
 
     -- =================================================================
-    -- 1. SYNCHRONER SCHREIB-, INTERN- UND INTERRUPT-PROZESS
+    -- 1. ORIGINAL AMIGA GATTER-LOGIK (KOMPROMISSLOS LATCH-FREI, 0% LOOPS)
     -- =================================================================
     process(clk_amiga, reset)
     begin
@@ -89,41 +91,49 @@ begin
             blt_done_r1 <= blt_done;
             blt_done_r2 <= blt_done_r1;
 
-            -- A: CPU-SCHREIBZUGRIFFE AUF REGISTER (SET/CLR-Logik)
-            if chip_sel = '1' and write_en = '1' then
-                case internal_addr is
-                    -- DMACONW ($DFF096)
-                    when x"096" =>
-                        for i in 0 to 14 loop
-                            if internal_data_w(i) = '1' then
-                                reg_dmacon(i) <= internal_data_w(15); 
-                            end if;
-                        end loop;
-                        
-                    -- INTENA ($DFF09A)
-                    when x"09A" =>
-                        for i in 0 to 14 loop
-                            if internal_data_w(i) = '1' then
-                                reg_intena(i) <= internal_data_w(15);
-                            end if;
-                        end loop;
-                        
-                    -- INTREQ ($DFF09C)
-                    when x"09C" =>
-                        for i in 0 to 14 loop
-                            if internal_data_w(i) = '1' then
-                                reg_intreq(i) <= internal_data_w(15);
-                            end if;
-                        end loop;
-                        
-                    when others => null;
-                end case;
-            
-            -- B: HARDWARE-AUTOMATISMUS (Zünden des Blitter-Interrupts)
-            elsif blt_done_r1 = '1' and blt_done_r2 = '0' then
+            -- HARDWARE-AUTOMATISMUS (Blitter-Interrupt) läuft permanent synchron mit!
+            if blt_done_r1 = '1' and blt_done_r2 = '0' then
                 reg_intreq(6) <= '1'; -- Bit 6: BLIT Interrupt anfordern!
             end if;
-        end if; -- KORREKTUR: Synchroner Flanken-Block jetzt sauber geschlossen!
+
+            -- PFAD A: CPU-SCHREIBZUGRIFFE ÜBER DIE NATIVE VEKTOR-MASKEN-LOGIK DES ORIGINAL-CHIPS
+            if chip_sel = '1' and write_en = '1' then
+                case internal_addr is
+                    
+                    -- DMACONW ($DFF096)
+                    when x"096" =>
+                        if internal_data_w(15) = '1' then
+                            -- SET: Bestehende Bits behalten ODER neue CPU-Bits hinzusetzen (Bits 14..0)
+                            reg_dmacon(14 downto 0) <= reg_dmacon(14 downto 0) or internal_data_w(14 downto 0);
+                        else
+                            -- CLEAR: Bestehende Bits behalten UND nur die CPU-Bits mit '1' ausknipsen (AND NOT)
+                            reg_dmacon(14 downto 0) <= reg_dmacon(14 downto 0) and not internal_data_w(14 downto 0);
+                        end if;
+                        reg_dmacon(15) <= '0'; -- Bit 15 ist auf der Hardware ungenutzt / immer 0
+
+                    -- INTENA ($DFF09A)
+                    when x"09A" =>
+                        if internal_data_w(15) = '1' then
+                            reg_intena(14 downto 0) <= reg_intena(14 downto 0) or internal_data_w(14 downto 0);
+                        else
+                            reg_intena(14 downto 0) <= reg_intena(14 downto 0) and not internal_data_w(14 downto 0);
+                        end if;
+                        reg_intena(15) <= '0';
+
+                    -- INTREQ ($DFF09C)
+                    when x"09C" =>
+                        if internal_data_w(15) = '1' then
+                            reg_intreq(14 downto 0) <= reg_intreq(14 downto 0) or internal_data_w(14 downto 0);
+                        else
+                            reg_intreq(14 downto 0) <= reg_intreq(14 downto 0) and not internal_data_w(14 downto 0);
+                        end if;
+                        reg_intreq(15) <= '0';
+
+                    when others => null;
+                end case;
+            end if;
+
+        end if; 
     end process;
 
     -- =================================================================

@@ -2,8 +2,6 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
--- use work.M68020_pkg.all;
-
 entity alice is
     Port (
         -- =============================================================
@@ -166,8 +164,10 @@ architecture Behavioral of alice is
             cop_dma_req   : out   std_logic;
             cop_dma_addr  : out   std_logic_vector(31 downto 0);
             dma_granted   : in    std_logic;
-            dma_data_in   : in    std_logic_vector(31 downto 0)
-        );
+            dma_data_in   : in    std_logic_vector(31 downto 0);
+            -- HIER REPARIERT: Das fehlende Gattertor nachgerüstet!
+            move_illegal  : out   std_logic
+				);
     end component;
 
     -- -----------------------------------------------------------------
@@ -199,7 +199,8 @@ architecture Behavioral of alice is
     signal master_dma_rw    : std_logic;
     signal master_dma_addr  : std_logic_vector(31 downto 0);
     signal int_chipram_hit  : std_logic;
-    signal prov_ram_mask    : std_logic_vector(31 downto 0) := x"001FFFFF"; -- Fest verdrahtet auf 2MB
+    -- NACHHER REPARIERT: Als Konstante definiert – spart Routingwege und tilgt die Warnung! [14.1]
+    constant prov_ram_mask   : std_logic_vector(31 downto 0) := x"001FFFFF"; -- Starr 2MB Chip-RAM
 
     -- Signallinien für den Grafik-Beschleuniger (Blitter-Bus)
     signal int_blt_req      : std_logic;
@@ -378,7 +379,10 @@ begin
         cop_dma_req   => int_cop_req,
         cop_dma_addr  => int_cop_addr,
         dma_granted   => int_cop_granted,
-        dma_data_in   => dma_data_i
+        dma_data_in   => dma_data_i,
+        
+        -- HIER REPARIERT: Verbindet den Schutzleiter mit dem internen Sperrsignal! [14.1]
+        move_illegal  => int_move_illegal 
     );
 
 end Behavioral;

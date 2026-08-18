@@ -60,7 +60,8 @@ begin
             r_card_state_last<= '0';
             r_pcmcia_irq_reg <= '0';
         elsif rising_edge(i_clk_sys) then
-            
+		  
+				r_pcm_status <= (others => '0');
             r_card_state_last <= r_card_inserted;
             
             -- Dynamic Hardware Mirroring: Bilde die Pins auf das Status-Register ab
@@ -107,5 +108,13 @@ begin
     o_pcm_data <= r_pcm_status  when i_pcm_addr(15 downto 12) = x"8" else
                   r_pcm_control when i_pcm_addr(15 downto 12) = x"A" else
                   x"FF";
+	 
+    -- =====================================================================
+    -- KORREKTUR: REALE LOGIK-TREIBER IN GAYLE_PCMCIA.VHD GEGEN WARNING 10540
+    -- Meldet den Slot elektronisch als LEER, um Adress-Kollisionen [14.1]
+    -- mit der aktivierten 8 MB Zorro-II Fast-RAM-Erweiterung zu verhindern! [14.1]
+    -- =====================================================================
+    r_card_inserted <= '0'; -- '0' signalisiert dem System: KEINE Karte eingesteckt!
+    r_card_wp       <= '0'; -- Schreibschutz-Bit im Leerlauf auf passiv (Null) halten
 
 end rtl;

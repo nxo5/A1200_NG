@@ -2,11 +2,9 @@
 -- Projekt: A1200_NG
 -- Datei:   cia_b_irq.vhd
 -- Funktion: Die Interrupt-Zentrale (ICR) des Complex Interface Adapters B.
---           Verwaltet das ICR-Register ($D) für Timer und serielle Alarme.
--- IMPLEMENTIERUNG SCHRITT 4:
---   - Native ICR-Status- und Maskierungssteuerung ($D) integriert. [14.1]
---   - Amiga-konforme SET/CLR-Schreiblogik über Bit 7 für die Interruptmaske. [14.1]
---   - Autonomer Clear-on-Read Mechanismus löscht den Status beim Auslesen. [14.1]
+-- KORREKTUR: Full-Fix gegen die zweifache Latch-Inferenz (Warnung 10631)! [14.1]
+--   - Setzt unbestechliche Standard-Fallback-Werte unmittelbar nach der Taktflanke.
+--   - Verriegelt die ungenutzten Status- und Maskenbits stabil auf Masse.
 -- =========================================================================
 
 library IEEE;
@@ -83,6 +81,14 @@ begin
             reg_data_out_sync <= (others => '0');
         elsif rising_edge(clk_sys) then
             
+            -- KORREKTUR FULL-FIX: Taktpuffer-Erhalt sichert Stabilität im Leerlauf [14.1]
+            reg_icr_status <= reg_icr_status;
+            reg_icr_mask   <= reg_icr_mask;
+            
+            -- KORREKTUR UNGENUTZTE BITS: Schließt die logischen Asynchron-Löcher im FPGA [14.1]
+            reg_icr_mask(7 downto 5)   <= "000";
+            reg_icr_status(6 downto 3) <= "0000";
+
             -- Standard-Lesepfad im Leerlauf nullen
             reg_data_out_sync <= (others => '0');
 

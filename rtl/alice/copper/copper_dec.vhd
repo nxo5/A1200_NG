@@ -133,13 +133,13 @@ begin
     -- 3. REPARATUR: SIGNALAUSRICHTUNG NACH DEM ECHTEN CHIPSATZ-RASTER
     -- =================================================================
     -- KORREKTUR: Mappt die Registeradresse fehlerfrei unter Berücksichtigung der impliziten Geraden-Null (A0=0) [14.1]
-    target_addr_raw <= "00" & instruction_reg(8 downto 1) & '0';
+	 target_addr_raw <= "000" & instruction_reg(8 downto 1) & '0';
     move_target_reg <= target_addr_raw;
     move_data_out   <= instruction_reg(31 downto 16); -- Die oberen 16 Bit enthalten die MOVE-Schreibdaten
 
-    wait_v_coord    <= unsigned(instruction_reg(15 downto 8) & instruction_reg(15)); -- V-Strahlabgleich (AGA-Ready)
-    wait_mask_v     <= instruction_reg(31 downto 24);
-    wait_mask_h     <= instruction_reg(23 downto 17) & "00"; -- Horizontale Maskierungs-Bits
+    wait_v_coord <= unsigned(instruction_reg(15) & instruction_reg(15 downto 8)); -- V-Strahlabgleich (AGA-Ready)
+    wait_mask_v     <= instruction_reg(15 downto 15) & instruction_reg(31 downto 24);
+	 wait_mask_h     <= instruction_reg(23 downto 17) & "00"; -- Horizontale Maskierungs-Bits
 
     -- Saubere, prozessbasierte Zuweisung der horizontalen Strahlkoordinate
     process(instruction_reg)
@@ -147,7 +147,7 @@ begin
         if instruction_reg(7 downto 2) = "000000" then
             int_wait_h <= (others => '0'); 
         else
-            int_wait_h <= unsigned(instruction_reg(7 downto 2) & "00");
+				int_wait_h <= unsigned('0' & instruction_reg(7 downto 2) & "00");
         end if;
     end process;
     

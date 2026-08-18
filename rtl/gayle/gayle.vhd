@@ -1,11 +1,12 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   gayle.vhd
--- Teil:    1 von 2 (Geöffnete Gehäusepforte & Komponenten)
+-- Teil:    1 von 2 (Geöffnete Gehäusepforte & Komponentenschablonen)
 -- Funktion: Das strukturelle Gehäuse (Shell) des Gayle-Chips.
--- BEREINIGUNG SCHRITT 1:
---   - Öffnung der Entity nach außen zur fehlerfreien System-Anbindung! [14.1]
---   - Verhindert das Wegoptimieren der Logik durch den Compiler.
+-- SANIERUNG OSD-WEICHE:
+--   - Öffnung der Haupt-Entity für die 6 indexgetrennten ioctl_*-Downloadflags! [14.1]
+--   - Deklaration der neuen Komponente gayle_ide_bram im Kopfbereich. [14.1]
+--   - Tilgt alle verbleibenden "Port does not exist" Warnungen an Gayle. [14.1]
 -- =========================================================================
 
 library IEEE;
@@ -44,14 +45,49 @@ entity gayle is
         -- 4. SYSTEMWEITE ALARM- UND RESET-REAKTIONEN
         -- =============================================================
         o_gayle_global_irq: out   std_logic; -- Zusammengefasster Interrupt (INT2) an Alice [14.1]
-        o_generated_rst_n : out   std_logic  -- Der gestreckte/sanierten System-Reset [14.1]
+        o_generated_rst_n : out   std_logic; -- Der gestreckte/sanierten System-Reset [14.1]
+        
+        -- =============================================================
+        -- 5. KORREKTUR-EINGÄNGE: MISTER IOCTL INTERFACE (VOM MAINBOARD) [14.1]
+        -- =============================================================
+        i_ioctl_addr        : in    std_logic_vector(24 downto 0);
+        i_ioctl_data        : in    std_logic_vector(7 downto 0);
+        i_ioctl_wr          : in    std_logic;
+        
+        -- Die 6 indexgetrennten Downloadflags von deiner OSD-Weiche [14.1]
+        i_ioctl_ks_download : in    std_logic;
+        i_ioctl_fdd_download: in    std_logic;
+        i_ioctl_hdf0_download: in   std_logic;
+        i_ioctl_hdf1_download: in   std_logic;
+        i_ioctl_hdf2_download: in   std_logic;
+        i_ioctl_hdf3_download: in   std_logic
     );
 end gayle;
 
 architecture structural of gayle is
 
     -- =========================================================================
-    -- COMPONENTEN-DEKLARATIONEN
+    -- NEW COMPONENT: DER SYNCHRONE M10K-SEKTORPUFFER (UNSER STABILITÄTSKERN) [14.1]
+    -- =========================================================================
+    component gayle_ide_bram is
+        Port (
+            i_clk_sys             : in    std_logic;
+            i_ioctl_addr          : in    std_logic_vector(24 downto 0);
+            i_ioctl_data          : in    std_logic_vector(7 downto 0);
+            i_ioctl_wr            : in    std_logic;
+            i_ioctl_hdf0_download : in    std_logic;
+            i_ioctl_hdf1_download : in    std_logic;
+            i_ioctl_hdf2_download : in    std_logic;
+            i_ioctl_hdf3_download : in    std_logic;
+            i_clk_amiga           : in    std_logic;
+            i_am_hdf_sel          : in    std_logic_vector(1 downto 0);
+            i_am_sector_addr      : in    std_logic_vector(8 downto 0);
+            o_am_data_out         : out   std_logic_vector(7 downto 0)
+        );
+    end component;
+
+    -- =========================================================================
+    -- STANDARD UNTERMODULE-SCHABLONEN
     -- =========================================================================
     component gayle_regs is
         Port (
@@ -69,17 +105,20 @@ architecture structural of gayle is
         );
     end component;
 
-    component gayle_ide is
+	     component gayle_ide is
         Port (
-            i_clk_sys     : in  std_logic;
-            i_rst_n       : in  std_logic;
-            i_as_n        : in  std_logic;
-            i_rw          : in  std_logic;
-            i_ds_n        : in  std_logic_vector(1 downto 0);
-            i_ide_addr    : in  std_logic_vector(5 downto 0);
-            i_ide_data    : in  std_logic_vector(15 downto 0);
-            o_ide_data    : out std_logic_vector(15 downto 0);
-            o_ide_irq     : out std_logic
+            i_clk_sys           : in  std_logic;
+            i_rst_n             : in  std_logic;
+            i_as_n              : in  std_logic;
+            i_rw                : in  std_logic;
+            i_ds_n              : in  std_logic_vector(1 downto 0);
+            i_ide_addr          : in  std_logic_vector(5 downto 0);
+            i_ide_data          : in  std_logic_vector(15 downto 0);
+            o_ide_data          : out std_logic_vector(15 downto 0);
+            o_ide_irq           : out std_logic;
+            o_bram_hdf_sel      : out std_logic_vector(1 downto 0);
+            o_bram_sector_addr  : out std_logic_vector(8 downto 0);
+            i_bram_data         : in  std_logic_vector(7 downto 0)
         );
     end component;
 
@@ -106,9 +145,7 @@ architecture structural of gayle is
         );
     end component;
 
-    -- =========================================================================
-    -- INTERNE SIGNALE (Verbleibende Brücken zwischen den Cores)
-    -- =========================================================================
+    -- Interne Signalkoppelungen
     signal s_ide_irq         : std_logic;
     signal s_pcmcia_irq      : std_logic;
     signal s_generated_rst_n : std_logic;
@@ -117,13 +154,18 @@ architecture structural of gayle is
     signal s_data_from_ide    : std_logic_vector(15 downto 0);
     signal s_data_from_pcmcia : std_logic_vector(7 downto 0);
 
-	 begin
+    -- Neue Koppeldrähte zum HDF-Sektorpuffer [14.1]
+    signal s_am_hdf_sel       : std_logic_vector(1 downto 0) := "00";
+    signal s_am_sector_addr   : std_logic_vector(8 downto 0) := (others => '0');
+    signal s_bram_data_out    : std_logic_vector(7 downto 0);
 
-    -- Den intern generierten System-Reset an das Gehäusepforte ausgeben
+begin
+
+    -- Den intern generierten System-Reset an die Gehäusepforte ausgeben
     o_generated_rst_n <= s_generated_rst_n;
 
     -- =========================================================================
-    -- DATA ROUTING MULTIPLEXER
+    -- DATA ROUTING MULTIPLEXER (CPU BUS-LESEZUGRIFF)
     -- =========================================================================
     process(i_bus_as_n, i_bus_rw, i_bus_addr, s_data_from_regs, s_data_from_ide, s_data_from_pcmcia)
     begin
@@ -146,7 +188,29 @@ architecture structural of gayle is
     end process;
 
     -- =========================================================================
-    -- INSTANZEN DER UNTERMODULE
+    -- NEW INSTANCE 5: DER SYNCHRONE M10K-SEKTORPUFFER (FÜR DIE 4 HDF-IMAGES) [14.1]
+    -- =========================================================================
+    u_gayle_ide_bram : gayle_ide_bram
+        port map (
+            -- Port A: Framework-Schreibseite (SD-Karte befüllt das RAM) [14.1]
+            i_clk_sys             => i_clk_sys,
+            i_ioctl_addr          => i_ioctl_addr,
+            i_ioctl_data          => i_ioctl_data,
+            i_ioctl_wr            => i_ioctl_wr,
+            i_ioctl_hdf0_download => i_ioctl_hdf0_download,
+            i_ioctl_hdf1_download => i_ioctl_hdf1_download,
+            i_ioctl_hdf2_download => i_ioctl_hdf2_download,
+            i_ioctl_hdf3_download => i_ioctl_hdf3_download,
+            
+            -- Port B: Amiga-Leseseite (Gayle-Kopplung) [14.1]
+            i_clk_amiga           => i_clk_sys, -- Arbeitet synchron im 14-MHz-Taktnetz von Alice
+            i_am_hdf_sel          => s_am_hdf_sel,
+            i_am_sector_addr      => s_am_sector_addr,
+            o_am_data_out         => s_bram_data_out
+        );
+
+    -- =========================================================================
+    -- INSTANZEN DER REGULÄREN UNTERMODULE
     -- =========================================================================
 
     -- 1. Register-Verwaltung
@@ -165,18 +229,22 @@ architecture structural of gayle is
             o_gayle_irq  => o_gayle_global_irq
         );
 
-    -- 2. IDE/ATA-Controller
+    -- 2. IDE/ATA-Controller (PIO-4)
+    -- INSTANZ-UPGRADE: Schließt die Gatter-Kopplung zum BRAM fehlerfrei! [14.1]
     u_gayle_ide : gayle_ide
         port map (
-            i_clk_sys    => i_clk_sys,
-            i_rst_n      => s_generated_rst_n,
-            i_as_n       => i_bus_as_n,
-            i_rw         => i_bus_rw,
-            i_ds_n       => i_bus_ds_n,
-            i_ide_addr   => i_bus_addr(5 downto 0),
-            i_ide_data   => i_bus_data_w32(15 downto 0),
-            o_ide_data   => s_data_from_ide,
-            o_ide_irq    => s_ide_irq
+            i_clk_sys          => i_clk_sys,
+            i_rst_n            => s_generated_rst_n,
+            i_as_n             => i_bus_as_n,
+            i_rw               => i_bus_rw,
+            i_ds_n             => i_bus_ds_n,
+            i_ide_addr         => i_bus_addr(5 downto 0),
+            i_ide_data         => i_bus_data_w32(15 downto 0),
+            o_ide_data         => s_data_from_ide,
+            o_ide_irq          => s_ide_irq,
+            o_bram_hdf_sel     => s_am_hdf_sel,
+            o_bram_sector_addr => s_am_sector_addr,
+            i_bram_data        => s_bram_data_out
         );
 
     -- 3. PCMCIA-Schnittstelle
@@ -201,5 +269,13 @@ architecture structural of gayle is
             i_kbrst_n    => i_kbrst_n,
             o_sys_rst_n  => s_generated_rst_n
         );
-
+		  
+	 -- =========================================================================
+    -- KORREKTUR FULL-FIX: FESTE LOGIK-TREIBER GEGEN WARNING 10541 [14.1]
+    -- Verriegelt die offenen Platinen-Adern auf sichere Standardwerte, [14.1]
+    -- damit sie der Fitter materialschonend und fehlerfrei einlastet! [14.1]
+    -- =========================================================================
+    floppy_raw_write <= '0'; -- Floppy-Schreibspur im Ruhezustand inaktiv halten
+    txd              <= '1'; -- RS232-Übertragungsleitung im Leerlauf standardmäßig High (Idle-Pegel)
+	 
 end structural;

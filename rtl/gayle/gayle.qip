@@ -1,5 +1,20 @@
+# =========================================================================
+# Projekt: A1200_NG
+# Datei:   gayle.qip
+# Funktion: Lokale Quartus IP-Projektliste für den Gayle-Gesamtchipsatz.
+#           Bündelt alle modularen Peripherie-Unterdateien dieses Ordners.
+# KORREKTUR:
+#   - Bindet das neue Gayle-Coprozessor-Subsystem über seine eigene .qip ein! [14.1]
+#   - Garantiert das fehlerfreie Einlesen aller lokalen Zähler- und Wrapper-Dateien. [14.1]
+# =========================================================================
+
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_regs.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_ide.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_ide_bram.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_pcmcia.vhd"]
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_reset.vhd"]
+
+# ====== GAYLE COPROZESSOR INTERN (SUBSYSTEM-EINBETAUNG) ======
+# KORREKTUR: Verweist nun sauber auf die Unter-QIP statt auf lose Einzeldateien! [14.1]
+set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "gayle_ide_cop/gayle_ide_cop.qip"]

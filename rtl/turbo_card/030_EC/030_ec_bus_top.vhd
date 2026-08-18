@@ -1,11 +1,11 @@
 -- =========================================================================
 -- Projekt: A1200_NG
--- Datei:   030_ec_bus_top.vhd
+-- Datei:   cpu_030_ec_bus.vhd
 -- Teil:    1 von 2 (Entity und Komponentendeklarationen)
 -- Funktion: Die übergeordnete Bus Interface Unit (BIU-Wrapper) des 68EC030.
 --           Verdrahtet die Bus-FSM, den MUX und den separaten Daten-Sizer.
---           ANPASSUNG: Trennung von AS_N und DS_N durch strukturelles Durchlöten
---                      der fsm_ds_en-Drahtbrücke auf Wrapper-Ebene (Punkt 2)!
+-- KORREKTUR FULL-FIX:
+--   - Beseitigt den harten Treiberkonflikt (Error 13076) am internal_D_in.
 -- =========================================================================
 
 library IEEE;
@@ -71,7 +71,7 @@ end cpu_030_ec_bus;
 
 architecture structural of cpu_030_ec_bus is
 
-    -- 1. Die erweiterte Bus-Zustandsmaschine (FSM) - MIT PORT fsm_ds_en!
+    -- 1. Die erweiterte Bus-Zustandsmaschine (FSM)
     component cpu_030_ec_bus_fsm
         Port (
             CLK             : in    std_logic; RESET_N : in std_logic;
@@ -87,7 +87,7 @@ architecture structural of cpu_030_ec_bus is
         );
     end component;
 
-    -- 2. Der erweiterte kombinatorische Bus-Multiplexer (MUX) - MIT PORT fsm_ds_en!
+    -- 2. Der erweiterte kombinatorische Bus-Multiplexer (MUX)
     component cpu_030_ec_bus_mux
         Port (
             fsm_tristate_en : in    std_logic; fsm_strobe_en : in std_logic; fsm_ds_en : in std_logic;
@@ -123,7 +123,7 @@ architecture structural of cpu_030_ec_bus is
 
     -- Interne Verbindungssignale
     signal strobe_aktiv     : std_logic;
-    signal ds_aktiv         : std_logic; -- NEU PUNKT 2: Der Koppel-Draht für das atmende Datenstrobe
+    signal ds_aktiv         : std_logic; 
     signal richtung_schreib : std_logic;
     signal tristate_sperre  : std_logic;
     signal internal_A_pins  : std_logic_vector(31 downto 0);
@@ -131,7 +131,8 @@ architecture structural of cpu_030_ec_bus is
     signal sizing_zeiger    : std_logic_vector(1 downto 0);
     signal dsack_width_sig  : std_logic_vector(1 downto 0);
     signal sizer_D_out_pins : std_logic_vector(31 downto 0);
-begin
+
+	 begin
 
     -- =====================================================================
     -- HARDWARE-SICHERUNG SCHRITT 1: DIE METASTABILE 2-STUFIGE PIPELINE
@@ -164,7 +165,8 @@ begin
     -- =====================================================================
     -- LOGISCHES LEITUNGSNETZ MIT SYNCHRONISIERTEN QUITTUNGEN
     -- =====================================================================
-    internal_D_in <= ext_D_in_pins;
+    -- KORREKTUR FULL-FIX: Die starre Direktverbindung wurde gelöscht! [14.1]
+    -- Verhindert den Fehler 13076, da internal_D_in nur vom Sizer geladen wird! [14.1]
 
     ext_OCS_N   <= '1'; 
     ext_ECS_N   <= '1'; 
@@ -176,7 +178,6 @@ begin
 
     -- =====================================================================
     -- STRUKTURELLE INSTANZIIERUNG: DIE BUS-ZUSTANDSMASCHINE (FSM)
-    -- KORREKTUR: Gibt das atmende Datenstrobe 'ds_aktiv' aus!
     -- =====================================================================
     i_bus_state_machine : cpu_030_ec_bus_fsm
         port map (
@@ -198,7 +199,7 @@ begin
             fsm_busy          => bus_busy,
             fsm_cycle_done    => cycle_done,
             fsm_strobe_en     => strobe_aktiv,
-            fsm_ds_en         => ds_aktiv, -- Hier wird das atmende Datenstrobe abgegriffen
+            fsm_ds_en         => ds_aktiv, 
             fsm_write_en      => richtung_schreib,
             fsm_tristate_en   => tristate_sperre,
             fsm_burst_cnt     => burst_zeiger,
@@ -207,13 +208,12 @@ begin
 
     -- =====================================================================
     -- STRUKTURELLE INSTANZIIERUNG: DER BUS-MULTIPLEXER (MUX)
-    -- KORREKTUR: Verbindet das atmende Datenstrobe 'ds_aktiv'!
     -- =====================================================================
     i_bus_multiplexer : cpu_030_ec_bus_mux
         port map (
             fsm_tristate_en   => tristate_sperre,
             fsm_strobe_en     => strobe_aktiv,
-            fsm_ds_en         => ds_aktiv, -- Bindet das atmende Strobe an den MUX-Port an
+            fsm_ds_en         => ds_aktiv, 
             fsm_write_en      => richtung_schreib,
             fsm_burst_cnt     => burst_zeiger,
             fsm_sizing_offset => sizing_zeiger,
@@ -240,7 +240,7 @@ begin
             cycle_write       => richtung_schreib,
             ext_dsack_width   => dsack_width_sig,
             core_D_out        => internal_D_out,
-            core_D_in         => internal_D_in,
+            core_D_in         => internal_D_in, -- Treibt nun exklusiv das innere Signal! [14.1]
             ext_D_in_pins     => ext_D_in_pins,
             ext_D_out_pins    => sizer_D_out_pins
         );

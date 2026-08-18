@@ -80,6 +80,12 @@ begin
         variable vol_ch1_v : unsigned(7 downto 0);
         variable vol_ch2_v : unsigned(7 downto 0);
         variable vol_ch3_v : unsigned(7 downto 0);
+        
+        -- KORREKTUR: Temporäre Rechenregister fangen die mathematische 17-Bit Breite ab! [14.1]
+        variable prod_ch0 : signed(16 downto 0);
+        variable prod_ch1 : signed(16 downto 0);
+        variable prod_ch2 : signed(16 downto 0);
+        variable prod_ch3 : signed(16 downto 0);
     begin
         if reset = '1' then
             for i in 0 to 3 loop
@@ -94,7 +100,7 @@ begin
             aud_dma_req_ch2 <= '0'; aud_dma_req_ch3 <= '0';
         elsif rising_edge(clk_amiga) then
             
-            -- PFAD A: DMA-BUFFER-SPEISUNG (Unabhängig vom CCK-Raster für schnellen Daten-Einzug)
+            -- PFAD A: DMA-BUFFER-SPEISUNG (Schneller Daten-Einzug)
             if aud_dma_write = '1' then
                 c_idx := to_integer(unsigned(aud_dma_load));
                 ch(c_idx).sample_buffer <= aud_dma_data(15 downto 8); 
@@ -102,7 +108,7 @@ begin
                 ch(c_idx).shadow_empty  <= '0';                        
             end if;
 
-            -- REPARATUR PFAD B: GETAKTETES DEKREMENTIEREN IM ORIGINALEN 3,54-MHZ RASTER [14.1]
+            -- REPARATUR PFAD B: GETAKTETES DEKREMENTIEREN IM 3,54-MHZ RASTER [14.1]
             if cck_tick = '1' then
                 -- Kanal 0
                 if ch(0).period_cnt = x"0000" then
@@ -149,17 +155,23 @@ begin
                 end if;
             end if;
 
-            -- Die gattergetreue 64er Lautstärken-Sperre (No-Overrun-Gatter)
+            -- Die gattergetreue 64er Lautstärken-Sperre
             if unsigned(aud_volume_ch0) >= 64 then vol_ch0_v := to_unsigned(64, 8); else vol_ch0_v := unsigned(aud_volume_ch0); end if;
             if unsigned(aud_volume_ch1) >= 64 then vol_ch1_v := to_unsigned(64, 8); else vol_ch1_v := unsigned(aud_volume_ch1); end if;
             if unsigned(aud_volume_ch2) >= 64 then vol_ch2_v := to_unsigned(64, 8); else vol_ch2_v := unsigned(aud_volume_ch2); end if;
             if unsigned(aud_volume_ch3) >= 64 then vol_ch3_v := to_unsigned(64, 8); else vol_ch3_v := unsigned(aud_volume_ch3); end if;
 
             -- MATHEMATISCHE LAUTSTÄRKEN-MATRIZIERUNG 
-            ch(0).mixed_val <= ch(0).current_sample * signed("0" & std_logic_vector(vol_ch0_v));
-            ch(1).mixed_val <= ch(1).current_sample * signed("0" & std_logic_vector(vol_ch1_v));
-            ch(2).mixed_val <= ch(2).current_sample * signed("0" & std_logic_vector(vol_ch2_v));
-            ch(3).mixed_val <= ch(3).current_sample * signed("0" & std_logic_vector(vol_ch3_v));
+            prod_ch0 := ch(0).current_sample * signed("0" & std_logic_vector(vol_ch0_v));
+            prod_ch1 := ch(1).current_sample * signed("0" & std_logic_vector(vol_ch1_v));
+            prod_ch2 := ch(2).current_sample * signed("0" & std_logic_vector(vol_ch2_v));
+            prod_ch3 := ch(3).current_sample * signed("0" & std_logic_vector(vol_ch3_v));
+
+            -- KORREKTUR: Zuweisung per 15-Bit-Abschneider löst den Vector-Mismatch auf! [14.1]
+            ch(0).mixed_val <= prod_ch0(14 downto 0);
+            ch(1).mixed_val <= prod_ch1(14 downto 0);
+            ch(2).mixed_val <= prod_ch2(14 downto 0);
+            ch(3).mixed_val <= prod_ch3(14 downto 0);
 
             -- Autonome Bedarfs-Signale weiterreichen
             aud_dma_req_ch0 <= ch(0).shadow_empty;
@@ -174,8 +186,10 @@ begin
     -- =================================================================
     process(ch)
     begin
-        audio_out_left  <= std_logic_vector(resize(ch(0).mixed_val, 15) + resize(ch(3).mixed_val, 15));
-        audio_out_right <= std_logic_vector(resize(ch(1).mixed_val, 15) + resize(ch(2).mixed_val, 15));
+        -- Durch das saubere 15-Bit-Format der Zuspieler schließt das Stereo-Panorama perfekt ab! [14.1]
+        audio_out_left  <= std_logic_vector(ch(0).mixed_val + ch(3).mixed_val);
+        audio_out_right <= std_logic_vector(ch(1).mixed_val + ch(2).mixed_val);
     end process;
 
 end Behavioral;
+

@@ -1,11 +1,11 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   030_ec_alu_core.vhd
--- Teil:    1 von 3 (Entity und Untermodul-Deklarationen)
+-- Teil:    1 von 2 (Entity, Signale & Instanziierungen)
 -- Funktion: Das arithmetische Verteilerzentrum (Core) des 68EC030.
---           Instanziiert Logik, Shifter, Bitops und das Mul/Div-Werk.
---           ANPASSUNG: Unbestechliche, hardwaregetreue 32-Bit Sign-Extension
---                      für alle Adressregister-Operationen (Schritt 1/3 für 32-Bit)!
+-- KORREKTUR:
+--   - Behebt die Latch-Falle (Critical Warning 10492) restlos! [14.1]
+--   - Sichert unbestechliche, hardwaregetreue 32-Bit Vorzeichen-Erweiterung.
 -- =========================================================================
 
 library IEEE;
@@ -14,23 +14,19 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity cpu_030_ec_alu_core is
     Port (
-        -- Operations-Parameter vom Decoder
-        alu_opcode      : in    std_logic_vector(7 downto 0);   -- Rechenbefehl (01=ADD, 02=SUB, etc.)
-        alu_size        : in    std_logic_vector(1 downto 0);   -- Operationsbreite (00=B, 01=W, 10=L)
-        dst_is_addr_reg : in    std_logic;                      -- '1' falls das Ziel ein An-Register ist
+        alu_opcode      : in    std_logic_vector(7 downto 0);   
+        alu_size        : in    std_logic_vector(1 downto 0);   
+        dst_is_addr_reg : in    std_logic;                      
 
-        -- Operanden-Eingänge aus der Registerbank
-        src_val         : in    std_logic_vector(31 downto 0);  -- Quell-Operand
-        dst_val         : in    std_logic_vector(31 downto 0);  -- Ziel-Operand
-        current_flags   : in    std_logic_vector(4 downto 0);   -- Aktuelle CCR-Flags (X, N, Z, V, C)
+        src_val         : in    std_logic_vector(31 downto 0);  
+        dst_val         : in    std_logic_vector(31 downto 0);  
+        current_flags   : in    std_logic_vector(4 downto 0);   
 
-        -- Kombinatorische Ausgänge an den Top-Wrapper / Registerbank
-        result_out      : out   std_logic_vector(31 downto 0);  -- Berechnetes Gesamtergebnis
-        new_flags_out   : out   std_logic_vector(15 downto 0);  -- Vollständiger neuer Statusvektor
-        flags_update_en : out   std_logic;                      -- '1' signalisiert: Flags im SR aktualisieren
+        result_out      : out   std_logic_vector(31 downto 0);  
+        new_flags_out   : out   std_logic_vector(15 downto 0);  
+        flags_update_en : out   std_logic;                      
         
-        -- Exception-Ausgang an das übergeordnete Steuerwerk
-        exception_div_zero : out std_logic                      -- Trigger für Division-by-Zero Exception (Vektor #5)
+        exception_div_zero : out std_logic                      
     );
 end cpu_030_ec_alu_core;
 
@@ -39,7 +35,6 @@ architecture structural of cpu_030_ec_alu_core is
     -- =====================================================================
     -- KOMPONENTENDEKLARATIONEN DER FUNKTIONALEN UNTERMODULE
     -- =====================================================================
-    
     component cpu_030_ec_alu_logic
         Port (
             alu_opcode      : in    std_logic_vector(7 downto 0); alu_size : in std_logic_vector(1 downto 0);
@@ -81,9 +76,7 @@ architecture structural of cpu_030_ec_alu_core is
         );
     end component;
 
-    -- =====================================================================
     -- Interne Verbindungssignale (Die Rechenbus-Leitungen des Cores)
-    -- =====================================================================
     signal logic_res          : std_logic_vector(31 downto 0);
     signal logic_flags        : std_logic_vector(15 downto 0);
     signal logic_flags_en     : std_logic;
@@ -159,7 +152,7 @@ begin
         sign_dst        := '0';
         sign_res        := '0';
 
-        -- KORREKTUR SCHRITT 1/3: 32-Bit Vorzeichen-Erweiterung des Quell-Operanden
+        -- 32-Bit Vorzeichen-Erweiterung des Quell-Operanden
         if dst_is_addr_reg = '1' then
             -- Adressregister-Operationen: Werden IMMER auf volle 32 Bit vorzeichenerweitert!
             if alu_size = "01" then
@@ -195,11 +188,9 @@ begin
             
             when x"01" => -- ADD / ADDA
                 if dst_is_addr_reg = '1' then
-                    -- Adressrechnung arbeitet starr im vollen 32-Bit-Band
                     res_signed(31 downto 0) := dst_signed + src_extended;
-                    arith_flags_en         <= '1'; -- Weist die Registerbank an, das Ergebnis zu sichern
+                    arith_flags_en         <= '1';
                 else
-                    -- Standard-Datenrechnung
                     if alu_size = "00" then
                         res_signed(8 downto 0) := signed('0' & dst_val(7 downto 0)) + signed('0' & src_val(7 downto 0));
                     elsif alu_size = "01" then
@@ -229,7 +220,6 @@ begin
                     elsif alu_size = "01" then flags(0) := res_signed(16); flags(4) := res_signed(16);
                     else flags(0) := res_signed(8); flags(4) := res_signed(8); end if; -- C/X
                 else
-                    -- EISERNE REGEL: Operationen auf Adressregister verändern NIEMALS die CCR-Flags!
                     flags(4 downto 0) := current_flags;
                 end if;
 
@@ -261,12 +251,14 @@ begin
 
     -- =====================================================================
     -- KOMBINATORISCHES AUSGANGS-MULTIPLEXER-FELD
+    -- REPARATUR: current_flags in Sensitivitätsliste eingepflegt! [14.1]
     -- =====================================================================
     process(alu_opcode, dst_val, arith_res, arith_flags, arith_flags_en,
             logic_res, logic_flags, logic_flags_en,
             shift_res, shift_flags, shift_flags_en,
             bitops_res, bitops_flags, bitops_flags_en,
-            muldiv_res, muldiv_flags, muldiv_flags_en)
+            muldiv_res, muldiv_flags, muldiv_flags_en,
+            current_flags) -- <--- FIX: Hier fehlerfrei angehängt! [14.1]
     begin
         result_out      <= dst_val;
         new_flags_out   <= x"27" & "000" & current_flags;

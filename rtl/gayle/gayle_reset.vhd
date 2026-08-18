@@ -43,56 +43,61 @@ begin
     o_sys_rst_n <= r_sys_rst_n;
 
     -- =========================================================================
-    -- ZYKLUSGENAUE SYSTEM-RESET STATE MACHINE (Synchron zum Systemtakt)
+    -- ZYKLUSGENAUE SYSTEM-RESET STATE MACHINE (REIN SYNCHRON: LÖST CRITICAL WARNING 18061) [14.1]
     -- =========================================================================
-    process(i_clk_sys, i_rst_n)
+    process(i_clk_sys) -- i_rst_n aus der Sensitivitätsliste entfernt [14.1]
     begin
-        if i_rst_n = '0' then
-            -- Wenn die Hauptstromversorgung (Power-On) zurückgesetzt wird
-            rst_state    <= RST_ASSERT;
-            rst_counter  <= (others => '0');
-            r_sys_rst_n  <= '0';
-        elsif rising_edge(i_clk_sys) then
+        if rising_edge(i_clk_sys) then
             
-            case rst_state is
+            -- SYNCHRONER MASTER-RESET: Zwingt die Register zu einem sauberen Start, [14.1]
+            -- erlaubt dem Fitter aber das korrekte Power-Up-Level auf 'High' ('1')! [14.1]
+            if i_rst_n = '0' then
+                rst_state    <= RST_ASSERT;
+                rst_counter  <= (others => '0');
+                r_sys_rst_n  <= '0';
+            else
                 
-                when RST_IDLE =>
-                    r_sys_rst_n <= '1';
-                    -- Überwache das Tastatur-Reset-Signal (Ctrl + Amiga + Amiga)
-                    if i_kbrst_n = '0' then
-                        rst_state   <= RST_ASSERT;
-                        r_sys_rst_n <= '0';
-                    end if;
+                case rst_state is
                     
-                when RST_ASSERT =>
-                    -- Halte den Reset-Zustand für eine stabile Mindestdauer aktiv
-                    r_sys_rst_n <= '0';
-                    if rst_counter = x"03E8" then -- 1000 Taktzyklen Mindestlänge (Beispielwert)
-                        rst_state   <= RST_DELAY;
-                        rst_counter <= (others => '0');
-                    else
-                        rst_counter <= rst_counter + 1;
-                    end if;
-                    
-                when RST_DELAY =>
-                    -- Einschwingphase nach dem Loslassen der Tasten / Signale
-                    r_sys_rst_n <= '0';
-                    if i_kbrst_n = '1' then
-                        rst_state   <= RST_RECOVERY;
-                        rst_counter <= (others => '0');
-                    end if;
-                    
-                when RST_RECOVERY =>
-                    -- Verzögerte Freigabe des Systems (Original-Hardwareverhalten)
-                    -- Dadurch wird sichergestellt, dass alle custom chips synchron starten
-                    if rst_counter = x"2710" then -- Streckung des Impulses
+                    when RST_IDLE =>
                         r_sys_rst_n <= '1';
-                        rst_state   <= RST_IDLE;
-                    else
-                        rst_counter <= rst_counter + 1;
-                    end if;
-                    
-            end case;
+                        -- Überwache das Tastatur-Reset-Signal (Ctrl + Amiga + Amiga)
+                        if i_kbrst_n = '0' then
+                            rst_state   <= RST_ASSERT;
+                            r_sys_rst_n <= '0';
+                        end if;
+                        
+                    when RST_ASSERT =>
+                        -- Halte den Reset-Zustand für eine stabile Mindestdauer aktiv
+                        r_sys_rst_n <= '0';
+                        if rst_counter = x"03E8" then -- 1000 Taktzyklen Mindestlänge
+                            rst_state   <= RST_DELAY;
+                            rst_counter <= (others => '0');
+                        else
+                            rst_counter <= rst_counter + 1;
+                        end if;
+                        
+                    when RST_DELAY =>
+                        -- Einschwingphase nach dem Loslassen der Tasten / Signale
+                        r_sys_rst_n <= '0';
+                        if i_kbrst_n = '1' then
+                            rst_state   <= RST_RECOVERY;
+                            rst_counter <= (others => '0');
+                        end if;
+                        
+                    when RST_RECOVERY =>
+                        -- Verzögerte Freigabe des Systems (Original-Hardwareverhalten)
+                        if rst_counter = x"2710" then -- Streckung des Impulses
+                            r_sys_rst_n <= '1';
+                            rst_state   <= RST_IDLE;
+                        else
+                            rst_counter <= rst_counter + 1;
+                        end if;
+                        
+                    when others =>
+                        rst_state <= RST_IDLE;
+                end case;
+            end if;
         end if;
     end process;
 

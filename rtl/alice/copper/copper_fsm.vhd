@@ -60,7 +60,7 @@ architecture Behavioral of copper_fsm is
     signal current_state : cop_state_t := ST_IDLE;
 
     -- Interner Status-Vektor zur Signalisierung der Aktivität an das Register-Interface
-    signal int_status    : std_logic_vector(1 downto 1) := "00";
+    signal int_status    : std_logic_vector(1 downto 0) := "00";
 
 begin
 

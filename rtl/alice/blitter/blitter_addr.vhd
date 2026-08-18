@@ -1,3 +1,13 @@
+-- =========================================================================
+-- Projekt: A1200_NG
+-- Datei:   blitter_addr.vhd
+-- Teil:    1 von 2 (Entity und Signaldeklarationen)
+-- Funktion: Berechnet die 32-Bit-Adressen für die vier Blitter-Kanäle (A, B, C, D).
+-- KORREKTUR FULL-FIX:
+--   - Behebt die Adress-Dublette (Error 10321) bei Register x"04C".
+--   - Korrigiert die Zuweisungen auf die originalen Amiga-Blitter-Offsets.
+-- =========================================================================
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -24,7 +34,7 @@ entity blitter_addr is
         ptr_inc       : in    std_logic;                     -- Befehl zum Weiterschalten des Pointers (+/- 2 Byte)
         mod_add       : in    std_logic;                     -- Befehl zum Addieren des Zeilen-Modulos
         
-        -- NEU: Linienmodus-Steuerung vom Rechenwerk und von den Registern
+        -- Linienmodus-Steuerung vom Rechenwerk und von den Registern
         line_mode_en  : in    std_logic;                     -- Schaltet die Adress-Logik auf Vektor-Schritte um
         line_sign_bit : in    std_logic;                     -- Das Vorzeichen des aktuellen Linienfehlers
         
@@ -56,7 +66,7 @@ architecture Behavioral of blitter_addr is
     -- Interner Adressbus für die kombinatorische Ausgabe
     signal active_addr : unsigned(31 downto 0);
 
-begin
+	 begin
 
     -- =================================================================
     -- 1. CPU-REGISTER-SCHREIBPROZESS (Pointer, Modulos & Oktanten)
@@ -73,14 +83,15 @@ begin
         elsif rising_edge(clk_amiga) then
             if reg_write_en = '1' then
                 case reg_addr is
-                    when x"04C" => bpl_ptr_a(31 downto 16) <= unsigned(reg_data_w(15 downto 0));
-                    when x"050" => bpl_ptr_a(15 downto 0)  <= unsigned(reg_data_w(15 downto 0));
-                    when x"04C" => bpl_ptr_b(31 downto 16) <= unsigned(reg_data_w(15 downto 0));
-                    when x"04E" => bpl_ptr_b(15 downto 0)  <= unsigned(reg_data_w(15 downto 0));
-                    when x"048" => bpl_ptr_c(31 downto 16) <= unsigned(reg_data_w(15 downto 0));
-                    when x"04A" => bpl_ptr_c(15 downto 0)  <= unsigned(reg_data_w(15 downto 0));
-                    when x"054" => bpl_ptr_d(31 downto 16) <= unsigned(reg_data_w(15 downto 0));
-                    when x"056" => bpl_ptr_d(15 downto 0)  <= unsigned(reg_data_w(15 downto 0));
+                    -- KORREKTUR: Originalgetreue Amiga-Registerbelegung ohne Überlappung! [14.1]
+                    when x"050" => bpl_ptr_a(31 downto 16) <= unsigned(reg_data_w(15 downto 0)); -- BLTPTAH
+                    when x"052" => bpl_ptr_a(15 downto 0)  <= unsigned(reg_data_w(15 downto 0)); -- BLTPTAL
+                    when x"04C" => bpl_ptr_b(31 downto 16) <= unsigned(reg_data_w(15 downto 0)); -- BLTPTBH
+                    when x"04E" => bpl_ptr_b(15 downto 0)  <= unsigned(reg_data_w(15 downto 0)); -- BLTPTBL
+                    when x"048" => bpl_ptr_c(31 downto 16) <= unsigned(reg_data_w(15 downto 0)); -- BLTPTCH
+                    when x"04A" => bpl_ptr_c(15 downto 0)  <= unsigned(reg_data_w(15 downto 0)); -- BLTPTCL
+                    when x"054" => bpl_ptr_d(31 downto 16) <= unsigned(reg_data_w(15 downto 0)); -- BLTPTDH
+                    when x"056" => bpl_ptr_d(15 downto 0)  <= unsigned(reg_data_w(15 downto 0)); -- BLTPTDL
                     
                     when x"060" => reg_bltcmod <= signed(reg_data_w(15 downto 0));
                     when x"062" => reg_bltdmod <= signed(reg_data_w(15 downto 0));
@@ -99,9 +110,6 @@ begin
             elsif ptr_inc = '1' then
                 if line_mode_en = '1' then
                     -- DIE ORIGINALEN AMIGA-BRESENHAM-OKTANTEN-REGELN:
-                    -- Je nach geladenem Oktant und dem Vorzeichen des Fehlers (line_sign_bit)
-                    -- springen die Adress-Pointer im RAM horizontal, vertikal oder diagonal!
-                    -- Hinweis: Der Linienzeichner steuert exklusiv den Zielkanal D.
                     case line_octant is
                         when "000" => -- Oktant 0
                             if line_sign_bit = '0' then bpl_ptr_d <= bpl_ptr_d + 2 + unsigned(resize(reg_bltcmod, 32));
@@ -116,7 +124,6 @@ begin
                             if line_sign_bit = '0' then bpl_ptr_d <= bpl_ptr_d - 2 + unsigned(resize(reg_bltcmod, 32));
                             else bpl_ptr_d <= bpl_ptr_d - 2; end if;
                         when others =>
-                            -- Rückwärts-Oktanten (4-7) verhalten sich spiegelbildlich mit negativen Offsets
                             if line_sign_bit = '0' then bpl_ptr_d <= bpl_ptr_d + 2 - unsigned(resize(reg_bltcmod, 32));
                             else bpl_ptr_d <= bpl_ptr_d + 2; end if;
                     end case;
@@ -132,8 +139,6 @@ begin
                 end if;
                 
             elsif mod_add = '1' and line_mode_en = '0' then
-                -- Modulo-Sprünge werden im Linienmodus komplett deaktiviert, 
-                -- da Bresenham die Zeilensprünge permanent über BLTCMOD abwickelt!
                 case chan_select is
                     when "00" => bpl_ptr_a <= unsigned(signed(bpl_ptr_a) + resize(reg_bltamod, 32));
                     when "01" => bpl_ptr_b <= unsigned(signed(bpl_ptr_b) + resize(reg_bltbmod, 32));

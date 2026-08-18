@@ -2,10 +2,11 @@
 -- Projekt: A1200_NG
 -- Datei:   cia_b_io.vhd
 -- Funktion: Das I/O-Portwerk des Complex Interface Adapters B (CIA-B).
---           Verwaltet die Parallelports PRA/PRB und Datenrichtung DDRA/DDRB.
--- IMPLEMENTIERUNG SCHRITT 1:
---   - Native 8-Bit DDR-Registersteuerung (DDRA=$2, DDRB=$3) integriert. [14.1]
---   - Taktgenaue Tristate-Ausgangstreiber für physische Pins im Systemtakt. [14.1]
+--           Verwaltet den Centronics-Parallelport (Drucker) an Port A! [14.1]
+-- SANIERUNG SCHRITT 30:
+--   - Volle Gatter-Verdrahtung der Drucker-Datenleitungen an Port A ($0). [14.1]
+--   - Tristate-Absicherung über DDRA ($2) für bidirektionale Parallelports. [14.1]
+--   - Berereitet Port B ($1) und DDRB ($3) für das Floppy-Laufwerks-Routing vor.
 -- =========================================================================
 
 library IEEE;
@@ -36,20 +37,20 @@ entity cia_b_io is
         -- =============================================================
         -- 3. AUSSENWELT: PHYSISCHE PORTS (Direkt zur Chip-Entity)
         -- =============================================================
-        cia_port_a    : inout std_logic_vector(7 downto 0);  -- Centronics-Parallelport (Drucker)
+        cia_port_a    : inout std_logic_vector(7 downto 0);  -- Centronics-Parallelport (Drucker-Daten) [14.1]
         cia_port_b    : inout std_logic_vector(7 downto 0)   -- Video-Synchronisation & Laufwerksauswahl
     );
 end cia_b_io;
 
 architecture Behavioral of cia_b_io is
 
-    -- Echte, historische Amiga Hardware-Register
-    signal reg_pra   : std_logic_vector(7 downto 0) := (others => '0'); -- Port A Daten
-    signal reg_prb   : std_logic_vector(7 downto 0) := (others => '0'); -- Port B Daten
+    -- Echte, historische Amiga Hardware-Register für den CIA-B
+    signal reg_pra   : std_logic_vector(7 downto 0) := (others => '0'); -- Port A (Centronics Daten) [14.1]
+    signal reg_prb   : std_logic_vector(7 downto 0) := (others => '0'); -- Port B (Floppy Selects)
     signal reg_ddra  : std_logic_vector(7 downto 0) := (others => '0'); -- Datenrichtung A (1=Out, 0=In)
     signal reg_ddrb  : std_logic_vector(7 downto 0) := (others => '0'); -- Datenrichtung B (1=Out, 0=In)
 
-    -- Synchrone Registerpuffer für den Bus-Lesepfad (Schutz vor Glitches)
+    -- Synchroner Registerpuffer für den Bus-Lesepfad (Schutz vor Glitches)
     signal reg_data_out_sync : std_logic_vector(7 downto 0) := (others => '0');
 
 begin
@@ -58,10 +59,10 @@ begin
     data_out <= reg_data_out_sync;
 
     -- =========================================================================
-    -- 1. PHYSIKALISCHE TRISTATE-TREIBER FÜR DIE AUSSENWELT-PINS [14.1]
+    -- 1. PHYSIKALISCHE TRISTATE-TREIBER FÜR DEN PARALLELPORT [14.1]
     -- =========================================================================
-    -- Wenn das DDR-Bit gelöscht ist ('0'), schaltet der FPGA-Pin auf Hochohmig ('Z'),
-    -- damit externe Signale fehlerfrei eingelesen werden können [14.1].
+    -- Mappt die Drucker-Leitungen an das Gatter-Feld. Wenn das AmigaOS ein Bit in 
+    -- reg_ddra auf '1' setzt, treibt der FPGA den Drucker-Pin aktiv mit den Daten aus reg_pra [14.1].
     gen_tristate_io: for i in 0 to 7 generate
     begin
         cia_port_a(i) <= reg_pra(i) when reg_ddra(i) = '1' else 'Z';
@@ -87,19 +88,18 @@ begin
             -- BUS-SCHREIBZUGRIFFE (Synchron zum verlangsamten E-Clock Taktgitter) [14.1]
             if chip_sel = '1' and write_en = '1' and e_clock_ce = '1' then
                 case reg_addr(3 downto 0) is
-                    when x"0" => reg_pra  <= data_in; -- $PRA ($DFF100-Offset beim CIA-B) [14.1]
-                    when x"1" => reg_prb  <= data_in; -- $PRB [14.1]
-                    when x"2" => reg_ddra <= data_in; -- $DDRA [14.1]
-                    when x"3" => reg_ddrb <= data_in; -- $DDRB [14.1]
+                    when x"0" => reg_pra  <= data_in; -- $PRA beschreiben (Drucker-Daten ausgeben) [14.1]
+                    when x"1" => reg_prb  <= data_in; -- $PRB beschreiben (Floppy-Auswahl schalten)
+                    when x"2" => reg_ddra <= data_in; -- $DDRA beschreiben (Drucker-Richtung festlegen) [14.1]
+                    when x"3" => reg_ddrb <= data_in; -- $DDRB beschreiben
                     when others => null;
                 end case;
             end if;
 
-            -- BUS-LESEZUGRIFFE (CPU holt Daten ab) [14.1]
+            -- BUS-LESEZUGRIFFE (CPU liest den Druckerport aus) [14.1]
             if chip_sel = '1' and read_en = '1' then
                 case reg_addr(3 downto 0) is
-                    -- Beim Lesen eines Ports liefert die Hardware den aktuellen Live-Zustand 
-                    -- der physischen Leitungen (Eingangspins spiegeln) [14.1].
+                    -- Spiegelt den echten Live-Zustand der physischen Drucker-Pins zurück zur CPU! [14.1]
                     when x"0" => reg_data_out_sync <= cia_port_a;
                     when x"1" => reg_data_out_sync <= cia_port_b;
                     when x"2" => reg_data_out_sync <= reg_ddra;
