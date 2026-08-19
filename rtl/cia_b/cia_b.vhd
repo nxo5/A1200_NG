@@ -6,6 +6,7 @@
 -- SANIERUNG SCHRITT 28 (A):
 --   - Vorbereitung des Multiplexers für den Lese-Datenbus.
 --   - Sichert zyklustreue Lesezugriffe für die CPU an der D0-D7 Busgrenze.
+-- TRISTATE-FIX: Internes Tri-State auf cia_data durch definierten BUS_IDLE_VALUE ersetzen
 -- =========================================================================
 
 library IEEE;
@@ -133,6 +134,9 @@ architecture Behavioral of cia_b is
     signal int_write_en      : std_logic;
     signal extended_addr     : std_logic_vector(31 downto 0);
 
+    -- Ersatz für internes Tri-State: definiere einen festen Bus-Ruhepegel (Pull-High)
+    constant BUS_IDLE_VALUE : std_logic_vector(7 downto 0) := (others => '1');
+
 	 begin
 
     -- =================================================================
@@ -163,9 +167,8 @@ architecture Behavioral of cia_b is
         end case;
     end process;
 
-    -- TRISTATE-STEUERUNG FÜR DEN EXTERNEN 8-BIT-AMIGA-DATENBUS
-    -- Greift nun absolut glitch-frei auf den sanierten Multiplexer-Ausgang zu [14.1].
-    cia_data <= mux_data_out when int_read_en = '1' else (others => 'Z');
+    -- ERSETZTER TRISTATE: Benutze einen definierten Bus-Ruhepegel anstelle von 'Z'
+    cia_data <= mux_data_out when int_read_en = '1' else BUS_IDLE_VALUE;
 
     -- =================================================================
     -- 2. INTERNE CHIP-VERDRAHTUNG (PORT MAPS)
