@@ -21,7 +21,16 @@ architecture Simulation of A1200_tb is
             VSync       : out STD_LOGIC;
             video_r     : out STD_LOGIC_VECTOR(7 downto 0);
             video_g     : out STD_LOGIC_VECTOR(7 downto 0);
-            video_b     : out STD_LOGIC_VECTOR(7 downto 0)
+            video_b     : out STD_LOGIC_VECTOR(7 downto 0);
+            ioctl_addr  : in  STD_LOGIC_VECTOR(24 downto 0);
+            ioctl_data  : in  STD_LOGIC_VECTOR(7 downto 0);
+            ioctl_wr    : in  STD_LOGIC;
+            ioctl_ks_download   : in  STD_LOGIC;
+            ioctl_fdd_download  : in  STD_LOGIC;
+            ioctl_hdf0_download : in  STD_LOGIC;
+            ioctl_hdf1_download : in  STD_LOGIC;
+            ioctl_hdf2_download : in  STD_LOGIC;
+            ioctl_hdf3_download : in  STD_LOGIC
         );
     end component;
 
@@ -29,6 +38,17 @@ architecture Simulation of A1200_tb is
     signal tb_clk_sys   : std_logic := '0';
     signal tb_reset     : std_logic := '1';
     signal tb_pal_mode  : std_logic := '1'; -- Fest auf PAL-Modus eingestellt
+
+    -- IOCTL / MiSTer download signals
+    signal tb_ioctl_addr : std_logic_vector(24 downto 0) := (others => '0');
+    signal tb_ioctl_data : std_logic_vector(7 downto 0) := (others => '0');
+    signal tb_ioctl_wr   : std_logic := '0';
+    signal tb_ioctl_ks_download  : std_logic := '0';
+    signal tb_ioctl_fdd_download : std_logic := '0';
+    signal tb_ioctl_hdf0_download: std_logic := '0';
+    signal tb_ioctl_hdf1_download: std_logic := '0';
+    signal tb_ioctl_hdf2_download: std_logic := '0';
+    signal tb_ioctl_hdf3_download: std_logic := '0';
 
     -- Ausgänge (Vorerst nur zur Vervollständigung, werden im Wave-Fenster sichtbar)
     signal tb_ce_pix    : std_logic;
@@ -58,7 +78,16 @@ begin
         VSync    => tb_vsync,
         video_r  => tb_video_r,
         video_g  => tb_video_g,
-        video_b  => tb_video_b
+        video_b  => tb_video_b,
+        ioctl_addr  => tb_ioctl_addr,
+        ioctl_data  => tb_ioctl_data,
+        ioctl_wr    => tb_ioctl_wr,
+        ioctl_ks_download   => tb_ioctl_ks_download,
+        ioctl_fdd_download  => tb_ioctl_fdd_download,
+        ioctl_hdf0_download => tb_ioctl_hdf0_download,
+        ioctl_hdf1_download => tb_ioctl_hdf1_download,
+        ioctl_hdf2_download => tb_ioctl_hdf2_download,
+        ioctl_hdf3_download => tb_ioctl_hdf3_download
     );
 
     -- 4. Oszillator-Prozess: Erzeugt einen dauerhaften 50 MHz Takt
