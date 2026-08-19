@@ -1,34 +1,40 @@
-# 1. Laufende Simulation sauber beenden
+# stop any running sim
 quit -sim
 
-# 2. VHDL-Bibliothek "work" im Projektordner anlegen/bereinigen
+# setup work library
 vlib work
 vmap work work
 
-# 3. Wichtige Projekt-Dateien im VHDL-2008-Modus kompilieren (Basis-Set)
-# Testbench und Top
+# compile testbench + top first
 vcom -2008 -work work A1200_tb.vhd
 vcom -2008 -work work rtl/A1200_top.vhd
 
-# Turbo card / CPU core (erste zentrale Komponenten)
-vcom -2008 -work work rtl/turbo_card/turbo_card.vhd
-vcom -2008 -work work rtl/turbo_card/030_EC/030_ec.vhd
-vcom -2008 -work work rtl/turbo_card/030_EC/030_ec_bus_top.vhd
+# compile all vhd files in rtl and subdirectories (up to 4 levels)
+vcom -2008 -work work rtl/*.vhd
+vcom -2008 -work work rtl/*/*.vhd
+vcom -2008 -work work rtl/*/*/*.vhd
+vcom -2008 -work work rtl/*/*/*/*.vhd
 
-# Optional: kompiliere Verilog/Verilog-Module falls vorhanden
-# (auskommentieren, falls kein Verilog-Compiler/Files benötigt werden)
-# vlog -work work rtl/mycore.v
-# vlog -work work rtl/lfsr.v
-# vlog -sv -work work sys/*.sv
+# compile system-level VHDL
+vcom -2008 -work work sys/*.vhd
+vcom -2008 -work work sys/*/*.vhd
 
-# 4. Elaborate / Starte Simulation der Testbench
+# compile turbo_card 030_EC dir explicit (if still missing)
+vcom -2008 -work work rtl/turbo_card/030_EC/*.vhd
+
+# compile Verilog / SystemVerilog files
+vlog -sv -work work rtl/*.v
+vlog -sv -work work rtl/*/*.v
+vlog -sv -work work sys/*.sv
+vlog -sv -work work rtl/*/*.sv
+
+# elaborate
 vsim -voptargs="+acc" work.A1200_tb
 
-# 5. Sichere, existierende Signale automatisch ins Wave-Fenster
+# add safe waves
 add wave -divider "TESTBENCH"
 add wave -position insertpoint sim:/A1200_tb/tb_clk_sys
 add wave -position insertpoint sim:/A1200_tb/tb_reset
-add wave -position insertpoint sim:/A1200_tb/tb_pal_mode
 
 add wave -divider "TOP/UT"
 add wave -position insertpoint sim:/A1200_tb/uut/ce_pix
@@ -36,18 +42,11 @@ add wave -position insertpoint sim:/A1200_tb/uut/HBlank
 add wave -position insertpoint sim:/A1200_tb/uut/HSync
 add wave -position insertpoint sim:/A1200_tb/uut/VBlank
 add wave -position insertpoint sim:/A1200_tb/uut/VSync
-add wave -position insertpoint sim:/A1200_tb/uut/video_r
 
-# 6. Protokollierung in eine Textdatei starten (vor dem Run-Befehl!)
+# transcript and run
 transcript file cpu_simulation.log
 
 echo "=== START DER CHIP-SIMULATION ==="
-
-# 7. Kurzer Simulationslauf (anpassbar)
 run 1000 ns
-
-# 8. Protokollierung sauber schließen und wegschreiben
 transcript file ""
-
-# 9. Wellenform-Ansicht optimieren
 wave zoomfull
