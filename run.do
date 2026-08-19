@@ -5,54 +5,49 @@ quit -sim
 vlib work
 vmap work work
 
-# 3. Alle Projekt-Dateien im VHDL-2008-Modus kompilieren
-vcom -2008 -reportprogress 300 -work work rtl/cpu/M68020_pkg.vhd
-vcom -2008 -reportprogress 300 -work work rtl/bram.vhd
-vcom -2008 -reportprogress 300 -work work rtl/cpu/M68020_fetch.vhd
-vcom -2008 -reportprogress 300 -work work rtl/cpu/M68020_decode.vhd
-vcom -2008 -reportprogress 300 -work work rtl/cpu/M68020_ea.vhd
-vcom -2008 -reportprogress 300 -work work rtl/cpu/M68020_execute.vhd
-vcom -2008 -reportprogress 300 -work work rtl/cpu/M68020_execute.vhd
-vcom -2008 -reportprogress 300 -work work rtl/cpu/M68020_bus_ctrl.vhd
-vcom -2008 -work work rtl/cpu/M68020_cpu.vhd
-vcom -2008 -reportprogress 300 -work work rtl/M68020_test_board.vhd
-vcom -2008 -reportprogress 300 -work work rtl/A1200_top.vhd
-vcom -2008 -reportprogress 300 -work work A1200_tb.vhd
+# 3. Wichtige Projekt-Dateien im VHDL-2008-Modus kompilieren (Basis-Set)
+# Testbench und Top
+vcom -2008 -work work A1200_tb.vhd
+vcom -2008 -work work rtl/A1200_top.vhd
 
-# 4. Die Simulation scharfschalten und die echte CPU-Hierarchie binden
-vsim -voptargs="+acc" work.a1200_tb
+# Turbo card / CPU core (erste zentrale Komponenten)
+vcom -2008 -work work rtl/turbo_card/turbo_card.vhd
+vcom -2008 -work work rtl/turbo_card/030_EC/030_ec.vhd
+vcom -2008 -work work rtl/turbo_card/030_EC/030_ec_bus_top.vhd
 
-# 5. Alle wichtigen Kern-Signale der CPU automatisch ins Wave-Fenster werfen
-add wave -divider "SYSTEM-BASIS"
-add wave -position insertpoint sim:/a1200_tb/tb_clk_sys
-add wave -position insertpoint sim:/a1200_tb/tb_reset
+# Optional: kompiliere Verilog/Verilog-Module falls vorhanden
+# (auskommentieren, falls kein Verilog-Compiler/Files benötigt werden)
+# vlog -work work rtl/mycore.v
+# vlog -work work rtl/lfsr.v
+# vlog -sv -work work sys/*.sv
 
-add wave -divider "68020 CPU-KERN"
-add wave -color "Yellow"  -position insertpoint sim:/a1200_tb/uut/amiga_cpu/current_state
-add wave -color "Orange"  -radix hexadecimal -position insertpoint sim:/a1200_tb/uut/amiga_cpu/reg_pc
-add wave -color "Cyan"    -radix hexadecimal -position insertpoint sim:/a1200_tb/uut/amiga_cpu/int_bus_data_r
+# 4. Elaborate / Starte Simulation der Testbench
+vsim -voptargs="+acc" work.A1200_tb
 
-add wave -divider "AMIGA BUS-HANDSHAKE"
-add wave -position insertpoint sim:/a1200_tb/uut/amiga_cpu/as_n
-add wave -position insertpoint sim:/a1200_tb/uut/amiga_cpu/ds_n
-add wave -position insertpoint sim:/a1200_tb/uut/amiga_cpu/dsack0_n
-add wave -position insertpoint sim:/a1200_tb/uut/amiga_cpu/dsack1_n
+# 5. Sichere, existierende Signale automatisch ins Wave-Fenster
+add wave -divider "TESTBENCH"
+add wave -position insertpoint sim:/A1200_tb/tb_clk_sys
+add wave -position insertpoint sim:/A1200_tb/tb_reset
+add wave -position insertpoint sim:/A1200_tb/tb_pal_mode
 
-add wave -divider "PIPELINE / DECODER"
-add wave -radix hexadecimal -position insertpoint sim:/a1200_tb/uut/amiga_cpu/int_stage_c
-add wave -position insertpoint sim:/a1200_tb/uut/amiga_cpu/int_op_nop
-add wave -position insertpoint sim:/a1200_tb/uut/amiga_cpu/int_exec_done
+add wave -divider "TOP/UT"
+add wave -position insertpoint sim:/A1200_tb/uut/ce_pix
+add wave -position insertpoint sim:/A1200_tb/uut/HBlank
+add wave -position insertpoint sim:/A1200_tb/uut/HSync
+add wave -position insertpoint sim:/A1200_tb/uut/VBlank
+add wave -position insertpoint sim:/A1200_tb/uut/VSync
+add wave -position insertpoint sim:/A1200_tb/uut/video_r
 
 # 6. Protokollierung in eine Textdatei starten (vor dem Run-Befehl!)
 transcript file cpu_simulation.log
 
 echo "=== START DER CHIP-SIMULATION ==="
 
-# 7. Den virtuellen Amiga 1200 für exakt 1000 Nanosekunden einschalten
-run 5000 ns
+# 7. Kurzer Simulationslauf (anpassbar)
+run 1000 ns
 
 # 8. Protokollierung sauber schließen und wegschreiben
 transcript file ""
 
-# 9. Die Wellenform-Ansicht optimal zoomen, damit alles sofort sichtbar ist
+# 9. Wellenform-Ansicht optimieren
 wave zoomfull
