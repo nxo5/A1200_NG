@@ -22,9 +22,9 @@ V:jl`E`nJWDeEzF:XVZ_XK0
 !s100 H`hBnl8QRTz:Yf[P=l[D71
 Z8 OV;C;10.5b;63
 33
-Z9 !s110 1787174233
+Z9 !s110 1787174538
 !i10b 1
-Z10 !s108 1787174233.000000
+Z10 !s108 1787174538.000000
 Z11 !s90 -reportprogress|300|-2008|-work|work|A1200_tb.vhd|
 Z12 !s107 A1200_tb.vhd|
 !i113 1
@@ -63,11 +63,11 @@ V1XDRP_7YYhoNYzV6D@ARB3
 !s100 :UDcSe[2=8_9UWIkGzO8J3
 R8
 33
-Z18 !s110 1787174234
+R9
 !i10b 1
-Z19 !s108 1787174234.000000
-Z20 !s90 -reportprogress|300|-2008|-work|work|rtl/A1200_top.vhd|rtl/NE555.vhd|rtl/amiga_chipset.vhd|rtl/ext_bus_bridge.vhd|rtl/kickstart.vhd|rtl/ram_decoder.vhd|rtl/sdram_bridge.vhd|
-Z21 !s107 rtl/sdram_bridge.vhd|rtl/ram_decoder.vhd|rtl/kickstart.vhd|rtl/ext_bus_bridge.vhd|rtl/amiga_chipset.vhd|rtl/NE555.vhd|rtl/A1200_top.vhd|
+R10
+Z18 !s90 -reportprogress|300|-2008|-work|work|rtl/A1200_top.vhd|
+Z19 !s107 rtl/A1200_top.vhd|
 !i113 1
 R13
 R14
@@ -82,11 +82,11 @@ VD`XQS>m<[Y6OBQeY7Zh9Z3
 !s100 dE8B:;>dS4jd3knkCOeRX1
 R8
 33
-R18
+R9
 !i10b 1
+R10
+R18
 R19
-R20
-R21
 !i113 1
 R13
 R14
@@ -101,35 +101,35 @@ V_1lUmKfz;X[kP5Z:UH5SD2
 !s100 ZRe6RlzjBc5eUH6CQFiV;3
 R8
 33
-Z22 !s110 1780874959
+Z20 !s110 1780874959
 !i10b 1
-Z23 !s108 1780874959.000000
+Z21 !s108 1780874959.000000
 !s90 -2008|-reportprogress|300|-work|work|rtl/A1200_top.vhd|
-!s107 rtl/A1200_top.vhd|
+R19
 !i113 1
 R13
 R14
 R0
 w1780869877
 Ealice
-Z24 w1787145114
+Z22 w1787145114
 R2
 R3
 R4
 R5
-Z25 8rtl/alice/alice.vhd
-Z26 Frtl/alice/alice.vhd
+Z23 8rtl/alice/alice.vhd
+Z24 Frtl/alice/alice.vhd
 l0
 L5
 V69>C43`=`Q?MhPUKl2K0@2
 !s100 Pz>dbgE@5<b7cVSg5?c8l0
 R8
 33
-R18
+Z25 !s110 1787174537
 !i10b 1
-R19
-Z27 !s90 -reportprogress|300|-2008|-work|work|rtl/alice/alice.vhd|rtl/alice/alice_beam.vhd|rtl/alice/alice_clk.vhd|rtl/alice/alice_dma.vhd|rtl/alice/alice_mmu.vhd|rtl/alice/alice_regs.vhd|rtl/cia_a/cia_a.vhd|rtl/cia_a/cia_a_io.vhd|rtl/cia_a/cia_a_irq.vhd|rtl/cia_a/cia_a_serial.vhd|rtl/cia_a/cia_a_timer.vhd|rtl/cia_b/cia_b.vhd|rtl/cia_b/cia_b_io.vhd|rtl/cia_b/cia_b_irq.vhd|rtl/cia_b/cia_b_serial.vhd|rtl/cia_b/cia_b_timer.vhd|rtl/gayle/gayle.vhd|rtl/gayle/gayle_ide.vhd|rtl/gayle/gayle_ide_bram.vhd|rtl/gayle/gayle_pcmcia.vhd|rtl/gayle/gayle_regs.vhd|rtl/gayle/gayle_reset.vhd|rtl/lisa/lisa.vhd|rtl/lisa/lisa_palette.vhd|rtl/lisa/lisa_shifter.vhd|rtl/lisa/lisa_sprites.vhd|rtl/lisa/lisa_video_mux.vhd|rtl/paula/paula.vhd|rtl/paula/paula_audio.vhd|rtl/paula/paula_floppy.vhd|rtl/paula/paula_regs.vhd|rtl/paula/paula_uart.vhd|rtl/turbo_card/fastram_bridge.vhd|rtl/turbo_card/tb_fastram.vhd|rtl/turbo_card/turbo_card.vhd|rtl/turbo_card/turbo_clk.vhd|rtl/turbo_card/turbo_rtc.vhd|
-Z28 !s107 rtl/turbo_card/turbo_rtc.vhd|rtl/turbo_card/turbo_clk.vhd|rtl/turbo_card/turbo_card.vhd|rtl/turbo_card/tb_fastram.vhd|rtl/turbo_card/fastram_bridge.vhd|rtl/paula/paula_uart.vhd|rtl/paula/paula_regs.vhd|rtl/paula/paula_floppy.vhd|rtl/paula/paula_audio.vhd|rtl/paula/paula.vhd|rtl/lisa/lisa_video_mux.vhd|rtl/lisa/lisa_sprites.vhd|rtl/lisa/lisa_shifter.vhd|rtl/lisa/lisa_palette.vhd|rtl/lisa/lisa.vhd|rtl/gayle/gayle_reset.vhd|rtl/gayle/gayle_regs.vhd|rtl/gayle/gayle_pcmcia.vhd|rtl/gayle/gayle_ide_bram.vhd|rtl/gayle/gayle_ide.vhd|rtl/gayle/gayle.vhd|rtl/cia_b/cia_b_timer.vhd|rtl/cia_b/cia_b_serial.vhd|rtl/cia_b/cia_b_irq.vhd|rtl/cia_b/cia_b_io.vhd|rtl/cia_b/cia_b.vhd|rtl/cia_a/cia_a_timer.vhd|rtl/cia_a/cia_a_serial.vhd|rtl/cia_a/cia_a_irq.vhd|rtl/cia_a/cia_a_io.vhd|rtl/cia_a/cia_a.vhd|rtl/alice/alice_regs.vhd|rtl/alice/alice_mmu.vhd|rtl/alice/alice_dma.vhd|rtl/alice/alice_clk.vhd|rtl/alice/alice_beam.vhd|rtl/alice/alice.vhd|
+Z26 !s108 1787174537.000000
+Z27 !s90 -reportprogress|300|-2008|-work|work|rtl/alice/alice.vhd|rtl/alice/alice_beam.vhd|rtl/alice/alice_clk.vhd|rtl/alice/alice_dma.vhd|rtl/alice/alice_mmu.vhd|rtl/alice/alice_regs.vhd|
+Z28 !s107 rtl/alice/alice_regs.vhd|rtl/alice/alice_mmu.vhd|rtl/alice/alice_dma.vhd|rtl/alice/alice_clk.vhd|rtl/alice/alice_beam.vhd|rtl/alice/alice.vhd|
 !i113 1
 R13
 R14
@@ -144,9 +144,9 @@ V6aX>RdNMg==Sj>c_D=Ya;0
 !s100 C9M8c3Zl_L0Yh?m64nm4k2
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -166,9 +166,9 @@ VXiACl6dFWo:3E]fdld8o92
 !s100 jO5R]3ccFCGE<fC]noSc[0
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -185,9 +185,9 @@ VRH^X9EB[fAG2iRT<=TCO41
 !s100 e74bZXWioz8]gz[BidiQP3
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -207,9 +207,9 @@ VE5`PU_fgF@6`4bGLLQ@F:0
 !s100 gYblR7Gl;J]U3H>1CSAUm0
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -226,9 +226,9 @@ Vbn]Wfem[dbUFi[5RlSTCm2
 !s100 EJBI^R^5nm@[CmV[<89]`3
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -248,9 +248,9 @@ VnKYXCUTbHTaV5`D@5fHfV0
 !s100 U6VliEaD49SYJhgecWeGI1
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -267,9 +267,9 @@ VW2=:Z9laj9QB=YoJ[?<JA3
 !s100 OHjnOQ<[C3D=hhW?4F@zV0
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -289,9 +289,9 @@ VL1KkKEZC>=U9=TCXUZ63@3
 !s100 mJ>7J7neh>;e:g[PfDTHD2
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -308,9 +308,9 @@ VMBijK8nUoz40_3FFLLbc]2
 !s100 AZZIabd4HMcePzL_Dbjcb2
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -330,9 +330,9 @@ Vj@9P`<hFoX=Zm7fCBemje1
 !s100 om<90Mg^Hlb;Cf=G>ELQF1
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -349,9 +349,9 @@ VGKgcA2B<L2feACn@S32T;1
 !s100 hi29Y>e`2E>=NjBY:UJ5h1
 R8
 33
-R18
+R25
 !i10b 1
-R19
+R26
 R27
 R28
 !i113 1
@@ -371,11 +371,11 @@ VHF]dm:9z>n[X_=Z0NbjVi2
 !s100 jhhnYYOchzazJ5`eQFzFV1
 R8
 33
-R18
+R9
 !i10b 1
-R19
-R20
-R21
+R10
+Z47 !s90 -reportprogress|300|-2008|-work|work|rtl/amiga_chipset.vhd|
+Z48 !s107 rtl/amiga_chipset.vhd|
 !i113 1
 R13
 R14
@@ -390,33 +390,74 @@ VifGZdKM7?Okk8K:@Ed0X23
 !s100 a4F0<Jg7EGMD2jiIQ1BX02
 R8
 33
-R18
+R9
 !i10b 1
-R19
-R20
-R21
+R10
+R47
+R48
 !i113 1
 R13
 R14
-Eblitter
-Z47 w1780969470
+Eascal
+Z49 w1778676418
 R2
 R3
 R4
 R5
-Z48 8rtl/alice/blitter/blitter.vhd
-Z49 Frtl/alice/blitter/blitter.vhd
+Z50 8sys/ascal.vhd
+Z51 Fsys/ascal.vhd
+l0
+L114
+V^=5dWRG1J;f801BnbZZnI0
+!s100 KdO4GU6fi>B>H<5z4@Vai0
+R8
+33
+Z52 !s110 1787174534
+!i10b 1
+Z53 !s108 1787174534.000000
+Z54 !s90 -reportprogress|300|-2008|-work|work|sys/ascal.vhd|
+Z55 !s107 sys/ascal.vhd|
+!i113 1
+R13
+R14
+Artl
+R2
+R3
+R4
+DEx4 work 5 ascal 0 22 ^=5dWRG1J;f801BnbZZnI0
+l1156
+L269
+VLI3GJeH]77U]M_Pf:SEAf3
+!s100 X:@z_HMVnnk]2M2jad:Tz0
+R8
+33
+R52
+!i10b 1
+R53
+R54
+R55
+!i113 1
+R13
+R14
+Eblitter
+Z56 w1780969470
+R2
+R3
+R4
+R5
+Z57 8rtl/alice/blitter/blitter.vhd
+Z58 Frtl/alice/blitter/blitter.vhd
 l0
 L7
 V8TMWz>51Yd3SzA47[^Z>b0
 !s100 OzJB5bVa9ZCj@<^NR=dbC2
 R8
 33
-Z50 !s110 1787174235
+Z59 !s110 1787174235
 !i10b 1
-Z51 !s108 1787174235.000000
-Z52 !s90 -reportprogress|300|-2008|-work|work|rtl/alice/blitter/blitter.vhd|rtl/alice/blitter/blitter_addr.vhd|rtl/alice/blitter/blitter_alu.vhd|rtl/alice/blitter/blitter_fsm.vhd|rtl/alice/blitter/blitter_shift.vhd|rtl/alice/copper/copper.vhd|rtl/alice/copper/copper_dec.vhd|rtl/alice/copper/copper_fsm.vhd|rtl/alice/copper/copper_sync.vhd|rtl/gayle/gayle_ide_cop/gayle_ide_cop.vhd|rtl/gayle/gayle_ide_cop/gayle_ide_cop_cnt.vhd|rtl/turbo_card/030_EC/030_ec.vhd|rtl/turbo_card/030_EC/030_ec_alu_bitops.vhd|rtl/turbo_card/030_EC/030_ec_alu_core.vhd|rtl/turbo_card/030_EC/030_ec_alu_logic.vhd|rtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd|rtl/turbo_card/030_EC/030_ec_alu_regs.vhd|rtl/turbo_card/030_EC/030_ec_alu_shift.vhd|rtl/turbo_card/030_EC/030_ec_alu_top.vhd|rtl/turbo_card/030_EC/030_ec_bus_fsm.vhd|rtl/turbo_card/030_EC/030_ec_bus_mux.vhd|rtl/turbo_card/030_EC/030_ec_bus_sizer.vhd|rtl/turbo_card/030_EC/030_ec_bus_top.vhd|rtl/turbo_card/030_EC/030_ec_cache_addr.vhd|rtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd|rtl/turbo_card/030_EC/030_ec_cache_tags.vhd|rtl/turbo_card/030_EC/030_ec_cache_top.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd|rtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd|rtl/turbo_card/030_EC/030_ec_dec_move.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_mux.vhd|rtl/turbo_card/030_EC/030_ec_dec_special.vhd|rtl/turbo_card/030_EC/030_ec_dec_special_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd|rtl/turbo_card/030_EC/030_ec_decode_top.vhd|
-Z53 !s107 rtl/turbo_card/030_EC/030_ec_decode_top.vhd|rtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd|rtl/turbo_card/030_EC/030_ec_dec_special_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_special.vhd|rtl/turbo_card/030_EC/030_ec_dec_mux.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_move.vhd|rtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd|rtl/turbo_card/030_EC/030_ec_dec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch.vhd|rtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu.vhd|rtl/turbo_card/030_EC/030_ec_cache_top.vhd|rtl/turbo_card/030_EC/030_ec_cache_tags.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd|rtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd|rtl/turbo_card/030_EC/030_ec_cache_addr.vhd|rtl/turbo_card/030_EC/030_ec_bus_top.vhd|rtl/turbo_card/030_EC/030_ec_bus_sizer.vhd|rtl/turbo_card/030_EC/030_ec_bus_mux.vhd|rtl/turbo_card/030_EC/030_ec_bus_fsm.vhd|rtl/turbo_card/030_EC/030_ec_alu_top.vhd|rtl/turbo_card/030_EC/030_ec_alu_shift.vhd|rtl/turbo_card/030_EC/030_ec_alu_regs.vhd|rtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd|rtl/turbo_card/030_EC/030_ec_alu_logic.vhd|rtl/turbo_card/030_EC/030_ec_alu_core.vhd|rtl/turbo_card/030_EC/030_ec_alu_bitops.vhd|rtl/turbo_card/030_EC/030_ec.vhd|rtl/gayle/gayle_ide_cop/gayle_ide_cop_cnt.vhd|rtl/gayle/gayle_ide_cop/gayle_ide_cop.vhd|rtl/alice/copper/copper_sync.vhd|rtl/alice/copper/copper_fsm.vhd|rtl/alice/copper/copper_dec.vhd|rtl/alice/copper/copper.vhd|rtl/alice/blitter/blitter_shift.vhd|rtl/alice/blitter/blitter_fsm.vhd|rtl/alice/blitter/blitter_alu.vhd|rtl/alice/blitter/blitter_addr.vhd|rtl/alice/blitter/blitter.vhd|
+Z60 !s108 1787174235.000000
+Z61 !s90 -reportprogress|300|-2008|-work|work|rtl/alice/blitter/blitter.vhd|rtl/alice/blitter/blitter_addr.vhd|rtl/alice/blitter/blitter_alu.vhd|rtl/alice/blitter/blitter_fsm.vhd|rtl/alice/blitter/blitter_shift.vhd|rtl/alice/copper/copper.vhd|rtl/alice/copper/copper_dec.vhd|rtl/alice/copper/copper_fsm.vhd|rtl/alice/copper/copper_sync.vhd|rtl/gayle/gayle_ide_cop/gayle_ide_cop.vhd|rtl/gayle/gayle_ide_cop/gayle_ide_cop_cnt.vhd|rtl/turbo_card/030_EC/030_ec.vhd|rtl/turbo_card/030_EC/030_ec_alu_bitops.vhd|rtl/turbo_card/030_EC/030_ec_alu_core.vhd|rtl/turbo_card/030_EC/030_ec_alu_logic.vhd|rtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd|rtl/turbo_card/030_EC/030_ec_alu_regs.vhd|rtl/turbo_card/030_EC/030_ec_alu_shift.vhd|rtl/turbo_card/030_EC/030_ec_alu_top.vhd|rtl/turbo_card/030_EC/030_ec_bus_fsm.vhd|rtl/turbo_card/030_EC/030_ec_bus_mux.vhd|rtl/turbo_card/030_EC/030_ec_bus_sizer.vhd|rtl/turbo_card/030_EC/030_ec_bus_top.vhd|rtl/turbo_card/030_EC/030_ec_cache_addr.vhd|rtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd|rtl/turbo_card/030_EC/030_ec_cache_tags.vhd|rtl/turbo_card/030_EC/030_ec_cache_top.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd|rtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd|rtl/turbo_card/030_EC/030_ec_dec_move.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_mux.vhd|rtl/turbo_card/030_EC/030_ec_dec_special.vhd|rtl/turbo_card/030_EC/030_ec_dec_special_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd|rtl/turbo_card/030_EC/030_ec_decode_top.vhd|
+Z62 !s107 rtl/turbo_card/030_EC/030_ec_decode_top.vhd|rtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd|rtl/turbo_card/030_EC/030_ec_dec_special_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_special.vhd|rtl/turbo_card/030_EC/030_ec_dec_mux.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_move.vhd|rtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd|rtl/turbo_card/030_EC/030_ec_dec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch.vhd|rtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu.vhd|rtl/turbo_card/030_EC/030_ec_cache_top.vhd|rtl/turbo_card/030_EC/030_ec_cache_tags.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd|rtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd|rtl/turbo_card/030_EC/030_ec_cache_addr.vhd|rtl/turbo_card/030_EC/030_ec_bus_top.vhd|rtl/turbo_card/030_EC/030_ec_bus_sizer.vhd|rtl/turbo_card/030_EC/030_ec_bus_mux.vhd|rtl/turbo_card/030_EC/030_ec_bus_fsm.vhd|rtl/turbo_card/030_EC/030_ec_alu_top.vhd|rtl/turbo_card/030_EC/030_ec_alu_shift.vhd|rtl/turbo_card/030_EC/030_ec_alu_regs.vhd|rtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd|rtl/turbo_card/030_EC/030_ec_alu_logic.vhd|rtl/turbo_card/030_EC/030_ec_alu_core.vhd|rtl/turbo_card/030_EC/030_ec_alu_bitops.vhd|rtl/turbo_card/030_EC/030_ec.vhd|rtl/gayle/gayle_ide_cop/gayle_ide_cop_cnt.vhd|rtl/gayle/gayle_ide_cop/gayle_ide_cop.vhd|rtl/alice/copper/copper_sync.vhd|rtl/alice/copper/copper_fsm.vhd|rtl/alice/copper/copper_dec.vhd|rtl/alice/copper/copper.vhd|rtl/alice/blitter/blitter_shift.vhd|rtl/alice/blitter/blitter_fsm.vhd|rtl/alice/blitter/blitter_alu.vhd|rtl/alice/blitter/blitter_addr.vhd|rtl/alice/blitter/blitter.vhd|
 !i113 1
 R13
 R14
@@ -424,40 +465,40 @@ Abehavioral
 R2
 R3
 R4
-Z54 DEx4 work 7 blitter 0 22 8TMWz>51Yd3SzA47[^Z>b0
+DEx4 work 7 blitter 0 22 8TMWz>51Yd3SzA47[^Z>b0
 l143
 L42
-Z55 VoMz>dG]:f4YXl2<d<0[LH2
-Z56 !s100 I6;zR]1_m<`6JHOcW]_Mg3
+VoMz>dG]:f4YXl2<d<0[LH2
+!s100 I6;zR]1_m<`6JHOcW]_Mg3
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Eblitter_addr
-Z57 w1786957931
+Z63 w1786957931
 R2
 R3
 R4
 R5
-Z58 8rtl/alice/blitter/blitter_addr.vhd
-Z59 Frtl/alice/blitter/blitter_addr.vhd
+Z64 8rtl/alice/blitter/blitter_addr.vhd
+Z65 Frtl/alice/blitter/blitter_addr.vhd
 l0
 L15
 V^XL@4>SSVLH=YMhMz`jj[0
 !s100 F0GdZ554k_aFXc:b@9hKD2
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -465,40 +506,40 @@ Abehavioral
 R2
 R3
 R4
-Z60 DEx4 work 12 blitter_addr 0 22 ^XL@4>SSVLH=YMhMz`jj[0
+DEx4 work 12 blitter_addr 0 22 ^XL@4>SSVLH=YMhMz`jj[0
 l69
 L48
-Z61 V3;05SmMZ@R4l=Vg2DDhU61
-Z62 !s100 ?@K<:6@0MFgQb^OQ7>T5[2
+V3;05SmMZ@R4l=Vg2DDhU61
+!s100 ?@K<:6@0MFgQb^OQ7>T5[2
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Eblitter_alu
-Z63 w1780911628
+Z66 w1780911628
 R2
 R3
 R4
 R5
-Z64 8rtl/alice/blitter/blitter_alu.vhd
-Z65 Frtl/alice/blitter/blitter_alu.vhd
+Z67 8rtl/alice/blitter/blitter_alu.vhd
+Z68 Frtl/alice/blitter/blitter_alu.vhd
 l0
 L5
 VcR@WSfXON?=7R:>D?f5of3
 !s100 3KL[Y0hT7Y4OMlj3M=oeE3
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -506,18 +547,18 @@ Abehavioral
 R2
 R3
 R4
-Z66 DEx4 work 11 blitter_alu 0 22 cR@WSfXON?=7R:>D?f5of3
+DEx4 work 11 blitter_alu 0 22 cR@WSfXON?=7R:>D?f5of3
 l63
 L44
-Z67 V=jEIMPYmEDF`1h]C?o]Q^0
-Z68 !s100 SB<9_PK?SF;5lSW]X2IK;2
+V=jEIMPYmEDF`1h]C?o]Q^0
+!s100 SB<9_PK?SF;5lSW]X2IK;2
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -535,11 +576,11 @@ VM;P=>]e3]9Z<b3F50J;5@0
 !s100 <g=QD>bUCOe?XT`a?Rn5a1
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -547,40 +588,40 @@ Abehavioral
 R2
 R3
 R4
-Z72 DEx4 work 11 blitter_fsm 0 22 M;P=>]e3]9Z<b3F50J;5@0
+DEx4 work 11 blitter_fsm 0 22 M;P=>]e3]9Z<b3F50J;5@0
 l71
 L44
-Z73 VI=DDRGfQ6EQ56>XUOXBg[2
-Z74 !s100 `R[ajzEFko3Qm@mV^<@`;3
+VI=DDRGfQ6EQ56>XUOXBg[2
+!s100 `R[ajzEFko3Qm@mV^<@`;3
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Eblitter_shift
-Z75 w1787145988
+Z72 w1787145988
 R2
 R3
 R4
 R5
-Z76 8rtl/alice/blitter/blitter_shift.vhd
-Z77 Frtl/alice/blitter/blitter_shift.vhd
+Z73 8rtl/alice/blitter/blitter_shift.vhd
+Z74 Frtl/alice/blitter/blitter_shift.vhd
 l0
 L15
 VIhfdKD:ZA5WR[e]TeoP2B0
 !s100 L`l6_f9fekD0V=hlnimbi1
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -588,40 +629,40 @@ Abehavioral
 R2
 R3
 R4
-Z78 DEx4 work 13 blitter_shift 0 22 IhfdKD:ZA5WR[e]TeoP2B0
+DEx4 work 13 blitter_shift 0 22 IhfdKD:ZA5WR[e]TeoP2B0
 l75
 L49
-Z79 VWk3Cbi>@j`OO3G?@<<N@90
-Z80 !s100 9FWP>I]^Ecee1U1g7bdmC0
+VWk3Cbi>@j`OO3G?@<<N@90
+!s100 9FWP>I]^Ecee1U1g7bdmC0
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Ebram
-Z81 w1780874411
+Z75 w1780874411
 R2
 R3
 R4
 R0
-Z82 8rtl/bram.vhd
-Z83 Frtl/bram.vhd
+Z76 8rtl/bram.vhd
+Z77 Frtl/bram.vhd
 l0
 L5
 V<`gZdB^F]7lR]Ei94ao>[3
 !s100 FC6Kcle?0N11D=TVAMlm80
 R8
 33
-Z84 !s110 1780874958
+Z78 !s110 1780874958
 !i10b 1
-Z85 !s108 1780874958.000000
-Z86 !s90 -2008|-reportprogress|300|-work|work|rtl/bram.vhd|
-Z87 !s107 rtl/bram.vhd|
+Z79 !s108 1780874958.000000
+Z80 !s90 -2008|-reportprogress|300|-work|work|rtl/bram.vhd|
+Z81 !s107 rtl/bram.vhd|
 !i113 1
 R13
 R14
@@ -636,33 +677,33 @@ VhGD;z>PLaY_=c9RfQ`?Do0
 !s100 WKXaHiXdYYF`6:1lUkiKW2
 R8
 33
-R84
+R78
 !i10b 1
-R85
-R86
-R87
+R79
+R80
+R81
 !i113 1
 R13
 R14
 Ecia_a
-Z88 w1787172411
+Z82 w1787172411
 R2
 R3
 R4
 R5
-Z89 8rtl/cia_a/cia_a.vhd
-Z90 Frtl/cia_a/cia_a.vhd
+Z83 8rtl/cia_a/cia_a.vhd
+Z84 Frtl/cia_a/cia_a.vhd
 l0
 L13
 Ve4ER`[cg7h38XcLf>VTf_2
 !s100 OfjJB?@2714_QhR0E5HL40
 R8
 33
-R18
+Z85 !s110 1787174536
 !i10b 1
-R19
-R27
-R28
+Z86 !s108 1787174536.000000
+Z87 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_a/cia_a.vhd|
+Z88 !s107 rtl/cia_a/cia_a.vhd|
 !i113 1
 R13
 R14
@@ -677,33 +718,33 @@ VV8OQM[2;H=E4^PkFO>hTH2
 !s100 mYT^gQ6]H^NGcnZfbl]S<0
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+R87
+R88
 !i113 1
 R13
 R14
 Ecia_a_io
-Z91 w1787172491
+Z89 w1787172491
 R2
 R3
 R4
 R5
-Z92 8rtl/cia_a/cia_a_io.vhd
-Z93 Frtl/cia_a/cia_a_io.vhd
+Z90 8rtl/cia_a/cia_a_io.vhd
+Z91 Frtl/cia_a/cia_a_io.vhd
 l0
 L15
 VgGZ1hU8AKgDT6G4`9:[b_2
 !s100 9Ii]iBHkB^1>GJ1o>C]Se1
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+Z92 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_a/cia_a_io.vhd|
+Z93 !s107 rtl/cia_a/cia_a_io.vhd|
 !i113 1
 R13
 R14
@@ -718,11 +759,11 @@ Va@9^UHbSe=e?2TVHV=HQj2
 !s100 jYS[<]c8mX?BF6BJPbA1h2
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+R92
+R93
 !i113 1
 R13
 R14
@@ -740,11 +781,11 @@ V@GjoQIndSl1@IAZXJ0GSJ1
 !s100 aWMciWMKEL]Hj]Pz7OIEA0
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+Z97 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_a/cia_a_irq.vhd|
+Z98 !s107 rtl/cia_a/cia_a_irq.vhd|
 !i113 1
 R13
 R14
@@ -759,33 +800,33 @@ V_F^d@c10X^;:hS8OKnhOF0
 !s100 R9jF1URNoef5VKPiFEB9L3
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+R97
+R98
 !i113 1
 R13
 R14
 Ecia_a_serial
-Z97 w1787172694
+Z99 w1787172694
 R2
 R3
 R4
 R5
-Z98 8rtl/cia_a/cia_a_serial.vhd
-Z99 Frtl/cia_a/cia_a_serial.vhd
+Z100 8rtl/cia_a/cia_a_serial.vhd
+Z101 Frtl/cia_a/cia_a_serial.vhd
 l0
 L15
 V<Zn;UBI;hAc?BK_@L1Md:1
 !s100 :gVk649Fz693K5c5AJ[L;2
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+Z102 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_a/cia_a_serial.vhd|
+Z103 !s107 rtl/cia_a/cia_a_serial.vhd|
 !i113 1
 R13
 R14
@@ -800,33 +841,33 @@ Vz`U>BY74MbTJ9g5:Iz[?40
 !s100 U?5EhG9PYEDenC8^M0A<j0
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+R102
+R103
 !i113 1
 R13
 R14
 Ecia_a_timer
-Z100 w1786880235
+Z104 w1786880235
 R2
 R3
 R4
 R5
-Z101 8rtl/cia_a/cia_a_timer.vhd
-Z102 Frtl/cia_a/cia_a_timer.vhd
+Z105 8rtl/cia_a/cia_a_timer.vhd
+Z106 Frtl/cia_a/cia_a_timer.vhd
 l0
 L16
 VFc5Vnb;F[kED:M@OEe0HY1
 !s100 M6In8JV;?3fJI?X6<GK2B0
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+Z107 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_a/cia_a_timer.vhd|
+Z108 !s107 rtl/cia_a/cia_a_timer.vhd|
 !i113 1
 R13
 R14
@@ -841,33 +882,33 @@ VQYD^MNV4egX4GUm?j8]231
 !s100 X2[9jZ[;F0P97I6zi<`I80
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+R107
+R108
 !i113 1
 R13
 R14
 Ecia_b
-Z103 w1787172838
+Z109 w1787172838
 R2
 R3
 R4
 R5
-Z104 8rtl/cia_b/cia_b.vhd
-Z105 Frtl/cia_b/cia_b.vhd
+Z110 8rtl/cia_b/cia_b.vhd
+Z111 Frtl/cia_b/cia_b.vhd
 l0
 L16
 V[9MTb4DJHJN]hB;CXlV1h3
 !s100 E7I<e]I=@?A1VY>W@mEWE1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+Z112 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_b/cia_b.vhd|
+Z113 !s107 rtl/cia_b/cia_b.vhd|
 !i113 1
 R13
 R14
@@ -882,33 +923,33 @@ V?M1UiXZz@aH5?aO2;>fQS2
 !s100 [c>SC<G3YGc>T1jGl57HR2
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R112
+R113
 !i113 1
 R13
 R14
 Ecia_b_io
-Z106 w1787172881
+Z114 w1787172881
 R2
 R3
 R4
 R5
-Z107 8rtl/cia_b/cia_b_io.vhd
-Z108 Frtl/cia_b/cia_b_io.vhd
+Z115 8rtl/cia_b/cia_b_io.vhd
+Z116 Frtl/cia_b/cia_b_io.vhd
 l0
 L15
 V:;i:8@7<3KA>W:Wk>:^8>3
 !s100 SJOW8=CllUkRLSJmWl[fL0
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+Z117 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_b/cia_b_io.vhd|
+Z118 !s107 rtl/cia_b/cia_b_io.vhd|
 !i113 1
 R13
 R14
@@ -923,33 +964,33 @@ VAPS=LaM^7BN>Yg<VLIlaa1
 !s100 ca@OR17Fc;d5RkXY8;kCF3
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+R117
+R118
 !i113 1
 R13
 R14
 Ecia_b_irq
-Z109 w1786895982
+Z119 w1786895982
 R2
 R3
 R4
 R5
-Z110 8rtl/cia_b/cia_b_irq.vhd
-Z111 Frtl/cia_b/cia_b_irq.vhd
+Z120 8rtl/cia_b/cia_b_irq.vhd
+Z121 Frtl/cia_b/cia_b_irq.vhd
 l0
 L14
 ViXNPI5X`F6ZTe@2?WK1SS3
 !s100 HMg22Nnf4m2UC[emVnRSd3
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R86
+Z122 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_b/cia_b_irq.vhd|
+Z123 !s107 rtl/cia_b/cia_b_irq.vhd|
 !i113 1
 R13
 R14
@@ -964,33 +1005,33 @@ VCQ?iFjQ9G`LkhF5NRE?@N3
 !s100 nj4<7GG=SE`f]]>M]NBQa3
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R86
+R122
+R123
 !i113 1
 R13
 R14
 Ecia_b_serial
-Z112 w1787172964
+Z124 w1787172964
 R2
 R3
 R4
 R5
-Z113 8rtl/cia_b/cia_b_serial.vhd
-Z114 Frtl/cia_b/cia_b_serial.vhd
+Z125 8rtl/cia_b/cia_b_serial.vhd
+Z126 Frtl/cia_b/cia_b_serial.vhd
 l0
 L15
 V`ZeRCNXNdKA4Kb4>QH97X2
 !s100 VzEQ9JjGKV:TAO`3b=_jB3
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+Z127 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_b/cia_b_serial.vhd|
+Z128 !s107 rtl/cia_b/cia_b_serial.vhd|
 !i113 1
 R13
 R14
@@ -1005,33 +1046,33 @@ VBKfOZ;DjI?X]PmUWae6SS1
 !s100 =cVV]6PH:QD3hV2iE2R=:1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R127
+R128
 !i113 1
 R13
 R14
 Ecia_b_timer
-Z115 w1786881339
+Z129 w1786881339
 R2
 R3
 R4
 R5
-Z116 8rtl/cia_b/cia_b_timer.vhd
-Z117 Frtl/cia_b/cia_b_timer.vhd
+Z130 8rtl/cia_b/cia_b_timer.vhd
+Z131 Frtl/cia_b/cia_b_timer.vhd
 l0
 L16
 V;[KRhNRlnk5_DPKfRZQI91
 !s100 <C1_<XlN]HmBC_jLIPYTA3
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+Z132 !s90 -reportprogress|300|-2008|-work|work|rtl/cia_b/cia_b_timer.vhd|
+Z133 !s107 rtl/cia_b/cia_b_timer.vhd|
 !i113 1
 R13
 R14
@@ -1046,33 +1087,33 @@ VkEmPn[lWQcV8cl^I7o1M92
 !s100 T]<c4n@Y[]A]ZiQ@EczmS2
 R8
 33
-R18
+R85
 !i10b 1
-R19
-R27
-R28
+R86
+R132
+R133
 !i113 1
 R13
 R14
 Ecopper
-Z118 w1786962925
+Z134 w1786962925
 R2
 R3
 R4
 R5
-Z119 8rtl/alice/copper/copper.vhd
-Z120 Frtl/alice/copper/copper.vhd
+Z135 8rtl/alice/copper/copper.vhd
+Z136 Frtl/alice/copper/copper.vhd
 l0
 L15
 V`mYla4_XQS@]T;5eYSam13
 !s100 lGMh?XN]JeSgCPo_Dfc?E1
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -1080,40 +1121,40 @@ Abehavioral
 R2
 R3
 R4
-Z121 DEx4 work 6 copper 0 22 `mYla4_XQS@]T;5eYSam13
+DEx4 work 6 copper 0 22 `mYla4_XQS@]T;5eYSam13
 l136
 L55
-Z122 V77OUOK7BjF`P@bMiQ8bS>3
-Z123 !s100 :hDodAc6L9E10MEJK]M9@0
+V77OUOK7BjF`P@bMiQ8bS>3
+!s100 :hDodAc6L9E10MEJK]M9@0
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Ecopper_dec
-Z124 w1786958905
+Z137 w1786958905
 R2
 R3
 R4
 R5
-Z125 8rtl/alice/copper/copper_dec.vhd
-Z126 Frtl/alice/copper/copper_dec.vhd
+Z138 8rtl/alice/copper/copper_dec.vhd
+Z139 Frtl/alice/copper/copper_dec.vhd
 l0
 L5
 VaOji?QN^`YBK[;WVmCVk:2
 !s100 83:oh[Jd5>bnzh[7^<`Pa3
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -1121,40 +1162,40 @@ Abehavioral
 R2
 R3
 R4
-Z127 DEx4 work 10 copper_dec 0 22 aOji?QN^`YBK[;WVmCVk:2
+DEx4 work 10 copper_dec 0 22 aOji?QN^`YBK[;WVmCVk:2
 l68
 L48
-Z128 VV@eYl4aed[O3^?dW>3<T=1
-Z129 !s100 6[hJ:A]Oj<E?Ffh22POEI1
+VV@eYl4aed[O3^?dW>3<T=1
+!s100 6[hJ:A]Oj<E?Ffh22POEI1
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Ecopper_fsm
-Z130 w1786959100
+Z140 w1786959100
 R2
 R3
 R4
 R5
-Z131 8rtl/alice/copper/copper_fsm.vhd
-Z132 Frtl/alice/copper/copper_fsm.vhd
+Z141 8rtl/alice/copper/copper_fsm.vhd
+Z142 Frtl/alice/copper/copper_fsm.vhd
 l0
 L15
 VhDF02RJZ;7PfR0DZ3Wk[41
 !s100 ?3=FUJlF=elEJIVcD`:j_1
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -1162,40 +1203,40 @@ Abehavioral
 R2
 R3
 R4
-Z133 DEx4 work 10 copper_fsm 0 22 hDF02RJZ;7PfR0DZ3Wk[41
+DEx4 work 10 copper_fsm 0 22 hDF02RJZ;7PfR0DZ3Wk[41
 l65
 L48
-Z134 VV8j6_oNP7jkj1]n;3QR<X3
-Z135 !s100 =koBYC1O=lIeaRGSZkTfz3
+VV8j6_oNP7jkj1]n;3QR<X3
+!s100 =koBYC1O=lIeaRGSZkTfz3
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Ecopper_sync
-Z136 w1786861072
+Z143 w1786861072
 R2
 R3
 R4
 R5
-Z137 8rtl/alice/copper/copper_sync.vhd
-Z138 Frtl/alice/copper/copper_sync.vhd
+Z144 8rtl/alice/copper/copper_sync.vhd
+Z145 Frtl/alice/copper/copper_sync.vhd
 l0
 L15
 V8?G[_fAhbih?^nOYndR?;0
 !s100 BIWblSz@DC<EjHO]9?41A1
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -1203,40 +1244,40 @@ Abehavioral
 R2
 R3
 R4
-Z139 DEx4 work 11 copper_sync 0 22 8?G[_fAhbih?^nOYndR?;0
+DEx4 work 11 copper_sync 0 22 8?G[_fAhbih?^nOYndR?;0
 l61
 L45
-Z140 VST8fBPERD<6j_F=YWYVcc3
-Z141 !s100 @z`]=HLjc1aZ^G<PRK1mQ0
+VST8fBPERD<6j_F=YWYVcc3
+!s100 @z`]=HLjc1aZ^G<PRK1mQ0
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Ecpu_030_ec
-Z142 w1787150037
+Z146 w1787150037
 R2
 R3
 R4
 R5
-Z143 8rtl/turbo_card/030_EC/030_ec.vhd
-Z144 Frtl/turbo_card/030_EC/030_ec.vhd
+Z147 8rtl/turbo_card/030_EC/030_ec.vhd
+Z148 Frtl/turbo_card/030_EC/030_ec.vhd
 l0
 L16
 V2RM7eLFUKY_=PEeY0@blm2
 !s100 ckeo0]7^>[=?h4b`nN5CE3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+Z149 !s90 -reportprogress|300|-2008|-work|work|rtl/turbo_card/030_EC/030_ec.vhd|rtl/turbo_card/030_EC/030_ec_alu_bitops.vhd|rtl/turbo_card/030_EC/030_ec_alu_core.vhd|rtl/turbo_card/030_EC/030_ec_alu_logic.vhd|rtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd|rtl/turbo_card/030_EC/030_ec_alu_regs.vhd|rtl/turbo_card/030_EC/030_ec_alu_shift.vhd|rtl/turbo_card/030_EC/030_ec_alu_top.vhd|rtl/turbo_card/030_EC/030_ec_bus_fsm.vhd|rtl/turbo_card/030_EC/030_ec_bus_mux.vhd|rtl/turbo_card/030_EC/030_ec_bus_sizer.vhd|rtl/turbo_card/030_EC/030_ec_bus_top.vhd|rtl/turbo_card/030_EC/030_ec_cache_addr.vhd|rtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd|rtl/turbo_card/030_EC/030_ec_cache_tags.vhd|rtl/turbo_card/030_EC/030_ec_cache_top.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd|rtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd|rtl/turbo_card/030_EC/030_ec_dec_move.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_mux.vhd|rtl/turbo_card/030_EC/030_ec_dec_special.vhd|rtl/turbo_card/030_EC/030_ec_dec_special_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd|rtl/turbo_card/030_EC/030_ec_decode_top.vhd|
+Z150 !s107 rtl/turbo_card/030_EC/030_ec_decode_top.vhd|rtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd|rtl/turbo_card/030_EC/030_ec_dec_special_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_special.vhd|rtl/turbo_card/030_EC/030_ec_dec_mux.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_move_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_move.vhd|rtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd|rtl/turbo_card/030_EC/030_ec_dec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd|rtl/turbo_card/030_EC/030_ec_dec_ea.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd|rtl/turbo_card/030_EC/030_ec_dec_branch.vhd|rtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd|rtl/turbo_card/030_EC/030_ec_dec_alu.vhd|rtl/turbo_card/030_EC/030_ec_cache_top.vhd|rtl/turbo_card/030_EC/030_ec_cache_tags.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd|rtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd|rtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd|rtl/turbo_card/030_EC/030_ec_cache_addr.vhd|rtl/turbo_card/030_EC/030_ec_bus_top.vhd|rtl/turbo_card/030_EC/030_ec_bus_sizer.vhd|rtl/turbo_card/030_EC/030_ec_bus_mux.vhd|rtl/turbo_card/030_EC/030_ec_bus_fsm.vhd|rtl/turbo_card/030_EC/030_ec_alu_top.vhd|rtl/turbo_card/030_EC/030_ec_alu_shift.vhd|rtl/turbo_card/030_EC/030_ec_alu_regs.vhd|rtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd|rtl/turbo_card/030_EC/030_ec_alu_logic.vhd|rtl/turbo_card/030_EC/030_ec_alu_core.vhd|rtl/turbo_card/030_EC/030_ec_alu_bitops.vhd|rtl/turbo_card/030_EC/030_ec.vhd|
 !i113 1
 R13
 R14
@@ -1244,40 +1285,40 @@ Astructural
 R2
 R3
 R4
-Z145 DEx4 work 10 cpu_030_ec 0 22 2RM7eLFUKY_=PEeY0@blm2
+DEx4 work 10 cpu_030_ec 0 22 2RM7eLFUKY_=PEeY0@blm2
 l215
 L59
-Z146 VUSeGW8HGg7jPCdWHlQW=e2
-Z147 !s100 kmBFM8iamM<j^JYWzk?5L3
+VUSeGW8HGg7jPCdWHlQW=e2
+!s100 kmBFM8iamM<j^JYWzk?5L3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_alu
-Z148 w1787151100
+Z151 w1787151100
 R2
 R3
 R4
 R5
-Z149 8rtl/turbo_card/030_EC/030_ec_alu_top.vhd
-Z150 Frtl/turbo_card/030_EC/030_ec_alu_top.vhd
+Z152 8rtl/turbo_card/030_EC/030_ec_alu_top.vhd
+Z153 Frtl/turbo_card/030_EC/030_ec_alu_top.vhd
 l0
 L15
 Vz_HROLJ8izR]nSIB;a]ng0
 !s100 3]dQgGmo4DZAh81IgFZhz3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1285,18 +1326,18 @@ Astructural
 R2
 R3
 R4
-Z151 DEx4 work 14 cpu_030_ec_alu 0 22 z_HROLJ8izR]nSIB;a]ng0
+DEx4 work 14 cpu_030_ec_alu 0 22 z_HROLJ8izR]nSIB;a]ng0
 l103
 L56
-Z152 VW]VFXUSSAW7<m73HPMXWl1
-Z153 !s100 Z;g`6:F>LL[_YfH6<OiX]2
+VW]VFXUSSAW7<m73HPMXWl1
+!s100 Z;g`6:F>LL[_YfH6<OiX]2
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1314,11 +1355,11 @@ VEI:TP1fdbaT3PcMHEnnSB3
 !s100 8U7K9gl:F<QG=P8d3Hb<12
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1326,40 +1367,40 @@ Abehavioral
 R2
 R3
 R4
-Z157 DEx4 work 21 cpu_030_ec_alu_bitops 0 22 EI:TP1fdbaT3PcMHEnnSB3
+DEx4 work 21 cpu_030_ec_alu_bitops 0 22 EI:TP1fdbaT3PcMHEnnSB3
 l34
 L33
-Z158 V9<Me[DYIGNNW4H>De;=aB2
-Z159 !s100 15F>@DofIMa3bL0?n3L9K3
+V9<Me[DYIGNNW4H>De;=aB2
+!s100 15F>@DofIMa3bL0?n3L9K3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_alu_core
-Z160 w1786889926
+Z157 w1786889926
 R2
 R3
 R4
 R5
-Z161 8rtl/turbo_card/030_EC/030_ec_alu_core.vhd
-Z162 Frtl/turbo_card/030_EC/030_ec_alu_core.vhd
+Z158 8rtl/turbo_card/030_EC/030_ec_alu_core.vhd
+Z159 Frtl/turbo_card/030_EC/030_ec_alu_core.vhd
 l0
 L15
 VZHPadSc=Q7V1^LKnm_N@C1
 !s100 Ag_a0PI7f2P0f9@9nlG>h2
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1367,18 +1408,18 @@ Astructural
 R2
 R3
 R4
-Z163 DEx4 work 19 cpu_030_ec_alu_core 0 22 ZHPadSc=Q7V1^LKnm_N@C1
+DEx4 work 19 cpu_030_ec_alu_core 0 22 ZHPadSc=Q7V1^LKnm_N@C1
 l100
 L33
-Z164 VALD^nNeSk9:YlH0Y1Qzko3
-Z165 !s100 b=CWXM0^lS9H81F>8a]jJ0
+VALD^nNeSk9:YlH0Y1Qzko3
+!s100 b=CWXM0^lS9H81F>8a]jJ0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1388,19 +1429,19 @@ R2
 R3
 R4
 R5
-Z166 8rtl/turbo_card/030_EC/030_ec_alu_logic.vhd
-Z167 Frtl/turbo_card/030_EC/030_ec_alu_logic.vhd
+Z160 8rtl/turbo_card/030_EC/030_ec_alu_logic.vhd
+Z161 Frtl/turbo_card/030_EC/030_ec_alu_logic.vhd
 l0
 L13
 Vid3eQz^Rm8M9=RanUbjC?1
 !s100 fRQ:daJSBZFU7P^ChM[bL3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1408,18 +1449,18 @@ Abehavioral
 R2
 R3
 R4
-Z168 DEx4 work 20 cpu_030_ec_alu_logic 0 22 id3eQz^Rm8M9=RanUbjC?1
+DEx4 work 20 cpu_030_ec_alu_logic 0 22 id3eQz^Rm8M9=RanUbjC?1
 l32
 L31
-Z169 V3knG^M=mA=?8bKJgJUHaf0
-Z170 !s100 81@U3=KLkPnD3L73iF@e`1
+V3knG^M=mA=?8bKJgJUHaf0
+!s100 81@U3=KLkPnD3L73iF@e`1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1429,19 +1470,19 @@ R2
 R3
 R4
 R5
-Z171 8rtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd
-Z172 Frtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd
+Z162 8rtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd
+Z163 Frtl/turbo_card/030_EC/030_ec_alu_muldiv.vhd
 l0
 L14
 V2MaDg;NNXa9Ml]6=Ge8mW0
 !s100 f>FJzDCoQVZRb[@eQR?fe0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1449,18 +1490,18 @@ Abehavioral
 R2
 R3
 R4
-Z173 DEx4 work 21 cpu_030_ec_alu_muldiv 0 22 2MaDg;NNXa9Ml]6=Ge8mW0
+DEx4 work 21 cpu_030_ec_alu_muldiv 0 22 2MaDg;NNXa9Ml]6=Ge8mW0
 l35
 L34
-Z174 VVn?VA@bVnfjj53k<PnE^;1
-Z175 !s100 eZVEUW_:<hL>JdWB;AiP90
+VVn?VA@bVnfjj53k<PnE^;1
+!s100 eZVEUW_:<hL>JdWB;AiP90
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1470,19 +1511,19 @@ R2
 R3
 R4
 R5
-Z176 8rtl/turbo_card/030_EC/030_ec_alu_regs.vhd
-Z177 Frtl/turbo_card/030_EC/030_ec_alu_regs.vhd
+Z164 8rtl/turbo_card/030_EC/030_ec_alu_regs.vhd
+Z165 Frtl/turbo_card/030_EC/030_ec_alu_regs.vhd
 l0
 L15
 Vd6KG8Mj^F^k1>oO@eh;MF1
 !s100 QE@Vfo]oePOUaJ2IbG6QY3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1490,18 +1531,18 @@ Abehavioral
 R2
 R3
 R4
-Z178 DEx4 work 19 cpu_030_ec_alu_regs 0 22 d6KG8Mj^F^k1>oO@eh;MF1
+DEx4 work 19 cpu_030_ec_alu_regs 0 22 d6KG8Mj^F^k1>oO@eh;MF1
 l79
 L60
-Z179 VneTOZiJ2@WFNcXH34<z8L1
-Z180 !s100 AW@>oRZGHFnVE=o[GFEzd3
+VneTOZiJ2@WFNcXH34<z8L1
+!s100 AW@>oRZGHFnVE=o[GFEzd3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1511,19 +1552,19 @@ R2
 R3
 R4
 R5
-Z181 8rtl/turbo_card/030_EC/030_ec_alu_shift.vhd
-Z182 Frtl/turbo_card/030_EC/030_ec_alu_shift.vhd
+Z166 8rtl/turbo_card/030_EC/030_ec_alu_shift.vhd
+Z167 Frtl/turbo_card/030_EC/030_ec_alu_shift.vhd
 l0
 L14
 VgU4>TX74n7OzzGVzMT`f[0
 !s100 `HNUzbaANzf6Jd4aIAKbC3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1531,40 +1572,40 @@ Abehavioral
 R2
 R3
 R4
-Z183 DEx4 work 20 cpu_030_ec_alu_shift 0 22 gU4>TX74n7OzzGVzMT`f[0
+DEx4 work 20 cpu_030_ec_alu_shift 0 22 gU4>TX74n7OzzGVzMT`f[0
 l36
 L34
-Z184 VfgA:4V5gcbX::Q?b6gQ1Q2
-Z185 !s100 nR8nN0fhUIli`:B2BHTLg3
+VfgA:4V5gcbX::Q?b6gQ1Q2
+!s100 nR8nN0fhUIli`:B2BHTLg3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_bus
-Z186 w1787151873
+Z168 w1787151873
 R2
 R3
 R4
 R5
-Z187 8rtl/turbo_card/030_EC/030_ec_bus_top.vhd
-Z188 Frtl/turbo_card/030_EC/030_ec_bus_top.vhd
+Z169 8rtl/turbo_card/030_EC/030_ec_bus_top.vhd
+Z170 Frtl/turbo_card/030_EC/030_ec_bus_top.vhd
 l0
 L15
 V54GTJaHRRF@TkJ5<O22Z<1
 !s100 gb27_LSgm48DY6heHYj=T1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1572,40 +1613,40 @@ Astructural
 R2
 R3
 R4
-Z189 DEx4 work 14 cpu_030_ec_bus 0 22 54GTJaHRRF@TkJ5<O22Z<1
+DEx4 work 14 cpu_030_ec_bus 0 22 54GTJaHRRF@TkJ5<O22Z<1
 l135
 L72
-Z190 Vb?:cDaTZY<h>7AGR[oNg11
-Z191 !s100 YW:R_lez<:4a^ZI5IRQdI2
+Vb?:cDaTZY<h>7AGR[oNg11
+!s100 YW:R_lez<:4a^ZI5IRQdI2
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_bus_fsm
-Z192 w1787162314
+Z171 w1787162314
 R2
 R3
 R4
 R5
-Z193 8rtl/turbo_card/030_EC/030_ec_bus_fsm.vhd
-Z194 Frtl/turbo_card/030_EC/030_ec_bus_fsm.vhd
+Z172 8rtl/turbo_card/030_EC/030_ec_bus_fsm.vhd
+Z173 Frtl/turbo_card/030_EC/030_ec_bus_fsm.vhd
 l0
 L13
 Vc_NGHFgOH^oFn5`KhB0aX1
 !s100 RDMc_J2bY_UOb4P;7al`C2
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1613,40 +1654,40 @@ Abehavioral
 R2
 R3
 R4
-Z195 DEx4 work 18 cpu_030_ec_bus_fsm 0 22 c_NGHFgOH^oFn5`KhB0aX1
+DEx4 work 18 cpu_030_ec_bus_fsm 0 22 c_NGHFgOH^oFn5`KhB0aX1
 l78
 L54
-Z196 VLF5R@EOjFkK4WGMAG:_MT3
-Z197 !s100 jf13mRAN7o`]kDFgN1n;K2
+VLF5R@EOjFkK4WGMAG:_MT3
+!s100 jf13mRAN7o`]kDFgN1n;K2
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_bus_mux
-Z198 w1787152433
+Z174 w1787152433
 R2
 R3
 R4
 R5
-Z199 8rtl/turbo_card/030_EC/030_ec_bus_mux.vhd
-Z200 Frtl/turbo_card/030_EC/030_ec_bus_mux.vhd
+Z175 8rtl/turbo_card/030_EC/030_ec_bus_mux.vhd
+Z176 Frtl/turbo_card/030_EC/030_ec_bus_mux.vhd
 l0
 L15
 VQ;`kzL^SJ1GYYNSIOR^8f1
 !s100 9R0PMd>SmoEh7H=IAd=9G3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1654,40 +1695,40 @@ Abehavioral
 R2
 R3
 R4
-Z201 DEx4 work 18 cpu_030_ec_bus_mux 0 22 Q;`kzL^SJ1GYYNSIOR^8f1
+DEx4 work 18 cpu_030_ec_bus_mux 0 22 Q;`kzL^SJ1GYYNSIOR^8f1
 l45
 L43
-Z202 VGM3<kDffRnAVjDOGQ<:Ie2
-Z203 !s100 K?ieZ[e<?b;S>=AR6T0KZ1
+VGM3<kDffRnAVjDOGQ<:Ie2
+!s100 K?ieZ[e<?b;S>=AR6T0KZ1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_bus_sizer
-Z204 w1786842727
+Z177 w1786842727
 R2
 R3
 R4
 R5
-Z205 8rtl/turbo_card/030_EC/030_ec_bus_sizer.vhd
-Z206 Frtl/turbo_card/030_EC/030_ec_bus_sizer.vhd
+Z178 8rtl/turbo_card/030_EC/030_ec_bus_sizer.vhd
+Z179 Frtl/turbo_card/030_EC/030_ec_bus_sizer.vhd
 l0
 L14
 VjH63TP=QKSONU8?=F[;A?0
 !s100 VbY^;W:QhcQYS=BK6e=U;3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1695,18 +1736,18 @@ Abehavioral
 R2
 R3
 R4
-Z207 DEx4 work 20 cpu_030_ec_bus_sizer 0 22 jH63TP=QKSONU8?=F[;A?0
+DEx4 work 20 cpu_030_ec_bus_sizer 0 22 jH63TP=QKSONU8?=F[;A?0
 l32
 L31
-Z208 VDhfRMJFlHhSm4<dWFnMGX2
-Z209 !s100 K84MR`[j>NhBH[>VzRARP1
+VDhfRMJFlHhSm4<dWFnMGX2
+!s100 K84MR`[j>NhBH[>VzRARP1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1716,19 +1757,19 @@ R2
 R3
 R4
 R5
-Z210 8rtl/turbo_card/030_EC/030_ec_cache_addr.vhd
-Z211 Frtl/turbo_card/030_EC/030_ec_cache_addr.vhd
+Z180 8rtl/turbo_card/030_EC/030_ec_cache_addr.vhd
+Z181 Frtl/turbo_card/030_EC/030_ec_cache_addr.vhd
 l0
 L13
 VaNlXdX7f`;^cNM0mlJVfN2
 !s100 jCBG[^k3m?2jOA;HijX3?0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1736,40 +1777,40 @@ Abehavioral
 R2
 R3
 R4
-Z212 DEx4 work 21 cpu_030_ec_cache_addr 0 22 aNlXdX7f`;^cNM0mlJVfN2
+DEx4 work 21 cpu_030_ec_cache_addr 0 22 aNlXdX7f`;^cNM0mlJVfN2
 l35
 L29
-Z213 Vkjhjl@c;O9o3CAd0P;1dU2
-Z214 !s100 3H6z?e<FdhI^9Z9@1?N0X1
+Vkjhjl@c;O9o3CAd0P;1dU2
+!s100 3H6z?e<FdhI^9Z9@1?N0X1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_cache_clear_unit
-Z215 w1781174505
+Z182 w1781174505
 R2
 R3
 R4
 R5
-Z216 8rtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd
-Z217 Frtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd
+Z183 8rtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd
+Z184 Frtl/turbo_card/030_EC/030_ec_cache_clear_unit.vhd
 l0
 L14
 VRh3@j3O<_H[ITVF?SDEXl3
 !s100 E3DNOTWUEAm^BUGXIfIh;3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1777,40 +1818,40 @@ Abehavioral
 R2
 R3
 R4
-Z218 DEx4 work 27 cpu_030_ec_cache_clear_unit 0 22 Rh3@j3O<_H[ITVF?SDEXl3
+DEx4 work 27 cpu_030_ec_cache_clear_unit 0 22 Rh3@j3O<_H[ITVF?SDEXl3
 l37
 L31
-Z219 VP_IIAPda^?leJ=f_R>N`C3
-Z220 !s100 6`K8_H>BMEG;]C6WLN6m02
+VP_IIAPda^?leJ=f_R>N`C3
+!s100 6`K8_H>BMEG;]C6WLN6m02
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_cache_ctrl
-Z221 w1786845178
+Z185 w1786845178
 R2
 R3
 R4
 R5
-Z222 8rtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd
-Z223 Frtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd
+Z186 8rtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd
+Z187 Frtl/turbo_card/030_EC/030_ec_cache_ctrl.vhd
 l0
 L15
 VbGhfjcQiUfcWaI<;_AI`80
 !s100 2]e6ZMhC1MAoc2]Qa7LUQ1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1818,40 +1859,40 @@ Astructural
 R2
 R3
 R4
-Z224 DEx4 work 21 cpu_030_ec_cache_ctrl 0 22 bGhfjcQiUfcWaI<;_AI`80
+DEx4 work 21 cpu_030_ec_cache_ctrl 0 22 bGhfjcQiUfcWaI<;_AI`80
 l108
 L55
-Z225 VUW;8k6nB;fY1fnjd3HM9Y3
-Z226 !s100 SAU?WZBHd4HR9TP8fd[c[0
+VUW;8k6nB;fY1fnjd3HM9Y3
+!s100 SAU?WZBHd4HR9TP8fd[c[0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_cache_ctrl_fsm
-Z227 w1781174610
+Z188 w1781174610
 R2
 R3
 R4
 R5
-Z228 8rtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd
-Z229 Frtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd
+Z189 8rtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd
+Z190 Frtl/turbo_card/030_EC/030_ec_cache_ctrl_fsm.vhd
 l0
 L14
 V0RiK2Yk<nW:RabHIENHgb0
 !s100 Yg;712XVQ5LJgf?24A=lg1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1859,40 +1900,40 @@ Abehavioral
 R2
 R3
 R4
-Z230 DEx4 work 25 cpu_030_ec_cache_ctrl_fsm 0 22 0RiK2Yk<nW:RabHIENHgb0
+DEx4 work 25 cpu_030_ec_cache_ctrl_fsm 0 22 0RiK2Yk<nW:RabHIENHgb0
 l52
 L47
-Z231 VI[^bWk>Gc;K=z53bO]i;L2
-Z232 !s100 o3F^iCUJMj4NcWeF61mJm0
+VI[^bWk>Gc;K=z53bO]i;L2
+!s100 o3F^iCUJMj4NcWeF61mJm0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_cache_tags
-Z233 w1787152934
+Z191 w1787152934
 R2
 R3
 R4
 R5
-Z234 8rtl/turbo_card/030_EC/030_ec_cache_tags.vhd
-Z235 Frtl/turbo_card/030_EC/030_ec_cache_tags.vhd
+Z192 8rtl/turbo_card/030_EC/030_ec_cache_tags.vhd
+Z193 Frtl/turbo_card/030_EC/030_ec_cache_tags.vhd
 l0
 L15
 VL`LWlcHV]>nWWoj1ilRTK1
 !s100 ^kfXKl3z251obZBU2_:<71
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1900,40 +1941,40 @@ Abehavioral
 R2
 R3
 R4
-Z236 DEx4 work 21 cpu_030_ec_cache_tags 0 22 L`LWlcHV]>nWWoj1ilRTK1
+DEx4 work 21 cpu_030_ec_cache_tags 0 22 L`LWlcHV]>nWWoj1ilRTK1
 l59
 L43
-Z237 VWIF`]_zjJ_nY>@55^T9on0
-Z238 !s100 _9j1ML?GB93Gmb`=A`oFT3
+VWIF`]_zjJ_nY>@55^T9on0
+!s100 _9j1ML?GB93Gmb`=A`oFT3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_cache_top
-Z239 w1787152682
+Z194 w1787152682
 R2
 R3
 R4
 R5
-Z240 8rtl/turbo_card/030_EC/030_ec_cache_top.vhd
-Z241 Frtl/turbo_card/030_EC/030_ec_cache_top.vhd
+Z195 8rtl/turbo_card/030_EC/030_ec_cache_top.vhd
+Z196 Frtl/turbo_card/030_EC/030_ec_cache_top.vhd
 l0
 L15
 V9Y;FhK21nZTV0>d9a=j[J2
 !s100 YgS?Q2b]2U^IbJXi0@bX[0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1941,40 +1982,40 @@ Astructural
 R2
 R3
 R4
-Z242 DEx4 work 20 cpu_030_ec_cache_top 0 22 9Y;FhK21nZTV0>d9a=j[J2
+DEx4 work 20 cpu_030_ec_cache_top 0 22 9Y;FhK21nZTV0>d9a=j[J2
 l137
 L55
-Z243 V;P:]@4fgE2Wz]`nMhjF@a1
-Z244 !s100 QFJ0YX7ec:o;A5^m9l=G<0
+V;P:]@4fgE2Wz]`nMhjF@a1
+!s100 QFJ0YX7ec:o;A5^m9l=G<0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_dec_alu
-Z245 w1786846611
+Z197 w1786846611
 R2
 R3
 R4
 R5
-Z246 8rtl/turbo_card/030_EC/030_ec_dec_alu.vhd
-Z247 Frtl/turbo_card/030_EC/030_ec_dec_alu.vhd
+Z198 8rtl/turbo_card/030_EC/030_ec_dec_alu.vhd
+Z199 Frtl/turbo_card/030_EC/030_ec_dec_alu.vhd
 l0
 L15
 VlV`SOS6YBafMzL_=cRN1l3
 !s100 @zQ8IVK>TC>Pi^oGR@5M;1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -1982,18 +2023,18 @@ Abehavioral
 R2
 R3
 R4
-Z248 DEx4 work 18 cpu_030_ec_dec_alu 0 22 lV`SOS6YBafMzL_=cRN1l3
+DEx4 work 18 cpu_030_ec_dec_alu 0 22 lV`SOS6YBafMzL_=cRN1l3
 l47
 L44
-Z249 VL0fEQ;IK;IahND0goQUo02
-Z250 !s100 `<2_jIc7K?AGffAl;WfC00
+VL0fEQ;IK;IahND0goQUo02
+!s100 `<2_jIc7K?AGffAl;WfC00
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2003,19 +2044,19 @@ R2
 R3
 R4
 R5
-Z251 8rtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd
-Z252 Frtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd
+Z200 8rtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd
+Z201 Frtl/turbo_card/030_EC/030_ec_dec_alu_op.vhd
 l0
 L12
 V:On[A>V[@ezNia@W<98ni0
 !s100 C_@BH0511igUZokUMo5BK1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2023,18 +2064,18 @@ Abehavioral
 R2
 R3
 R4
-Z253 DEx4 work 21 cpu_030_ec_dec_alu_op 0 22 :On[A>V[@ezNia@W<98ni0
+DEx4 work 21 cpu_030_ec_dec_alu_op 0 22 :On[A>V[@ezNia@W<98ni0
 l31
 L30
-Z254 VMPRMR2LeJm=H8l7^[=Vk73
-Z255 !s100 8[e=0j4dJ];@kL]Rl9XI=1
+VMPRMR2LeJm=H8l7^[=Vk73
+!s100 8[e=0j4dJ];@kL]Rl9XI=1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2044,19 +2085,19 @@ R2
 R3
 R4
 R5
-Z256 8rtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd
-Z257 Frtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd
+Z202 8rtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd
+Z203 Frtl/turbo_card/030_EC/030_ec_dec_alu_size.vhd
 l0
 L12
 VQ1<ROSKA]GCTQBoMohU=]3
 !s100 ?Ul14olZG;<``URh6Q>9c0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2064,18 +2105,18 @@ Abehavioral
 R2
 R3
 R4
-Z258 DEx4 work 23 cpu_030_ec_dec_alu_size 0 22 Q1<ROSKA]GCTQBoMohU=]3
+DEx4 work 23 cpu_030_ec_dec_alu_size 0 22 Q1<ROSKA]GCTQBoMohU=]3
 l23
 L22
-Z259 Ved_m;f^n6?hPi0Hi<]ElD1
-Z260 !s100 oOd`L=934MembZ_2QUM0>1
+Ved_m;f^n6?hPi0Hi<]ElD1
+!s100 oOd`L=934MembZ_2QUM0>1
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2085,19 +2126,19 @@ R2
 R3
 R4
 R5
-Z261 8rtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd
-Z262 Frtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd
+Z204 8rtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd
+Z205 Frtl/turbo_card/030_EC/030_ec_dec_bitfield.vhd
 l0
 L13
 Vde_2ak5JndYI07WNID31d3
 !s100 8Jl363?S8LKN5_l5O6eg]3
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2105,18 +2146,18 @@ Astructural
 R2
 R3
 R4
-Z263 DEx4 work 23 cpu_030_ec_dec_bitfield 0 22 de_2ak5JndYI07WNID31d3
+DEx4 work 23 cpu_030_ec_dec_bitfield 0 22 de_2ak5JndYI07WNID31d3
 l56
 L36
-Z264 VLC_foMK@?e32n1nASQmTe0
-Z265 !s100 G:0>mJO3S@`dOgNW8i16`0
+VLC_foMK@?e32n1nASQmTe0
+!s100 G:0>mJO3S@`dOgNW8i16`0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2126,19 +2167,19 @@ R2
 R3
 R4
 R5
-Z266 8rtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd
-Z267 Frtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd
+Z206 8rtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd
+Z207 Frtl/turbo_card/030_EC/030_ec_dec_bitfield_op.vhd
 l0
 L12
 VM@CU8FfZ>Vl5?G=BV@<]i1
 !s100 Tf618CoDTBzoh`3PER<Ue0
 R8
 33
-R50
-!i10b 1
-R51
 R52
+!i10b 1
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2146,40 +2187,40 @@ Abehavioral
 R2
 R3
 R4
-Z268 DEx4 work 26 cpu_030_ec_dec_bitfield_op 0 22 M@CU8FfZ>Vl5?G=BV@<]i1
+DEx4 work 26 cpu_030_ec_dec_bitfield_op 0 22 M@CU8FfZ>Vl5?G=BV@<]i1
 l26
 L25
-Z269 VM_[=SO8noQP9D;k_mGK4]2
-Z270 !s100 98mS[A4dBQ?G95687FO_l0
+VM_[=SO8noQP9D;k_mGK4]2
+!s100 98mS[A4dBQ?G95687FO_l0
 R8
 33
-R50
+Z208 !s110 1787174535
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_dec_boot_fsm
-Z271 w1787156977
+Z209 w1787156977
 R2
 R3
 R4
 R5
-Z272 8rtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd
-Z273 Frtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd
+Z210 8rtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd
+Z211 Frtl/turbo_card/030_EC/030_ec_dec_boot_fsm.vhd
 l0
 L16
 V:W?GP^Q2Dk_N3Q7;=zngd3
 !s100 J>0jEe390TU82:KTLLlLT2
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2187,18 +2228,18 @@ Abehavioral
 R2
 R3
 R4
-Z274 DEx4 work 23 cpu_030_ec_dec_boot_fsm 0 22 :W?GP^Q2Dk_N3Q7;=zngd3
+DEx4 work 23 cpu_030_ec_dec_boot_fsm 0 22 :W?GP^Q2Dk_N3Q7;=zngd3
 l44
 L41
-Z275 VZ:Gka8l8]Y9?@C9;0d5CT1
-Z276 !s100 e]<00QL2nT4Q[;4hK`kBF0
+VZ:Gka8l8]Y9?@C9;0d5CT1
+!s100 e]<00QL2nT4Q[;4hK`kBF0
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2208,19 +2249,19 @@ R2
 R3
 R4
 R5
-Z277 8rtl/turbo_card/030_EC/030_ec_dec_branch.vhd
-Z278 Frtl/turbo_card/030_EC/030_ec_dec_branch.vhd
+Z212 8rtl/turbo_card/030_EC/030_ec_dec_branch.vhd
+Z213 Frtl/turbo_card/030_EC/030_ec_dec_branch.vhd
 l0
 L15
 V>62g==Y^R[>D:@`1P:<0J1
 !s100 XDh^R[d1^o<GZm[oaDIeU0
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2228,18 +2269,18 @@ Abehavioral
 R2
 R3
 R4
-Z279 DEx4 work 21 cpu_030_ec_dec_branch 0 22 >62g==Y^R[>D:@`1P:<0J1
+DEx4 work 21 cpu_030_ec_dec_branch 0 22 >62g==Y^R[>D:@`1P:<0J1
 l39
 L37
-Z280 VKl9FOdMCFTabAAL;95kmX2
-Z281 !s100 OkYCYhngkWBYJEialLA`93
+VKl9FOdMCFTabAAL;95kmX2
+!s100 OkYCYhngkWBYJEialLA`93
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2249,19 +2290,19 @@ R2
 R3
 R4
 R5
-Z282 8rtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd
-Z283 Frtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd
+Z214 8rtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd
+Z215 Frtl/turbo_card/030_EC/030_ec_dec_branch_cond.vhd
 l0
 L12
 VJBlVZ[JE8YW>H^kg8OR7B1
 !s100 SZ;20EG9Q;Kbo0PX;;A@40
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2269,18 +2310,18 @@ Abehavioral
 R2
 R3
 R4
-Z284 DEx4 work 26 cpu_030_ec_dec_branch_cond 0 22 JBlVZ[JE8YW>H^kg8OR7B1
+DEx4 work 26 cpu_030_ec_dec_branch_cond 0 22 JBlVZ[JE8YW>H^kg8OR7B1
 l23
 L22
-Z285 VTab>2[?iYYeCZb=NM_WQV0
-Z286 !s100 lL`;WoSnQ<gP>cca`RcbN0
+VTab>2[?iYYeCZb=NM_WQV0
+!s100 lL`;WoSnQ<gP>cca`RcbN0
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2290,19 +2331,19 @@ R2
 R3
 R4
 R5
-Z287 8rtl/turbo_card/030_EC/030_ec_dec_ea.vhd
-Z288 Frtl/turbo_card/030_EC/030_ec_dec_ea.vhd
+Z216 8rtl/turbo_card/030_EC/030_ec_dec_ea.vhd
+Z217 Frtl/turbo_card/030_EC/030_ec_dec_ea.vhd
 l0
 L13
 V[BMCU[37U6Hn5d9`fF;PD0
 !s100 gUV]V?4ngYn2fY<2zd?F03
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2310,40 +2351,40 @@ Abehavioral
 R2
 R3
 R4
-Z289 DEx4 work 17 cpu_030_ec_dec_ea 0 22 [BMCU[37U6Hn5d9`fF;PD0
+DEx4 work 17 cpu_030_ec_dec_ea 0 22 [BMCU[37U6Hn5d9`fF;PD0
 l39
 L38
-Z290 V1Y5Q6cBU[P4M:CVK<N?7V3
-Z291 !s100 F>kOe?5SzfWo>3G2NgG`[0
+V1Y5Q6cBU[P4M:CVK<N?7V3
+!s100 F>kOe?5SzfWo>3G2NgG`[0
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_dec_ea_shared
-Z292 w1786844615
+Z218 w1786844615
 R2
 R3
 R4
 R5
-Z293 8rtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd
-Z294 Frtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd
+Z219 8rtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd
+Z220 Frtl/turbo_card/030_EC/030_ec_dec_ea_shared.vhd
 l0
 L15
 VlI7CP37V:m]Ik[dXkkXLH2
 !s100 Y59Ac7PhUz;Nz5L]`Rj6i2
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2351,40 +2392,40 @@ Abehavioral
 R2
 R3
 R4
-Z295 DEx4 work 24 cpu_030_ec_dec_ea_shared 0 22 lI7CP37V:m]Ik[dXkkXLH2
+DEx4 work 24 cpu_030_ec_dec_ea_shared 0 22 lI7CP37V:m]Ik[dXkkXLH2
 l43
 L41
-Z296 V<BJD::1W0DK1B?^XJFKdl0
-Z297 !s100 <70N91]7AdT[2DjcZ<5eQ2
+V<BJD::1W0DK1B?^XJFKdl0
+!s100 <70N91]7AdT[2DjcZ<5eQ2
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_dec_exec_fsm
-Z298 w1781192991
+Z221 w1781192991
 R2
 R3
 R4
 R5
-Z299 8rtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd
-Z300 Frtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd
+Z222 8rtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd
+Z223 Frtl/turbo_card/030_EC/030_ec_dec_exec_fsm.vhd
 l0
 L14
 V=OI31S:RL0VZT76RS@PNV0
 !s100 ^d7a]0_3?Pb@Ci]dGD0L11
 R8
 33
-R50
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2392,40 +2433,40 @@ Abehavioral
 R2
 R3
 R4
-Z301 DEx4 work 23 cpu_030_ec_dec_exec_fsm 0 22 =OI31S:RL0VZT76RS@PNV0
+DEx4 work 23 cpu_030_ec_dec_exec_fsm 0 22 =OI31S:RL0VZT76RS@PNV0
 l71
 L64
-Z302 V<XcVRGm?kZ_]gNWSi4;VQ2
-Z303 !s100 W2C^0g]SMUFTCcmZPa<=[2
+V<XcVRGm?kZ_]gNWSi4;VQ2
+!s100 W2C^0g]SMUFTCcmZPa<=[2
 R8
 33
-Z304 !s110 1787174236
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_dec_fsm
-Z305 w1787154308
+Z224 w1787154308
 R2
 R3
 R4
 R5
-Z306 8rtl/turbo_card/030_EC/030_ec_dec_fsm.vhd
-Z307 Frtl/turbo_card/030_EC/030_ec_dec_fsm.vhd
+Z225 8rtl/turbo_card/030_EC/030_ec_dec_fsm.vhd
+Z226 Frtl/turbo_card/030_EC/030_ec_dec_fsm.vhd
 l0
 L13
 VI6AeX3W8kQl@c;keLZb8h1
 !s100 IJc22h1W6h8RQ]98a:[^E1
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2433,18 +2474,18 @@ Abehavioral
 R2
 R3
 R4
-Z308 DEx4 work 18 cpu_030_ec_dec_fsm 0 22 I6AeX3W8kQl@c;keLZb8h1
+DEx4 work 18 cpu_030_ec_dec_fsm 0 22 I6AeX3W8kQl@c;keLZb8h1
 l102
 L62
-Z309 VBZ0b4;K6fj?izBO7jGlQ71
-Z310 !s100 67Uf8YnOLTAPdScfNIATf3
+VBZ0b4;K6fj?izBO7jGlQ71
+!s100 67Uf8YnOLTAPdScfNIATf3
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2454,19 +2495,19 @@ R2
 R3
 R4
 R5
-Z311 8rtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd
-Z312 Frtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd
+Z227 8rtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd
+Z228 Frtl/turbo_card/030_EC/030_ec_dec_interrupt.vhd
 l0
 L13
 VO@fJiKjOd?P?<P7>=VNJJ0
 !s100 76me=]<O4S[o26mzNi[=00
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2474,40 +2515,40 @@ Abehavioral
 R2
 R3
 R4
-Z313 DEx4 work 24 cpu_030_ec_dec_interrupt 0 22 O@fJiKjOd?P?<P7>=VNJJ0
+DEx4 work 24 cpu_030_ec_dec_interrupt 0 22 O@fJiKjOd?P?<P7>=VNJJ0
 l28
 L27
-Z314 V8X1VRZUoUIM3_3Co4hKkc2
-Z315 !s100 _6z=SeWHWF@dV<BR]B78[0
+V8X1VRZUoUIM3_3Co4hKkc2
+!s100 _6z=SeWHWF@dV<BR]B78[0
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_dec_move
-Z316 w1786846457
+Z229 w1786846457
 R2
 R3
 R4
 R5
-Z317 8rtl/turbo_card/030_EC/030_ec_dec_move.vhd
-Z318 Frtl/turbo_card/030_EC/030_ec_dec_move.vhd
+Z230 8rtl/turbo_card/030_EC/030_ec_dec_move.vhd
+Z231 Frtl/turbo_card/030_EC/030_ec_dec_move.vhd
 l0
 L15
 VlRj;c4SeQR1`iA`;7M[D[1
 !s100 a0`RzbAFkR<NPhCoLQ?z80
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2515,18 +2556,18 @@ Abehavioral
 R2
 R3
 R4
-Z319 DEx4 work 19 cpu_030_ec_dec_move 0 22 lRj;c4SeQR1`iA`;7M[D[1
+DEx4 work 19 cpu_030_ec_dec_move 0 22 lRj;c4SeQR1`iA`;7M[D[1
 l47
 L44
-Z320 VBoI:;;<8fER9HWiQ:fSbb3
-Z321 !s100 >GYNj=MAQK:g9YAo9g42K3
+VBoI:;;<8fER9HWiQ:fSbb3
+!s100 >GYNj=MAQK:g9YAo9g42K3
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2536,19 +2577,19 @@ R2
 R3
 R4
 R5
-Z322 8rtl/turbo_card/030_EC/030_ec_dec_move_op.vhd
-Z323 Frtl/turbo_card/030_EC/030_ec_dec_move_op.vhd
+Z232 8rtl/turbo_card/030_EC/030_ec_dec_move_op.vhd
+Z233 Frtl/turbo_card/030_EC/030_ec_dec_move_op.vhd
 l0
 L12
 VRc^Ak@>?W9WNGAjCjIRI@2
 !s100 oCA3DB2<^az6deLzS:>8A3
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2556,18 +2597,18 @@ Abehavioral
 R2
 R3
 R4
-Z324 DEx4 work 22 cpu_030_ec_dec_move_op 0 22 Rc^Ak@>?W9WNGAjCjIRI@2
+DEx4 work 22 cpu_030_ec_dec_move_op 0 22 Rc^Ak@>?W9WNGAjCjIRI@2
 l31
 L30
-Z325 Vd?RISJYhF]kId^b@izWGI2
-Z326 !s100 L2z=@<@HnEXfTZOlLi`BO0
+Vd?RISJYhF]kId^b@izWGI2
+!s100 L2z=@<@HnEXfTZOlLi`BO0
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2577,19 +2618,19 @@ R2
 R3
 R4
 R5
-Z327 8rtl/turbo_card/030_EC/030_ec_dec_move_size.vhd
-Z328 Frtl/turbo_card/030_EC/030_ec_dec_move_size.vhd
+Z234 8rtl/turbo_card/030_EC/030_ec_dec_move_size.vhd
+Z235 Frtl/turbo_card/030_EC/030_ec_dec_move_size.vhd
 l0
 L12
 V6;HQaVgf6QG@;i1gO9AR52
 !s100 0zb[EUmz_kRkYLE;Ik]A?1
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2597,40 +2638,40 @@ Abehavioral
 R2
 R3
 R4
-Z329 DEx4 work 24 cpu_030_ec_dec_move_size 0 22 6;HQaVgf6QG@;i1gO9AR52
+DEx4 work 24 cpu_030_ec_dec_move_size 0 22 6;HQaVgf6QG@;i1gO9AR52
 l23
 L22
-Z330 V`90NVB6Ofz>fSR6>809@N2
-Z331 !s100 dXIZ<G0cMzBF;SD:QaakR2
+V`90NVB6Ofz>fSR6>809@N2
+!s100 dXIZ<G0cMzBF;SD:QaakR2
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_dec_mux
-Z332 w1781177989
+Z236 w1781177989
 R2
 R3
 R4
 R5
-Z333 8rtl/turbo_card/030_EC/030_ec_dec_mux.vhd
-Z334 Frtl/turbo_card/030_EC/030_ec_dec_mux.vhd
+Z237 8rtl/turbo_card/030_EC/030_ec_dec_mux.vhd
+Z238 Frtl/turbo_card/030_EC/030_ec_dec_mux.vhd
 l0
 L15
 V@LcI02Vh_<P8IL<P9oO_V1
 !s100 E]?>H;l7]B?HeZHCDh3?F1
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2638,18 +2679,18 @@ Abehavioral
 R2
 R3
 R4
-Z335 DEx4 work 18 cpu_030_ec_dec_mux 0 22 @LcI02Vh_<P8IL<P9oO_V1
+DEx4 work 18 cpu_030_ec_dec_mux 0 22 @LcI02Vh_<P8IL<P9oO_V1
 l70
 L68
-Z336 V7LFgTo7XH_oO`h:[@fb?j1
-Z337 !s100 hBJX30VdEO1`m=e1@?3FN2
+V7LFgTo7XH_oO`h:[@fb?j1
+!s100 hBJX30VdEO1`m=e1@?3FN2
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2659,19 +2700,19 @@ R2
 R3
 R4
 R5
-Z338 8rtl/turbo_card/030_EC/030_ec_dec_special.vhd
-Z339 Frtl/turbo_card/030_EC/030_ec_dec_special.vhd
+Z239 8rtl/turbo_card/030_EC/030_ec_dec_special.vhd
+Z240 Frtl/turbo_card/030_EC/030_ec_dec_special.vhd
 l0
 L14
 VNBMjX>]HU=ko;WM>oH4Z<0
 !s100 WRhK98JR8SOId<KI9Z_G32
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2679,18 +2720,18 @@ Abehavioral
 R2
 R3
 R4
-Z340 DEx4 work 22 cpu_030_ec_dec_special 0 22 NBMjX>]HU=ko;WM>oH4Z<0
+DEx4 work 22 cpu_030_ec_dec_special 0 22 NBMjX>]HU=ko;WM>oH4Z<0
 l53
 L51
-Z341 V5=l07_figRWo=cnTfgk2=2
-Z342 !s100 H:;X0L88<?mhe<;]3FVJ61
+V5=l07_figRWo=cnTfgk2=2
+!s100 H:;X0L88<?mhe<;]3FVJ61
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2700,19 +2741,19 @@ R2
 R3
 R4
 R5
-Z343 8rtl/turbo_card/030_EC/030_ec_dec_special_op.vhd
-Z344 Frtl/turbo_card/030_EC/030_ec_dec_special_op.vhd
+Z241 8rtl/turbo_card/030_EC/030_ec_dec_special_op.vhd
+Z242 Frtl/turbo_card/030_EC/030_ec_dec_special_op.vhd
 l0
 L12
 V9?]QCm30UK:biHf?Ea;fg0
 !s100 mRBKFd6B0o28^fgh]@iXd3
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2720,40 +2761,40 @@ Abehavioral
 R2
 R3
 R4
-Z345 DEx4 work 25 cpu_030_ec_dec_special_op 0 22 9?]QCm30UK:biHf?Ea;fg0
+DEx4 work 25 cpu_030_ec_dec_special_op 0 22 9?]QCm30UK:biHf?Ea;fg0
 l28
 L27
-Z346 V02GG>^6^OQV`;lSLUmT[d2
-Z347 !s100 XV>GEz;;JAiRfRmG[i^AP1
+V02GG>^6^OQV`;lSLUmT[d2
+!s100 XV>GEz;;JAiRfRmG[i^AP1
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_dec_trap_unit
-Z348 w1781193164
+Z243 w1781193164
 R2
 R3
 R4
 R5
-Z349 8rtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd
-Z350 Frtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd
+Z244 8rtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd
+Z245 Frtl/turbo_card/030_EC/030_ec_dec_trap_unit.vhd
 l0
 L14
 VVn<@>_JAHCe`5G;`B`h7=1
 !s100 45dJ]M;mNBNbDICe0bo5G3
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2761,40 +2802,40 @@ Abehavioral
 R2
 R3
 R4
-Z351 DEx4 work 24 cpu_030_ec_dec_trap_unit 0 22 Vn<@>_JAHCe`5G;`B`h7=1
+DEx4 work 24 cpu_030_ec_dec_trap_unit 0 22 Vn<@>_JAHCe`5G;`B`h7=1
 l51
 L48
-Z352 V546?RXBD>D2dzWHPQ?=H^1
-Z353 !s100 d[OM_BSf_o<9LRBCz=:N22
+V546?RXBD>D2dzWHPQ?=H^1
+!s100 d[OM_BSf_o<9LRBCz=:N22
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_ec_decode_top
-Z354 w1787153402
+Z246 w1787153402
 R2
 R3
 R4
 R5
-Z355 8rtl/turbo_card/030_EC/030_ec_decode_top.vhd
-Z356 Frtl/turbo_card/030_EC/030_ec_decode_top.vhd
+Z247 8rtl/turbo_card/030_EC/030_ec_decode_top.vhd
+Z248 Frtl/turbo_card/030_EC/030_ec_decode_top.vhd
 l0
 L15
 V:]a=kLkl74Ykk<<N8[QKI0
 !s100 H7T;1fWcfe4dRjPZF?XbC2
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
@@ -2802,40 +2843,40 @@ Abehavioral
 R2
 R3
 R4
-Z357 DEx4 work 21 cpu_030_ec_decode_top 0 22 :]a=kLkl74Ykk<<N8[QKI0
+DEx4 work 21 cpu_030_ec_decode_top 0 22 :]a=kLkl74Ykk<<N8[QKI0
 l377
 L73
-Z358 VUh3^mT[zFm5e`]6hi3IUi1
-Z359 !s100 ;LjPnAG@2FzFNDIOc>j:z1
+VUh3^mT[zFm5e`]6hi3IUi1
+!s100 ;LjPnAG@2FzFNDIOc>j:z1
 R8
 33
-R304
+R208
 !i10b 1
-R51
-R52
 R53
+R149
+R150
 !i113 1
 R13
 R14
 Ecpu_030_fastram_bridge
-Z360 w1787173800
+Z249 w1787173800
 R2
 R3
 R4
 R5
-Z361 8rtl/turbo_card/fastram_bridge.vhd
-Z362 Frtl/turbo_card/fastram_bridge.vhd
+Z250 8rtl/turbo_card/fastram_bridge.vhd
+Z251 Frtl/turbo_card/fastram_bridge.vhd
 l0
 L13
 VEcn9SYlCkLDYBPak@Y=;R3
 !s100 A8?a2:<8jmlk:J;n7[0Me1
 R8
 33
-R18
+R9
 !i10b 1
-R19
-R27
-R28
+R26
+Z252 !s90 -reportprogress|300|-2008|-work|work|rtl/turbo_card/fastram_bridge.vhd|
+Z253 !s107 rtl/turbo_card/fastram_bridge.vhd|
 !i113 1
 R13
 R14
@@ -2843,40 +2884,40 @@ Abehavioral
 R2
 R3
 R4
-Z363 DEx4 work 22 cpu_030_fastram_bridge 0 22 Ecn9SYlCkLDYBPak@Y=;R3
+Z254 DEx4 work 22 cpu_030_fastram_bridge 0 22 Ecn9SYlCkLDYBPak@Y=;R3
 l50
 L40
 VS;DDOLVoX0G65^2oI[TeZ3
 !s100 lok1l=O9AB4ce`Vz<VIO^0
 R8
 33
-R18
+R9
 !i10b 1
-R19
-R27
-R28
+R26
+R252
+R253
 !i113 1
 R13
 R14
 Eext_bus_bridge
-Z364 w1787140180
+Z255 w1787140180
 R2
 R3
 R4
 R5
-Z365 8rtl/ext_bus_bridge.vhd
-Z366 Frtl/ext_bus_bridge.vhd
+Z256 8rtl/ext_bus_bridge.vhd
+Z257 Frtl/ext_bus_bridge.vhd
 l0
 L15
 Vke@akanFcNhJQl6Pb`J2V3
 !s100 he5kb0jo1oEo8QF4zLeVB2
 R8
 33
-R18
+Z258 !s110 1787174234
 !i10b 1
-R19
-R20
-R21
+Z259 !s108 1787174234.000000
+Z260 !s90 -reportprogress|300|-2008|-work|work|rtl/A1200_top.vhd|rtl/NE555.vhd|rtl/amiga_chipset.vhd|rtl/ext_bus_bridge.vhd|rtl/kickstart.vhd|rtl/ram_decoder.vhd|rtl/sdram_bridge.vhd|
+Z261 !s107 rtl/sdram_bridge.vhd|rtl/ram_decoder.vhd|rtl/kickstart.vhd|rtl/ext_bus_bridge.vhd|rtl/amiga_chipset.vhd|rtl/NE555.vhd|rtl/A1200_top.vhd|
 !i113 1
 R13
 R14
@@ -2891,33 +2932,33 @@ VI08[TKfXIY80oX0NkV@Ud0
 !s100 CDlFk?A6zQC6]2U?=]]]A0
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R20
-R21
+R259
+R260
+R261
 !i113 1
 R13
 R14
 Egayle
-Z367 w1786971932
+Z262 w1786971932
 R2
 R3
 R4
 R5
-Z368 8rtl/gayle/gayle.vhd
-Z369 Frtl/gayle/gayle.vhd
+Z263 8rtl/gayle/gayle.vhd
+Z264 Frtl/gayle/gayle.vhd
 l0
 L16
 VVm>0oDm6aN6hlHC2d`iKN1
 !s100 0RlOafQhaf`i[YcMX8A<52
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+Z265 !s90 -reportprogress|300|-2008|-work|work|rtl/gayle/gayle.vhd|rtl/gayle/gayle_ide.vhd|rtl/gayle/gayle_ide_bram.vhd|rtl/gayle/gayle_pcmcia.vhd|rtl/gayle/gayle_regs.vhd|rtl/gayle/gayle_reset.vhd|
+Z266 !s107 rtl/gayle/gayle_reset.vhd|rtl/gayle/gayle_regs.vhd|rtl/gayle/gayle_pcmcia.vhd|rtl/gayle/gayle_ide_bram.vhd|rtl/gayle/gayle_ide.vhd|rtl/gayle/gayle.vhd|
 !i113 1
 R13
 R14
@@ -2932,33 +2973,33 @@ V?>a2GH33[IlG99z:gckTT1
 !s100 =n>]20`Q9LG9IIaDEYfXE2
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
 Egayle_ide
-Z370 w1786977666
+Z267 w1786977666
 R2
 R3
 R4
 R5
-Z371 8rtl/gayle/gayle_ide.vhd
-Z372 Frtl/gayle/gayle_ide.vhd
+Z268 8rtl/gayle/gayle_ide.vhd
+Z269 Frtl/gayle/gayle_ide.vhd
 l0
 L15
 Vi?XVecngaKEFM7;Pn51ad2
 !s100 ^_z9VCE5_@f[SKd^U8e1[0
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
@@ -2973,33 +3014,33 @@ V]o`:=6N5iAEeim27e^<Pl1
 !s100 JC`QCfhjAG>=ETFVQ6WXz3
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
 Egayle_ide_bram
-Z373 w1786903371
+Z270 w1786903371
 R2
 R3
 R4
 R5
-Z374 8rtl/gayle/gayle_ide_bram.vhd
-Z375 Frtl/gayle/gayle_ide_bram.vhd
+Z271 8rtl/gayle/gayle_ide_bram.vhd
+Z272 Frtl/gayle/gayle_ide_bram.vhd
 l0
 L13
 VH?`:<5>0cc^ebcOVK]ac01
 !s100 7[n8e8<Z3@=3nz0VOlT?Z3
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
@@ -3014,33 +3055,33 @@ VPC=2GSE:l<3DEQk<]kJZl3
 !s100 VL=D:?:Wc13:ETAl5m=Rd3
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
 Egayle_ide_cop
-Z376 w1786977159
+Z273 w1786977159
 R2
 R3
 R4
 R5
-Z377 8rtl/gayle/gayle_ide_cop/gayle_ide_cop.vhd
-Z378 Frtl/gayle/gayle_ide_cop/gayle_ide_cop.vhd
+Z274 8rtl/gayle/gayle_ide_cop/gayle_ide_cop.vhd
+Z275 Frtl/gayle/gayle_ide_cop/gayle_ide_cop.vhd
 l0
 L13
 VieDQ@go=D3RfPRg]zhQ_T0
 !s100 67DZ<c55_C]hf`bHR0R]R3
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -3048,40 +3089,40 @@ Astructural
 R2
 R3
 R4
-Z379 DEx4 work 13 gayle_ide_cop 0 22 ieDQ@go=D3RfPRg]zhQ_T0
+DEx4 work 13 gayle_ide_cop 0 22 ieDQ@go=D3RfPRg]zhQ_T0
 l47
 L30
-Z380 V0dJ>QEmd5M^82e]gb`DU60
-Z381 !s100 7eA;]5FFI0i9Y2SIUd6]N1
+V0dJ>QEmd5M^82e]gb`DU60
+!s100 7eA;]5FFI0i9Y2SIUd6]N1
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Egayle_ide_cop_cnt
-Z382 w1787148704
+Z276 w1787148704
 R2
 R3
 R4
 R5
-Z383 8rtl/gayle/gayle_ide_cop/gayle_ide_cop_cnt.vhd
-Z384 Frtl/gayle/gayle_ide_cop/gayle_ide_cop_cnt.vhd
+Z277 8rtl/gayle/gayle_ide_cop/gayle_ide_cop_cnt.vhd
+Z278 Frtl/gayle/gayle_ide_cop/gayle_ide_cop_cnt.vhd
 l0
 L16
 VV?XNbE73[g;Ea9M;00mKb3
 !s100 e>l[7ZEIkFmLk8dh5>eXF3
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
@@ -3089,40 +3130,40 @@ Artl
 R2
 R3
 R4
-Z385 DEx4 work 17 gayle_ide_cop_cnt 0 22 V?XNbE73[g;Ea9M;00mKb3
+DEx4 work 17 gayle_ide_cop_cnt 0 22 V?XNbE73[g;Ea9M;00mKb3
 l42
 L32
-Z386 V[I500Vm@eFO6:YF4SdnQg3
-Z387 !s100 W>HYL`zk[N4`L00LIch?C1
+V[I500Vm@eFO6:YF4SdnQg3
+!s100 W>HYL`zk[N4`L00LIch?C1
 R8
 33
-R50
+R59
 !i10b 1
-R51
-R52
-R53
+R60
+R61
+R62
 !i113 1
 R13
 R14
 Egayle_pcmcia
-Z388 w1787148081
+Z279 w1787148081
 R2
 R3
 R4
 R5
-Z389 8rtl/gayle/gayle_pcmcia.vhd
-Z390 Frtl/gayle/gayle_pcmcia.vhd
+Z280 8rtl/gayle/gayle_pcmcia.vhd
+Z281 Frtl/gayle/gayle_pcmcia.vhd
 l0
 L15
 Ve7fzg9UQeB^P`6m95Bl?U3
 !s100 >FOA^I_VW1ob0_PhOW0nd1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
@@ -3137,33 +3178,33 @@ VGc4dc6c3LFIKRm;8GaoV81
 !s100 _F?5glgI9OJYa2cFbe3Oe1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
 Egayle_regs
-Z391 w1787148426
+Z282 w1787148426
 R2
 R3
 R4
 R5
-Z392 8rtl/gayle/gayle_regs.vhd
-Z393 Frtl/gayle/gayle_regs.vhd
+Z283 8rtl/gayle/gayle_regs.vhd
+Z284 Frtl/gayle/gayle_regs.vhd
 l0
 L15
 V=5BT8eEDz=4z8K6XCWhSP1
 !s100 MHXA?DXncOfEWBJA;_XXc2
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
@@ -3178,33 +3219,33 @@ V_F3HF5RWM3GTTVKW0bTYB2
 !s100 o2dV;n3n8JI=e4E3QBTn30
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
 Egayle_reset
-Z394 w1786964059
+Z285 w1786964059
 R2
 R3
 R4
 R5
-Z395 8rtl/gayle/gayle_reset.vhd
-Z396 Frtl/gayle/gayle_reset.vhd
+Z286 8rtl/gayle/gayle_reset.vhd
+Z287 Frtl/gayle/gayle_reset.vhd
 l0
 L12
 VdjIA9Aa3?5jXJKc_bcm:z1
 !s100 ?W^hjmZmZQfjNTS18IWGd1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
@@ -3219,33 +3260,33 @@ Vf;ZSVhnDY`jm5b[Zc63;V0
 !s100 `CF<Yho35LAMmL9]LFaii1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R265
+R266
 !i113 1
 R13
 R14
 Ekickstart
-Z397 w1786941410
+Z288 w1786941410
 R2
 R3
 R4
 R5
-Z398 8rtl/kickstart.vhd
-Z399 Frtl/kickstart.vhd
+Z289 8rtl/kickstart.vhd
+Z290 Frtl/kickstart.vhd
 l0
 L16
 V=GoLY0EOojW=OCONFNMQ>0
 !s100 :HVg6kbP7_8j0aZ=48?<B0
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R20
-R21
+R259
+R260
+R261
 !i113 1
 R13
 R14
@@ -3260,33 +3301,33 @@ VWK4igJ5[D=>gK]NDZM;f<0
 !s100 aF2EYbFRZcozQ?zYck=eK0
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R20
-R21
+R259
+R260
+R261
 !i113 1
 R13
 R14
 Elisa
-Z400 w1787147272
+Z291 w1787147272
 R2
 R3
 R4
 R5
-Z401 8rtl/lisa/lisa.vhd
-Z402 Frtl/lisa/lisa.vhd
+Z292 8rtl/lisa/lisa.vhd
+Z293 Frtl/lisa/lisa.vhd
 l0
 L14
 V8NX3n:1E0e>URTIYe30WR2
 !s100 Z;3>NJ2G_V;cOfZG9[SO[1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+Z294 !s90 -reportprogress|300|-2008|-work|work|rtl/lisa/lisa.vhd|rtl/lisa/lisa_palette.vhd|rtl/lisa/lisa_shifter.vhd|rtl/lisa/lisa_sprites.vhd|rtl/lisa/lisa_video_mux.vhd|
+Z295 !s107 rtl/lisa/lisa_video_mux.vhd|rtl/lisa/lisa_sprites.vhd|rtl/lisa/lisa_shifter.vhd|rtl/lisa/lisa_palette.vhd|rtl/lisa/lisa.vhd|
 !i113 1
 R13
 R14
@@ -3301,33 +3342,33 @@ V5m1;Um8732440??_N9DBg3
 !s100 M`0Hf]GIi4IoV958L:Ecz2
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R294
+R295
 !i113 1
 R13
 R14
 Elisa_palette
-Z403 w1787146603
+Z296 w1787146603
 R2
 R3
 R4
 R5
-Z404 8rtl/lisa/lisa_palette.vhd
-Z405 Frtl/lisa/lisa_palette.vhd
+Z297 8rtl/lisa/lisa_palette.vhd
+Z298 Frtl/lisa/lisa_palette.vhd
 l0
 L15
 VLeRZOBXjYhK;XTlIXgdNf0
 !s100 YD6^W@C4hzf=n88SUYFYm1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R294
+R295
 !i113 1
 R13
 R14
@@ -3342,33 +3383,33 @@ VH[mC?ECTWb=854d__em9a0
 !s100 z8moYW:3>]AbP7i]LnX;f1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R294
+R295
 !i113 1
 R13
 R14
 Elisa_shifter
-Z406 w1780935603
+Z299 w1780935603
 R2
 R3
 R4
 R5
-Z407 8rtl/lisa/lisa_shifter.vhd
-Z408 Frtl/lisa/lisa_shifter.vhd
+Z300 8rtl/lisa/lisa_shifter.vhd
+Z301 Frtl/lisa/lisa_shifter.vhd
 l0
 L5
 VZ3K60E1HD?JIX:23SPEcK2
 !s100 IcoT__@7[6Ue=i748EPQM3
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R294
+R295
 !i113 1
 R13
 R14
@@ -3383,33 +3424,33 @@ VgFkjJ;aIhbd?F8E6>6M@F1
 !s100 VXaQZFXFfG^Sh8bJSoGlW0
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R294
+R295
 !i113 1
 R13
 R14
 Elisa_sprites
-Z409 w1780935675
+Z302 w1780935675
 R2
 R3
 R4
 R5
-Z410 8rtl/lisa/lisa_sprites.vhd
-Z411 Frtl/lisa/lisa_sprites.vhd
+Z303 8rtl/lisa/lisa_sprites.vhd
+Z304 Frtl/lisa/lisa_sprites.vhd
 l0
 L5
 VV[O4b4W<zTbKV2kTLUFEg0
 !s100 P=O4kQk2P=0KR>z5U<jaj2
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R294
+R295
 !i113 1
 R13
 R14
@@ -3424,33 +3465,33 @@ V`Tj7@MUTVA0zIcn^RfdVf2
 !s100 ]VeFT@=jS^I]RbNFfHA]]0
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R294
+R295
 !i113 1
 R13
 R14
 Elisa_video_mux
-Z412 w1787146957
+Z305 w1787146957
 R2
 R3
 R4
 R5
-Z413 8rtl/lisa/lisa_video_mux.vhd
-Z414 Frtl/lisa/lisa_video_mux.vhd
+Z306 8rtl/lisa/lisa_video_mux.vhd
+Z307 Frtl/lisa/lisa_video_mux.vhd
 l0
 L15
 V48_YE]l6;R9Z`R63m^iSS2
 !s100 [iMaoSaWig[3@eDNQMdF^0
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R294
+R295
 !i113 1
 R13
 R14
@@ -3465,39 +3506,39 @@ V8DbRkGS5YA9W:Y0QVV[=o0
 !s100 9c_BPj54zB_G4L8igU;CJ0
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R294
+R295
 !i113 1
 R13
 R14
 Em68020_bus_ctrl
-Z415 w1780868785
-Z416 DPx4 work 10 m68020_pkg 0 22 FkFoSc>cS0ciC@=h_o;FP2
+Z308 w1780868785
+Z309 DPx4 work 10 m68020_pkg 0 22 FkFoSc>cS0ciC@=h_o;FP2
 R2
 R3
 R4
 R0
-Z417 8rtl/cpu/M68020_bus_ctrl.vhd
-Z418 Frtl/cpu/M68020_bus_ctrl.vhd
+Z310 8rtl/cpu/M68020_bus_ctrl.vhd
+Z311 Frtl/cpu/M68020_bus_ctrl.vhd
 l0
 L8
 V]FY8cBH3bKHb>IXHL=m5k1
 !s100 :^BR]k;Fk:_GM3SJ0PQHR3
 R8
 33
-R22
+R20
 !i10b 1
-R23
-Z419 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_bus_ctrl.vhd|
-Z420 !s107 rtl/cpu/M68020_bus_ctrl.vhd|
+R21
+Z312 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_bus_ctrl.vhd|
+Z313 !s107 rtl/cpu/M68020_bus_ctrl.vhd|
 !i113 1
 R13
 R14
 Abehavioral
-R416
+R309
 R2
 R3
 R4
@@ -3508,39 +3549,39 @@ VS<I5f5QL>dKG@idf9FiC?2
 !s100 oadoGi1PIl8jfj28T2:>R2
 R8
 33
-R22
+R20
 !i10b 1
-R23
-R419
-R420
+R21
+R312
+R313
 !i113 1
 R13
 R14
 Em68020_cpu
-Z421 w1780874953
-R416
+Z314 w1780874953
+R309
 R2
 R3
 R4
 R0
-Z422 8rtl/cpu/M68020_cpu.vhd
-Z423 Frtl/cpu/M68020_cpu.vhd
+Z315 8rtl/cpu/M68020_cpu.vhd
+Z316 Frtl/cpu/M68020_cpu.vhd
 l0
 L8
 VHEff^EEJTgS1d`gVenQ7X1
 !s100 `O:WiDI^@GhF<I2Y1VI?n0
 R8
 33
-R22
+R20
 !i10b 1
-R23
-Z424 !s90 -reportprogress|300|-2008|-work|work|rtl/cpu/M68020_cpu.vhd|
-Z425 !s107 rtl/cpu/M68020_cpu.vhd|
+R21
+Z317 !s90 -reportprogress|300|-2008|-work|work|rtl/cpu/M68020_cpu.vhd|
+Z318 !s107 rtl/cpu/M68020_cpu.vhd|
 !i113 1
 R13
 R14
 Abehavioral
-R416
+R309
 R2
 R3
 R4
@@ -3551,39 +3592,39 @@ VzU54k^W=i6LIU76LS_LQg2
 !s100 zP`UiaBPVZ2[YBa1IiaM42
 R8
 33
-R22
+R20
 !i10b 1
-R23
-R424
-R425
+R21
+R317
+R318
 !i113 1
 R13
 R14
 Em68020_decode
-Z426 w1780867300
-R416
+Z319 w1780867300
+R309
 R2
 R3
 R4
 R0
-Z427 8rtl/cpu/M68020_decode.vhd
-Z428 Frtl/cpu/M68020_decode.vhd
+Z320 8rtl/cpu/M68020_decode.vhd
+Z321 Frtl/cpu/M68020_decode.vhd
 l0
 L8
 V6XMQ]l9cPSloO^5ZElcj@2
 !s100 ?MBf<]cIzW^OGBd3kVf`i0
 R8
 33
-R84
+R78
 !i10b 1
-R85
-Z429 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_decode.vhd|
-Z430 !s107 rtl/cpu/M68020_decode.vhd|
+R79
+Z322 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_decode.vhd|
+Z323 !s107 rtl/cpu/M68020_decode.vhd|
 !i113 1
 R13
 R14
 Abehavioral
-R416
+R309
 R2
 R3
 R4
@@ -3594,39 +3635,39 @@ V^Y`AgLDTGWQdRINna7gD=1
 !s100 3fl1;1cODJ2i_@B@Ug_d`2
 R8
 33
-R84
+R78
 !i10b 1
-R85
-R429
-R430
+R79
+R322
+R323
 !i113 1
 R13
 R14
 Em68020_ea
-Z431 w1780867359
-R416
+Z324 w1780867359
+R309
 R2
 R3
 R4
 R0
-Z432 8rtl/cpu/M68020_ea.vhd
-Z433 Frtl/cpu/M68020_ea.vhd
+Z325 8rtl/cpu/M68020_ea.vhd
+Z326 Frtl/cpu/M68020_ea.vhd
 l0
 L8
 VSXkEZdT:0gXTO`@=BPY`O2
 !s100 3cZAzXP`U:]7V<l`:98O92
 R8
 33
-R84
+R78
 !i10b 1
-R85
-Z434 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_ea.vhd|
-Z435 !s107 rtl/cpu/M68020_ea.vhd|
+R79
+Z327 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_ea.vhd|
+Z328 !s107 rtl/cpu/M68020_ea.vhd|
 !i113 1
 R13
 R14
 Abehavioral
-R416
+R309
 R2
 R3
 R4
@@ -3637,39 +3678,39 @@ VQQYhgai<1QP?QXz0T>DEO3
 !s100 a:B;F^AjK@?6D]4oMn5D>0
 R8
 33
-R84
+R78
 !i10b 1
-R85
-R434
-R435
+R79
+R327
+R328
 !i113 1
 R13
 R14
 Em68020_execute
-Z436 w1780868296
-R416
+Z329 w1780868296
+R309
 R2
 R3
 R4
 R0
-Z437 8rtl/cpu/M68020_execute.vhd
-Z438 Frtl/cpu/M68020_execute.vhd
+Z330 8rtl/cpu/M68020_execute.vhd
+Z331 Frtl/cpu/M68020_execute.vhd
 l0
 L8
 V1fZ^30C=FRZ1Ij?@?`YD30
 !s100 _8WBK?@dj6@44BZjDH:FL0
 R8
 33
-R22
+R20
 !i10b 1
-R23
-Z439 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_execute.vhd|
-Z440 !s107 rtl/cpu/M68020_execute.vhd|
+R21
+Z332 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_execute.vhd|
+Z333 !s107 rtl/cpu/M68020_execute.vhd|
 !i113 1
 R13
 R14
 Abehavioral
-R416
+R309
 R2
 R3
 R4
@@ -3680,39 +3721,39 @@ VzWNnzl^YcJ[HFhj=keNN>1
 !s100 7O@7i:zLChXaQN26`3kcK3
 R8
 33
-R22
+R20
 !i10b 1
-R23
-R439
-R440
+R21
+R332
+R333
 !i113 1
 R13
 R14
 Em68020_fetch
-Z441 w1780866480
-R416
+Z334 w1780866480
+R309
 R2
 R3
 R4
 R0
-Z442 8rtl/cpu/M68020_fetch.vhd
-Z443 Frtl/cpu/M68020_fetch.vhd
+Z335 8rtl/cpu/M68020_fetch.vhd
+Z336 Frtl/cpu/M68020_fetch.vhd
 l0
 L8
 V2zQiB9ciFNAVVPkX_1Xi61
 !s100 jF]1_?C[N1>?HBn9Y];RZ3
 R8
 33
-R84
+R78
 !i10b 1
-R85
-Z444 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_fetch.vhd|
-Z445 !s107 rtl/cpu/M68020_fetch.vhd|
+R79
+Z337 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_fetch.vhd|
+Z338 !s107 rtl/cpu/M68020_fetch.vhd|
 !i113 1
 R13
 R14
 Abehavioral
-R416
+R309
 R2
 R3
 R4
@@ -3723,11 +3764,11 @@ VVTab<Fc4g_EIXkNl8Gd:V0
 !s100 L_[DIQY1[;`>2Gn1z69i82
 R8
 33
-R84
+R78
 !i10b 1
-R85
-R444
-R445
+R79
+R337
+R338
 !i113 1
 R13
 R14
@@ -3735,26 +3776,26 @@ Pm68020_pkg
 R2
 R3
 R4
-Z446 w1780865918
+Z339 w1780865918
 R0
-Z447 8rtl/cpu/M68020_pkg.vhd
-Z448 Frtl/cpu/M68020_pkg.vhd
+Z340 8rtl/cpu/M68020_pkg.vhd
+Z341 Frtl/cpu/M68020_pkg.vhd
 l0
 L5
 VFkFoSc>cS0ciC@=h_o;FP2
 !s100 bbmARSOPmFX`N5D[1hNLZ2
 R8
 33
-R84
+R78
 !i10b 1
-R85
-Z449 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_pkg.vhd|
-Z450 !s107 rtl/cpu/M68020_pkg.vhd|
+R79
+Z342 !s90 -2008|-reportprogress|300|-work|work|rtl/cpu/M68020_pkg.vhd|
+Z343 !s107 rtl/cpu/M68020_pkg.vhd|
 !i113 1
 R13
 R14
 Bbody
-R416
+R309
 R2
 R3
 R4
@@ -3764,33 +3805,33 @@ V94:596DWMbIaH<fT1Zo:E2
 !s100 47F;SG63A[MOROLAObVAk2
 R8
 33
-R84
+R78
 !i10b 1
-R85
-R449
-R450
+R79
+R342
+R343
 !i113 1
 R13
 R14
 Em68020_test_board
-Z451 w1780869594
+Z344 w1780869594
 R2
 R3
 R4
 R0
-Z452 8rtl/M68020_test_board.vhd
-Z453 Frtl/M68020_test_board.vhd
+Z345 8rtl/M68020_test_board.vhd
+Z346 Frtl/M68020_test_board.vhd
 l0
 L5
 V9J5F[e`CX5PF2ALn2g8Mm0
 !s100 T]]gZQ^WR=ihI<B@:EiVV2
 R8
 33
-R22
+R20
 !i10b 1
-R23
-Z454 !s90 -2008|-reportprogress|300|-work|work|rtl/M68020_test_board.vhd|
-Z455 !s107 rtl/M68020_test_board.vhd|
+R21
+Z347 !s90 -2008|-reportprogress|300|-work|work|rtl/M68020_test_board.vhd|
+Z348 !s107 rtl/M68020_test_board.vhd|
 !i113 1
 R13
 R14
@@ -3805,33 +3846,57 @@ VBEOYOffF2;`Bh<M_2M0TU3
 !s100 8YPl^6CzlL@1?[kn3k`Pe1
 R8
 33
-R22
+R20
 !i10b 1
-R23
-R454
-R455
+R21
+R347
+R348
 !i113 1
 R13
 R14
+vmycore
+Z349 DXx6 sv_std 3 std 0 22 AD7iAPLo6nTIKk<N0eo=D3
+R9
+!i10b 1
+!s100 ;TWLi`2NND0778X_PWW2I2
+IjO2P12MN_B@VE4CT;34go1
+Z350 VDg1SIo80bB@j0V0VzS_@n1
+Z351 !s105 lfsr_v_unit
+S1
+R5
+R49
+8rtl/mycore.v
+Frtl/mycore.v
+L0 2
+Z352 OV;L;10.5b;63
+r1
+!s85 0
+31
+R10
+Z353 !s107 rtl/pll.v|rtl/mycore.v|rtl/lfsr.v|
+Z354 !s90 -reportprogress|300|-sv|-work|work|rtl/lfsr.v|rtl/mycore.v|rtl/pll.v|
+!i113 1
+Z355 o-sv -work work
+Z356 tCvgOpt 0
 Ene555
-Z456 w1787138325
+Z357 w1787138325
 R2
 R3
 R4
 R5
-Z457 8rtl/NE555.vhd
-Z458 Frtl/NE555.vhd
+Z358 8rtl/NE555.vhd
+Z359 Frtl/NE555.vhd
 l0
 L14
 VEY?I<6OMK[eWRgH>]20cH0
 !s100 `:1OoOXb1A>Z=BDoPoU370
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R20
-R21
+R259
+R260
+R261
 !i113 1
 R13
 R14
@@ -3846,33 +3911,33 @@ V@;OXzj36iLAGEA=XA53h61
 !s100 QiWd7JinZPX0<HdalYc`O2
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R20
-R21
+R259
+R260
+R261
 !i113 1
 R13
 R14
 Epaula
-Z459 w1786877569
+Z360 w1786877569
 R2
 R3
 R4
 R5
-Z460 8rtl/paula/paula.vhd
-Z461 Frtl/paula/paula.vhd
+Z361 8rtl/paula/paula.vhd
+Z362 Frtl/paula/paula.vhd
 l0
 L15
 V<gCZ@Do5b42MSc<Q2QOO63
 !s100 2LQBz7D4k9hb2ZFaDeM5W1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+Z363 !s90 -reportprogress|300|-2008|-work|work|rtl/paula/paula.vhd|rtl/paula/paula_audio.vhd|rtl/paula/paula_floppy.vhd|rtl/paula/paula_regs.vhd|rtl/paula/paula_uart.vhd|
+Z364 !s107 rtl/paula/paula_uart.vhd|rtl/paula/paula_regs.vhd|rtl/paula/paula_floppy.vhd|rtl/paula/paula_audio.vhd|rtl/paula/paula.vhd|
 !i113 1
 R13
 R14
@@ -3887,33 +3952,33 @@ VDn]6A<iGjh[UXz^OMfW]R0
 !s100 <6ecnizACOGSRW;I8b09_0
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R363
+R364
 !i113 1
 R13
 R14
 Epaula_audio
-Z462 w1787149617
+Z365 w1787149617
 R2
 R3
 R4
 R5
-Z463 8rtl/paula/paula_audio.vhd
-Z464 Frtl/paula/paula_audio.vhd
+Z366 8rtl/paula/paula_audio.vhd
+Z367 Frtl/paula/paula_audio.vhd
 l0
 L15
 V_`Sckj?QXIOVFP`Q;e63^0
 !s100 eKBkO=3lUR>d@ijFn<Z8R1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R363
+R364
 !i113 1
 R13
 R14
@@ -3928,33 +3993,33 @@ V^fKC5:GcW`>XZ?R3<CdXU2
 !s100 5YnDAoeVT2;QZHOh]N[Hb1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R363
+R364
 !i113 1
 R13
 R14
 Epaula_floppy
-Z465 w1787149778
+Z368 w1787149778
 R2
 R3
 R4
 R5
-Z466 8rtl/paula/paula_floppy.vhd
-Z467 Frtl/paula/paula_floppy.vhd
+Z369 8rtl/paula/paula_floppy.vhd
+Z370 Frtl/paula/paula_floppy.vhd
 l0
 L15
 VkWWBZ6EHV>?IP54bB;HF50
 !s100 KJ5e[flLGVWKRJOSLPL1L0
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R363
+R364
 !i113 1
 R13
 R14
@@ -3969,33 +4034,33 @@ VEz;Z0S;O]mcfUo<^OO37<1
 !s100 Z;z[@D3Hb]KofkRaVc6CV1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R363
+R364
 !i113 1
 R13
 R14
 Epaula_regs
-Z468 w1786895183
+Z371 w1786895183
 R2
 R3
 R4
 R5
-Z469 8rtl/paula/paula_regs.vhd
-Z470 Frtl/paula/paula_regs.vhd
+Z372 8rtl/paula/paula_regs.vhd
+Z373 Frtl/paula/paula_regs.vhd
 l0
 L14
 VK_^`_JMV3J8I8@e5dP<R21
 !s100 `45]Nk]T:Yoh2d3m`Uk]K2
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R363
+R364
 !i113 1
 R13
 R14
@@ -4010,33 +4075,33 @@ VYoXfUZ^@QRJ6;Jf`T4QA?0
 !s100 N?PbTk[WRIHCeRR0QURDI2
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R363
+R364
 !i113 1
 R13
 R14
 Epaula_uart
-Z471 w1780940690
+Z374 w1780940690
 R2
 R3
 R4
 R5
-Z472 8rtl/paula/paula_uart.vhd
-Z473 Frtl/paula/paula_uart.vhd
+Z375 8rtl/paula/paula_uart.vhd
+Z376 Frtl/paula/paula_uart.vhd
 l0
 L5
 VXO0A9_7cWT76O`c?CHe6e3
 !s100 4JkKldgBL<K`IY8TOBMAd3
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R363
+R364
 !i113 1
 R13
 R14
@@ -4051,33 +4116,98 @@ V<PbmXPgFBXRhNYT2NGAQT0
 !s100 4ZY^iHoi?_QQ;aDJliO_;1
 R8
 33
-R18
+R25
 !i10b 1
-R19
-R27
-R28
+R26
+R363
+R364
 !i113 1
 R13
 R14
-Eram_decoder
-Z474 w1786941322
+vpll
+R349
+R9
+!i10b 1
+!s100 `[cNA:7M8[c9R9FfGJ81M1
+IZ7fkj;R4jfYWGd]hLY3]o1
+R350
+R351
+S1
+R5
+R49
+8rtl/pll.v
+Frtl/pll.v
+L0 8
+R352
+r1
+!s85 0
+31
+R10
+R353
+R354
+!i113 1
+R355
+R356
+Epll_hdmi_adj
+R49
 R2
 R3
 R4
 R5
-Z475 8rtl/ram_decoder.vhd
-Z476 Frtl/ram_decoder.vhd
+Z377 8sys/pll_hdmi_adj.vhd
+Z378 Fsys/pll_hdmi_adj.vhd
+l0
+L21
+VRgK8>DHSB4d0YW^]REcfQ2
+!s100 LROKMhF]JBn=C]8Q0A@:b3
+R8
+33
+R52
+!i10b 1
+R53
+Z379 !s90 -reportprogress|300|-2008|-work|work|sys/pll_hdmi_adj.vhd|
+Z380 !s107 sys/pll_hdmi_adj.vhd|
+!i113 1
+R13
+R14
+Artl
+R2
+R3
+R4
+DEx4 work 12 pll_hdmi_adj 0 22 RgK8>DHSB4d0YW^]REcfQ2
+l82
+L53
+ViEC_d4n`VAB5F;JhdVT9E0
+!s100 ]kC6[fLK2U5m:I3S3b3Vf2
+R8
+33
+R52
+!i10b 1
+R53
+R379
+R380
+!i113 1
+R13
+R14
+Eram_decoder
+Z381 w1786941322
+R2
+R3
+R4
+R5
+Z382 8rtl/ram_decoder.vhd
+Z383 Frtl/ram_decoder.vhd
 l0
 L16
 V[CGMTTWRa@JP>1zj:C4cO2
 !s100 N:Jc=[@NJY@miVo4jFFP50
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R20
-R21
+R259
+R260
+R261
 !i113 1
 R13
 R14
@@ -4092,11 +4222,11 @@ V@anGcOj_G]n0K:?eP?HXW1
 !s100 8M6f8hBQUi;CG<H@]49gA0
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R20
-R21
+R259
+R260
+R261
 !i113 1
 R13
 R14
@@ -4106,19 +4236,19 @@ R2
 R3
 R4
 R5
-Z477 8rtl/sdram_bridge.vhd
-Z478 Frtl/sdram_bridge.vhd
+Z384 8rtl/sdram_bridge.vhd
+Z385 Frtl/sdram_bridge.vhd
 l0
 L15
 V`<9DOjG>PPkE<b8@MH9eL1
 !s100 64z=_eOdal:?KN>bGSl=Z2
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R20
-R21
+R259
+R260
+R261
 !i113 1
 R13
 R14
@@ -4133,11 +4263,11 @@ VboKFh@4[7:Y]0<`bAoSQ21
 !s100 lXo16C^^0Lgj2f]:EA0RL0
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R20
-R21
+R259
+R260
+R261
 !i113 1
 R13
 R14
@@ -4147,24 +4277,24 @@ R2
 R3
 R4
 R5
-Z479 8rtl/turbo_card/tb_fastram.vhd
-Z480 Frtl/turbo_card/tb_fastram.vhd
+Z386 8rtl/turbo_card/tb_fastram.vhd
+Z387 Frtl/turbo_card/tb_fastram.vhd
 l0
 L8
 VIogQkR3F;SC<H@`oT]Z3m3
 !s100 iZg_L_aJ@Y=G1Nm9V<z5a0
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R27
-R28
+R259
+Z388 !s90 -reportprogress|300|-2008|-work|work|rtl/alice/alice.vhd|rtl/alice/alice_beam.vhd|rtl/alice/alice_clk.vhd|rtl/alice/alice_dma.vhd|rtl/alice/alice_mmu.vhd|rtl/alice/alice_regs.vhd|rtl/cia_a/cia_a.vhd|rtl/cia_a/cia_a_io.vhd|rtl/cia_a/cia_a_irq.vhd|rtl/cia_a/cia_a_serial.vhd|rtl/cia_a/cia_a_timer.vhd|rtl/cia_b/cia_b.vhd|rtl/cia_b/cia_b_io.vhd|rtl/cia_b/cia_b_irq.vhd|rtl/cia_b/cia_b_serial.vhd|rtl/cia_b/cia_b_timer.vhd|rtl/gayle/gayle.vhd|rtl/gayle/gayle_ide.vhd|rtl/gayle/gayle_ide_bram.vhd|rtl/gayle/gayle_pcmcia.vhd|rtl/gayle/gayle_regs.vhd|rtl/gayle/gayle_reset.vhd|rtl/lisa/lisa.vhd|rtl/lisa/lisa_palette.vhd|rtl/lisa/lisa_shifter.vhd|rtl/lisa/lisa_sprites.vhd|rtl/lisa/lisa_video_mux.vhd|rtl/paula/paula.vhd|rtl/paula/paula_audio.vhd|rtl/paula/paula_floppy.vhd|rtl/paula/paula_regs.vhd|rtl/paula/paula_uart.vhd|rtl/turbo_card/fastram_bridge.vhd|rtl/turbo_card/tb_fastram.vhd|rtl/turbo_card/turbo_card.vhd|rtl/turbo_card/turbo_clk.vhd|rtl/turbo_card/turbo_rtc.vhd|
+Z389 !s107 rtl/turbo_card/turbo_rtc.vhd|rtl/turbo_card/turbo_clk.vhd|rtl/turbo_card/turbo_card.vhd|rtl/turbo_card/tb_fastram.vhd|rtl/turbo_card/fastram_bridge.vhd|rtl/paula/paula_uart.vhd|rtl/paula/paula_regs.vhd|rtl/paula/paula_floppy.vhd|rtl/paula/paula_audio.vhd|rtl/paula/paula.vhd|rtl/lisa/lisa_video_mux.vhd|rtl/lisa/lisa_sprites.vhd|rtl/lisa/lisa_shifter.vhd|rtl/lisa/lisa_palette.vhd|rtl/lisa/lisa.vhd|rtl/gayle/gayle_reset.vhd|rtl/gayle/gayle_regs.vhd|rtl/gayle/gayle_pcmcia.vhd|rtl/gayle/gayle_ide_bram.vhd|rtl/gayle/gayle_ide.vhd|rtl/gayle/gayle.vhd|rtl/cia_b/cia_b_timer.vhd|rtl/cia_b/cia_b_serial.vhd|rtl/cia_b/cia_b_irq.vhd|rtl/cia_b/cia_b_io.vhd|rtl/cia_b/cia_b.vhd|rtl/cia_a/cia_a_timer.vhd|rtl/cia_a/cia_a_serial.vhd|rtl/cia_a/cia_a_irq.vhd|rtl/cia_a/cia_a_io.vhd|rtl/cia_a/cia_a.vhd|rtl/alice/alice_regs.vhd|rtl/alice/alice_mmu.vhd|rtl/alice/alice_dma.vhd|rtl/alice/alice_clk.vhd|rtl/alice/alice_beam.vhd|rtl/alice/alice.vhd|
 !i113 1
 R13
 R14
 Asim
-R363
+R254
 R2
 R3
 R4
@@ -4175,33 +4305,33 @@ VIAZe?:XoC8hLMRTX0NiO>2
 !s100 VCTXFLBlX_3;jz`J4KG<A3
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R27
-R28
+R259
+R388
+R389
 !i113 1
 R13
 R14
 Eturbo_card
-Z481 w1787173985
+Z390 w1787173985
 R2
 R3
 R4
 R5
-Z482 8rtl/turbo_card/turbo_card.vhd
-Z483 Frtl/turbo_card/turbo_card.vhd
+Z391 8rtl/turbo_card/turbo_card.vhd
+Z392 Frtl/turbo_card/turbo_card.vhd
 l0
 L13
 Ve?gYEccdS9]8JARcc;=7U0
 !s100 8j7RYDOl>f8m0OI6mTgm>1
 R8
 33
-R18
+R9
 !i10b 1
-R19
-R27
-R28
+R10
+Z393 !s90 -reportprogress|300|-2008|-work|work|rtl/turbo_card/turbo_card.vhd|
+Z394 !s107 rtl/turbo_card/turbo_card.vhd|
 !i113 1
 R13
 R14
@@ -4216,33 +4346,33 @@ V7PHd9ROLQV0<=B2FK5?300
 !s100 hCLTZ8D8^Gm8jK]O1<KKV2
 R8
 33
-R18
+R9
 !i10b 1
-R19
-R27
-R28
+R10
+R393
+R394
 !i113 1
 R13
 R14
 Eturbo_clk
-Z484 w1787150617
+Z395 w1787150617
 R2
 R3
 R4
 R5
-Z485 8rtl/turbo_card/turbo_clk.vhd
-Z486 Frtl/turbo_card/turbo_clk.vhd
+Z396 8rtl/turbo_card/turbo_clk.vhd
+Z397 Frtl/turbo_card/turbo_clk.vhd
 l0
 L19
 V9a8lUlieV8iIKh0B_?]3A1
 !s100 C1bR2S<7Gb0kYDWY1P_Jo2
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R27
-R28
+R259
+R388
+R389
 !i113 1
 R13
 R14
@@ -4257,33 +4387,33 @@ VOCjaHKSElZicjbX1>VG4>0
 !s100 i4NKd09H;gn@H31`io6Vd3
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R27
-R28
+R259
+R388
+R389
 !i113 1
 R13
 R14
 Eturbo_rtc
-Z487 w1787142684
+Z398 w1787142684
 R2
 R3
 R4
 R5
-Z488 8rtl/turbo_card/turbo_rtc.vhd
-Z489 Frtl/turbo_card/turbo_rtc.vhd
+Z399 8rtl/turbo_card/turbo_rtc.vhd
+Z400 Frtl/turbo_card/turbo_rtc.vhd
 l0
 L16
 VgTD3X]Q4:5lQfaI2o5gEz2
 !s100 f`jfhFS7o@SccChUEY?M<3
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R27
-R28
+R259
+R388
+R389
 !i113 1
 R13
 R14
@@ -4298,11 +4428,11 @@ VoCM25RoDfWRe9i1Laal<H2
 !s100 hH`VMZigc09J49VA4Hg9D3
 R8
 33
-R18
+R258
 !i10b 1
-R19
-R27
-R28
+R259
+R388
+R389
 !i113 1
 R13
 R14
