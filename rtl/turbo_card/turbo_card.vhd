@@ -36,13 +36,13 @@ entity turbo_card is
         IPL_N           : in    std_logic_vector(2 downto 0);   -- Interrupt Priority Level
 
         -- FastRAM / DDR Interface (durchgereicht an Nanoboard)
-        ddr_req         : out   std_logic;                      -- Request an externes DDR-Interface
-        ddr_rnw         : out   std_logic;                      -- Read(1)/Write(0) Richtung
-        ddr_addr        : out   std_logic_vector(25 downto 2);  -- Kürzerer Adressbus für DDR-Controller
-        ddr_data_w      : out   std_logic_vector(31 downto 0);  -- Daten vom CPU an DDR
-        ddr_data_r      : in    std_logic_vector(31 downto 0);  -- Daten von DDR an CPU
-        ddr_ready       : in    std_logic;                      -- Ready von externem DDR
-        ddr_burst_ack   : in    std_logic                       -- Burst-Acknowledge vom DDR-Controller
+        ddr_req         : out   std_logic;
+        ddr_rnw         : out   std_logic;
+        ddr_addr        : out   std_logic_vector(25 downto 2);
+        ddr_data_w      : out   std_logic_vector(31 downto 0);
+        ddr_data_r      : in    std_logic_vector(31 downto 0);
+        ddr_ready       : in    std_logic;
+        ddr_burst_ack   : in    std_logic
     );
 end turbo_card;
 
@@ -89,27 +89,27 @@ architecture structural of turbo_card is
         );
     end component;
 
-    -- FastRAM bridge (lokaler, CPU-seitiger Zugang zur Nanoboard-DDR)
+    -- Fast-RAM Bridge (instanziiert in diesem Modul)
     component cpu_030_fastram_bridge is
         Port (
-            CLK             : in    std_logic;
-            RESET_N         : in    std_logic;
-            cpu_A           : in    std_logic_vector(31 downto 0);
-            cpu_D_out       : in    std_logic_vector(31 downto 0);
-            cpu_D_in        : out   std_logic_vector(31 downto 0);
-            cpu_AS_N        : in    std_logic;
-            cpu_DS_N        : in    std_logic;
-            cpu_RW          : in    std_logic;
-            cache_req       : in    std_logic;
-            cache_burst_en  : in    std_logic;
-            cpu_sterm_n     : out   std_logic;
-            ddr_req         : out   std_logic;
-            ddr_rnw         : out   std_logic;
-            ddr_addr        : out   std_logic_vector(25 downto 2);
-            ddr_data_w      : out   std_logic_vector(31 downto 0);
-            ddr_data_r      : in    std_logic_vector(31 downto 0);
-            ddr_ready       : in    std_logic;
-            ddr_burst_ack   : in    std_logic
+            CLK             : in    std_logic;                      
+            RESET_N         : in    std_logic;                      
+            cpu_A           : in    std_logic_vector(31 downto 0);  
+            cpu_D_out       : in    std_logic_vector(31 downto 0);  
+            cpu_D_in        : out   std_logic_vector(31 downto 0);  
+            cpu_AS_N        : in    std_logic;                      
+            cpu_DS_N        : in    std_logic;                      
+            cpu_RW          : in    std_logic;                      
+            cache_req       : in    std_logic;                      
+            cache_burst_en  : in    std_logic;                      
+            cpu_sterm_n     : out   std_logic;                      
+            ddr_req         : out   std_logic;                      
+            ddr_rnw         : out   std_logic;                      
+            ddr_addr        : out   std_logic_vector(25 downto 2); 
+            ddr_data_w      : out   std_logic_vector(31 downto 0);  
+            ddr_data_r      : in    std_logic_vector(31 downto 0);  
+            ddr_ready       : in    std_logic;                      
+            ddr_burst_ack   : in    std_logic                       
         );
     end component;
 
@@ -127,15 +127,8 @@ architecture structural of turbo_card is
     -- Interner Invertierungskanal zur CPU
     signal s_cpu_reset_n   : std_logic;
 
-    -- FastRAM interne Signale
-    signal fastram_cpu_sterm_n : std_logic := '1';
-    signal f_ddr_req           : std_logic := '0';
-    signal f_ddr_rnw           : std_logic := '1';
-    signal f_ddr_addr          : std_logic_vector(25 downto 2) := (others => '0');
-    signal f_ddr_data_w        : std_logic_vector(31 downto 0) := (others => '0');
-    signal f_ddr_data_r        : std_logic_vector(31 downto 0) := (others => '0');
-    signal f_ddr_ready         : std_logic := '0';
-    signal f_ddr_burst_ack     : std_logic := '0';
+    -- Verbindung zwischen FastRAM-Bridge und CPU
+    signal cpu_sterm_n     : std_logic := '1';
 
 begin
 
@@ -166,16 +159,17 @@ begin
     -- =====================================================================
     -- 3. INSTANZIIERUNG: DER SANIERTEN 68EC030 CPU-KERN
     -- REPARIERT: IPL_N Fallback starr auf inaktiv ('1') gelegt zur Geister-Sperre!
+    -- Hinweis: STERM_N wird hier an die FastRAM-Bridge angeschlossen (cpu_sterm_n)
     -- =====================================================================
     i_cpu_core : cpu_030_ec
         port map (
             CLK         => local_cpu_clk,   
             RESET_N     => s_cpu_reset_n,   
             A           => local_addr,      
-            
+
             D_in        => D_in,            
             D_out       => D_out,           
-            
+
             AS_N        => local_as_n,
             DS_N        => local_ds_n,
             RW          => local_rw,
@@ -186,7 +180,7 @@ begin
             CIOUT_N     => open,
             DSACK0_N    => DSACK0_N,        
             DSACK1_N    => DSACK1_N,
-            STERM_N     => fastram_cpu_sterm_n,  -- Verbunden mit FastRAM-Bridge
+            STERM_N     => cpu_sterm_n,     -- verbinde zu FastRAM-Bridge
             CIIN_N      => '1',             
             HALT_N      => '1',             
             BERR_N      => '1',             
@@ -199,40 +193,29 @@ begin
         );
 
     -- =====================================================================
-    -- 4. INSTANZIIERUNG: DIE FASTRAM-BRIDGE (LOKAL IN DER TURBOKARTE)
-    -- Diese Bridge beobachtet den CPU-Bus und liefert cpu_sterm_n Signale.
+    -- 4. INSTANZIIERUNG: FASTRAM-BRIDGE (LESEN / SCHREIBEN ZUM EXTERNEN DDR)
+    -- Die Brücke beobachtet CPU-Adressen / AS_N und steuert die externen DDR-Ports
     -- =====================================================================
-    i_fastram : cpu_030_fastram_bridge
+    u_fastram : cpu_030_fastram_bridge
         port map (
-            CLK            => local_cpu_clk,
-            RESET_N        => s_cpu_reset_n,
-            cpu_A          => local_addr,
-            cpu_D_out      => D_out,
-            cpu_D_in       => D_in,
-            cpu_AS_N       => local_as_n,
-            cpu_DS_N       => local_ds_n,
-            cpu_RW         => local_rw,
-            cache_req      => open,
-            cache_burst_en => open,
-            cpu_sterm_n    => fastram_cpu_sterm_n,
-            ddr_req        => f_ddr_req,
-            ddr_rnw        => f_ddr_rnw,
-            ddr_addr       => f_ddr_addr,
-            ddr_data_w     => f_ddr_data_w,
-            ddr_data_r     => f_ddr_data_r,
-            ddr_ready      => f_ddr_ready,
-            ddr_burst_ack  => f_ddr_burst_ack
+            CLK             => local_cpu_clk,
+            RESET_N         => s_cpu_reset_n,
+            cpu_A           => local_addr,
+            cpu_D_out       => D_out,
+            cpu_D_in        => D_in,
+            cpu_AS_N        => local_as_n,
+            cpu_DS_N        => local_ds_n,
+            cpu_RW          => local_rw,
+            cache_req       => '0',         -- zur Zeit nicht verwendet
+            cache_burst_en  => '1',         -- Burst-Reads erlauben
+            cpu_sterm_n     => cpu_sterm_n,
+            ddr_req         => ddr_req,
+            ddr_rnw         => ddr_rnw,
+            ddr_addr        => ddr_addr,
+            ddr_data_w      => ddr_data_w,
+            ddr_data_r      => ddr_data_r,
+            ddr_ready       => ddr_ready,
+            ddr_burst_ack   => ddr_burst_ack
         );
-
-    -- =====================================================================
-    -- 5. ROUTE FASTRAM-DDR-SIGNALS ZUM TOP (ENTITY-PORTS)
-    -- =====================================================================
-    ddr_req     <= f_ddr_req;
-    ddr_rnw     <= f_ddr_rnw;
-    ddr_addr    <= f_ddr_addr;
-    ddr_data_w  <= f_ddr_data_w;
-    f_ddr_data_r <= ddr_data_r;
-    f_ddr_ready <= ddr_ready;
-    f_ddr_burst_ack <= ddr_burst_ack;
 
 end structural;
