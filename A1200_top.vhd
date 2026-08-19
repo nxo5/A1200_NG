@@ -4,6 +4,7 @@
 -- Teil:    1 von 3 (Entity und Signale)
 -- Funktion: Das zentrale Mainboard-Verteilerzentrum (Chipsatz-Wrapper).
 -- SANIERUNG: ROM-OVERLAY & WAIT-STATE HARMONISIERUNG (0 ERRORS)
+-- TRISTATE-FIX: Ersetze internes 'Z' auf cpu_D_to_core durch definierten Bus-Ruhepegel
 -- =========================================================================
 
 library IEEE;
@@ -132,8 +133,8 @@ architecture structural of A1200_top is
     signal s_clk_14m        : std_logic;
     signal s_cnt_14m        : unsigned(1 downto 0) := "00";
 
-    -- Glue signals for gayle mapping
-    signal gayle_bus_data_r : std_logic_vector(31 downto 0);
+    -- Definierter Bus-Ruhepegel anstelle interner 'Z'
+    constant BUS_IDLE_32 : std_logic_vector(31 downto 0) := (others => '1');
 
     
     begin
@@ -183,7 +184,7 @@ architecture structural of A1200_top is
                 bus_dsack1_n  <= '0';
             else
                 -- Hier klinken sich Gayle, die CIAs und das Chip-RAM ein
-                cpu_D_to_core <= (others => 'Z'); -- Wird von Peripherie getrieben
+                cpu_D_to_core <= BUS_IDLE_32; -- Vermeide internes Tri-State; benutze definierten Idle-Wert
                 bus_dsack0_n  <= '1';             
                 bus_dsack1_n  <= '1';
             end if;
