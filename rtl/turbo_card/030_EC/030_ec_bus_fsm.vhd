@@ -170,7 +170,8 @@ architecture behavioral of cpu_030_ec_bus_fsm is
                     current_bus_state <= BUS_S4_WAIT;
 
                 -- ---------------------------------------------------------
-                -- BUS_S4_WAIT: ERWEITERTE LOGISCHE SIZING- UND BURST-WEICHE
+                -- BUS_S4_WAIT: KORREKTUR: ZYKLUSTREUER WAIT-STATE-GENERATOR [14.1]
+                -- Hält die Strobes starr aktiv, bis das langsame Mainboard quittiert!
                 -- ---------------------------------------------------------
                 when BUS_S4_WAIT =>
                     if ext_BERR_N = '0' then
@@ -189,25 +190,24 @@ architecture behavioral of cpu_030_ec_bus_fsm is
                     elsif ext_DSACK1_N = '0' or ext_DSACK0_N = '0' then
                         reg_cbreq_n <= '1'; 
                         
-                        -- UNBESTECHLICHE SIZING-MASKEN-PRÜFUNG:
-                        -- Ein Folgezyklus wird NUR dann betreten, wenn die CPU ein Longword (00) 
-                        -- oder Word (01) fordert, der Bus aber schmaler antwortet. 
-                        -- Fordert die CPU nur ein Byte (00) oder Word auf passendem Bus, geht es starr zu S5!
                         if ext_DSACK1_N = '0' and ext_DSACK0_N = '0' then
                             current_bus_state <= BUS_S5_DONE; -- Voller 32-Bit Port fertig
                             
                         elsif cycle_size = "00" then
-                            -- CPU wollte nur ein Byte, Transfer auf 8/16-Bit Bus sofort erledigt!
                             current_bus_state <= BUS_S5_DONE;
                             
                         elsif cycle_size = "01" and ext_DSACK1_N = '0' and ext_DSACK0_N = '1' then
-                            -- CPU wollte ein Word und kriegt einen 16-Bit Port -> Ebenfalls fertig!
                             current_bus_state <= BUS_S5_DONE;
                         else
-                            -- ECHTER ENG-BUS-KONFLIKT: Weiche biegt ab in die Sizing-Pause
                             current_bus_state <= BUS_SIZ_PAUSE_2;
                         end if;
+                    else
+                        -- ANSONSTEN: Halte die Daten- und Adressstrobes unnachgiebig auf Active-Low! [14.1]
+                        reg_strobe_en     <= '1';
+                        reg_ds_en         <= '1';
+                        current_bus_state <= BUS_S4_WAIT; -- Schleife schließt latch- und glitchfrei [14.1]
                     end if;
+
 
 					 -- =========================================================
                 -- RESTRICHTE SCHLEIFENPHASEN FÜR SIZING-FOLGEZYKLEN
