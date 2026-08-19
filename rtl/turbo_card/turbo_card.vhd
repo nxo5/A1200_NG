@@ -33,7 +33,16 @@ entity turbo_card is
         -- Rückmeldungen vom Mainboard-Chipsatz und Paula-Interrupts
         DSACK0_N        : in    std_logic;                      -- Daten-Ack Bit 0
         DSACK1_N        : in    std_logic;                      -- Daten-Ack Bit 1
-        IPL_N           : in    std_logic_vector(2 downto 0)    -- Interrupt Priority Level
+        IPL_N           : in    std_logic_vector(2 downto 0);   -- Interrupt Priority Level
+
+        -- FastRAM / DDR Interface (durchgereicht an Nanoboard)
+        ddr_req         : out   std_logic;                      -- Request an externes DDR-Interface
+        ddr_rnw         : out   std_logic;                      -- Read(1)/Write(0) Richtung
+        ddr_addr        : out   std_logic_vector(25 downto 2);  -- Kürzerer Adressbus für DDR-Controller
+        ddr_data_w      : out   std_logic_vector(31 downto 0);  -- Daten vom CPU an DDR
+        ddr_data_r      : in    std_logic_vector(31 downto 0);  -- Daten von DDR an CPU
+        ddr_ready       : in    std_logic;                      -- Ready von externem DDR
+        ddr_burst_ack   : in    std_logic                       -- Burst-Acknowledge vom DDR-Controller
     );
 end turbo_card;
 
@@ -214,5 +223,16 @@ begin
             ddr_ready      => f_ddr_ready,
             ddr_burst_ack  => f_ddr_burst_ack
         );
+
+    -- =====================================================================
+    -- 5. ROUTE FASTRAM-DDR-SIGNALS ZUM TOP (ENTITY-PORTS)
+    -- =====================================================================
+    ddr_req     <= f_ddr_req;
+    ddr_rnw     <= f_ddr_rnw;
+    ddr_addr    <= f_ddr_addr;
+    ddr_data_w  <= f_ddr_data_w;
+    f_ddr_data_r <= ddr_data_r;
+    f_ddr_ready <= ddr_ready;
+    f_ddr_burst_ack <= ddr_burst_ack;
 
 end structural;
