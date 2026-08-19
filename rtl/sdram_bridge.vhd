@@ -81,15 +81,16 @@ architecture Behavioral of sdram_bridge is
     
     signal ks_we_r1, ks_we_r2   : std_logic := '0';
 
-	 begin
+    	 begin
 
     sdram_clk <= clk_sdram;
     
     -- ECHTES TRI-STATE: Nur hier am physischen, externen Board-Pin erlaubt und zwingend nötig!
     sdram_data <= internal_sdram_out when sdram_oe = '1' else (others => 'Z');
 
-    am_dsack0_n <= '0' when reg_dsack0_n = '0' else 'Z';
-    am_dsack1_n <= '0' when reg_dsack1_n = '0' else 'Z';
+    -- Replace internal tri-state driven ack outputs with direct signals (synth-safe)
+    am_dsack0_n <= reg_dsack0_n;
+    am_dsack1_n <= reg_dsack1_n;
 
     select_width <= am_siz1 & am_siz0 & reg_latched_addr(1 downto 0);
 
