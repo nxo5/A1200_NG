@@ -3,9 +3,10 @@
 -- Datei:   cia_a.vhd
 -- Teil:    1 von 2 (Schnittstelle & Komponenten)
 -- Funktion: Das strukturelle Top-Level Hauptgehäuse (Shell) des CIA-A-Chips.
--- SANIERUNG SCHRITT 29 (A):
---   - Vorbereitung des Multiplexers für den Lese-Datenbus.
---   - Sichert zyklustreue Lesezugriffe für die CPU an der D24-D31 Busgrenze.
+-- SANIERUNG (TRISTATE-FIX):
+--   - Entfernt intern verwendete 'Z' Tri-State-Ausgabe und ersetzt sie durch
+--     einen definierten Bus‑Ruhezustand (Pull‑High), damit interne Tri‑States
+--     nicht mehr im FPGA entstehen. (Minimale invasive Änderung)
 -- =========================================================================
 
 library IEEE;
@@ -133,6 +134,9 @@ architecture Behavioral of cia_a is
     signal int_write_en      : std_logic;
     signal extended_addr     : std_logic_vector(31 downto 0);
 
+    -- Ersatz für internes Tri-State: definiere einen festen Bus-Ruhepegel (Pull-High)
+    constant BUS_IDLE_VALUE : std_logic_vector(7 downto 0) := (others => '1');
+
 	 begin
 
     -- =================================================================
@@ -163,9 +167,8 @@ architecture Behavioral of cia_a is
         end case;
     end process;
 
-    -- TRISTATE-STEUERUNG FÜR DEN EXTERNEN 8-BIT-AMIGA-DATENBUS
-    -- Mappt den fehlerfreien Multiplexer-Ausgang sauber auf die CPU-Leitungen [14.1].
-    cia_data <= mux_data_out when int_read_en = '1' else (others => 'Z');
+    -- ERSETZTEN TRISTATE: Benutze einen definierten Bus-Ruhepegel anstelle von 'Z'
+    cia_data <= mux_data_out when int_read_en = '1' else BUS_IDLE_VALUE;
 
     -- =================================================================
     -- 2. INTERNE CHIP-VERDRAHTUNG (PORT MAPS)
