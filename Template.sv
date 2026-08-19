@@ -100,7 +100,7 @@ pll_0002 my_hardware_pll
 	.outclk_0(clk_sys)
 );
 
-wire reset = RESET | status[0] | buttons[1]; // Triggersignal vom Framework / OSD
+wire reset = RESET | status[0] | buttons[1] | ioctl_download; // Triggersignal vom Framework / OSD
 wire amiga_reset_extended;                     // Das gedehnte, unnachgiebige Hardwarereset-Signal [14.1]
 
 wire [7:0] core_r, core_g, core_b;
