@@ -37,7 +37,16 @@ entity A1200_top is
         ioctl_hdf0_download : in    std_logic;                      
         ioctl_hdf1_download : in    std_logic;
         ioctl_hdf2_download : in    std_logic;
-        ioctl_hdf3_download : in    std_logic
+        ioctl_hdf3_download : in    std_logic;
+
+        -- FastRAM / DDR Interface (durchgereicht an Nanoboard)
+        ddr_req         : out   std_logic;                      -- Request an externes DDR-Interface
+        ddr_rnw         : out   std_logic;                      -- Read(1)/Write(0) Richtung
+        ddr_addr        : out   std_logic_vector(25 downto 2);  -- Kürzerer Adressbus für DDR-Controller
+        ddr_data_w      : out   std_logic_vector(31 downto 0);  -- Daten vom CPU an DDR
+        ddr_data_r      : in    std_logic_vector(31 downto 0);  -- Daten von DDR an CPU
+        ddr_ready       : in    std_logic;                      -- Ready von externem DDR
+        ddr_burst_ack   : in    std_logic                       -- Burst-Acknowledge vom DDR-Controller
     );
 end A1200_top;
 
@@ -60,7 +69,16 @@ architecture structural of A1200_top is
             FC              : out   std_logic_vector(2 downto 0);
             DSACK0_N        : in    std_logic;
             DSACK1_N        : in    std_logic;
-            IPL_N           : in    std_logic_vector(2 downto 0)
+            IPL_N           : in    std_logic_vector(2 downto 0);
+
+            -- FastRAM / DDR Interface (durchgereicht an Nanoboard)
+            ddr_req         : out   std_logic;
+            ddr_rnw         : out   std_logic;
+            ddr_addr        : out   std_logic_vector(25 downto 2);
+            ddr_data_w      : out   std_logic_vector(31 downto 0);
+            ddr_data_r      : in    std_logic_vector(31 downto 0);
+            ddr_ready       : in    std_logic;
+            ddr_burst_ack   : in    std_logic
         );
     end component;
 
@@ -207,7 +225,15 @@ architecture structural of A1200_top is
             FC              => bus_fc,
             DSACK0_N        => bus_dsack0_n,
             DSACK1_N        => bus_dsack1_n,
-            IPL_N           => system_ipl_n
+            IPL_N           => system_ipl_n,
+
+            ddr_req         => ddr_req,
+            ddr_rnw         => ddr_rnw,
+            ddr_addr        => ddr_addr,
+            ddr_data_w      => ddr_data_w,
+            ddr_data_r      => ddr_data_r,
+            ddr_ready       => ddr_ready,
+            ddr_burst_ack   => ddr_burst_ack
         );
 
     -- =====================================================================
