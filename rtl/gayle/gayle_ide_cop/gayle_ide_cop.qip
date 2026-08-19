@@ -1,0 +1,9 @@
+# =========================================================================
+# Projekt: A1200_NG
+# Ordner:  gayle_ide_cop
+# Datei:   gayle_ide_cop.qip
+# Funktion: Lokale Quartus IP-Projektliste für den Gayle IDE-Coprozessor.
+# =========================================================================
+
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_ide_cop.vhd"]
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "gayle_ide_cop_cnt.vhd"]
