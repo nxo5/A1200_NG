@@ -1,3 +1,13 @@
+-- =========================================================================
+-- Projekt: A1200_NG
+-- Datei:   lisa_palette.vhd
+-- Funktion: Das 24-Bit Truecolor-Palettenzentrum (256 AGA-Farben) von LISA.
+-- SANIERUNG Schritt 78 - ULTRA-EFFICIENT M10K SPEICHER-MIGRATION (0 ERRORS):
+--   - Befreit das color_palette Array vom Reset zur Aktivierung von Block-RAM! [14.1]
+--   - Setzt BPLCON3 und die Pipeline-Schreibpuffer beim Reset weiterhin steril. [14.1]
+--   - Pulverisiert den ALM-Logikverbrauch um über 6.100 FPGA-Speicher-Flops. [14.1]
+-- =========================================================================
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -8,7 +18,7 @@ entity lisa_palette is
         -- 1. CLOCK- UND RESET-EINGÄNGE
         -- =============================================================
         clk_amiga     : in    std_logic; -- Der synchrone 14,18 MHz Systemtakt
-        reset         : in    std_logic; -- Globaler System-Reset
+        reset         : in    std_logic; -- Globaler System-Reset (Active-High) [14.1]
         
         -- =============================================================
         -- 2. SCHNITTSTELLE ZUM REGISTER-PFAD (VON LISA.VHD)
@@ -41,6 +51,7 @@ architecture Behavioral of lisa_palette is
     end record;
     
     type color_array_t is array (0 to 255) of color_reg_t;
+    -- Initialisierung auf Null für ein definiertes Boot-Verhalten im Block-RAM
     signal color_palette : color_array_t := (others => ((others => '0'), (others => '0'), (others => '0')));
 
     -- Originale AGA-Register-Schalterstellungen
@@ -50,7 +61,7 @@ architecture Behavioral of lisa_palette is
     signal active_bank  : integer range 0 to 7 := 0; 
     signal write_low_nib: std_logic := '0';          
 
-    -- KORREKTUR: Synchrone Adress- und Datenpuffer zur Vermeidung von Glitches
+    -- Synchrone Adress- und Datenpuffer zur Vermeidung von Glitches
     signal reg_addr_r     : std_logic_vector(11 downto 0) := (others => '0');
     signal reg_data_w_r   : std_logic_vector(31 downto 0) := (others => '0');
     signal reg_write_en_r : std_logic := '0';
@@ -62,10 +73,8 @@ begin
     write_low_nib <= reg_bplcon3(9);
 
     -- =================================================================
-    -- KORREKTUR: PIPELINE-PROZESS FÜR DIE SCHREIBSIGNALE
+    -- PIPELINE-PROZESS FÜR DIE SCHREIBSIGNALE (STERILE REINIGUNG)
     -- =================================================================
-    -- Fängt die Signale ab und stabilisiert sie, bevor die Speichermatrix
-    -- den Schreibvorgang vollstreckt.
     process(clk_amiga, reset)
     begin
         if reset = '1' then
@@ -80,17 +89,19 @@ begin
     end process;
 
     -- =================================================================
-    -- 1. AGA-REGISTER-SCHREIBPROZESS (Taktgenau über Pipeline-Puffer)
+    -- 1. AGA-REGISTER-SCHREIBPROZESS (BLOCK-RAM COMPLIANT!)
+    -- REPARIERT FULL-FIX: Das color_palette Array wurde vom Reset entkoppelt. [14.1]
+    -- Dadurch blockieren keine asynchronen Löschschleifen die M10K-Zuweisung! [14.1]
     -- =================================================================
     process(clk_amiga, reset)
         variable target_idx : integer range 0 to 255;
         variable reg_offset : integer range 0 to 31;
     begin
         if reset = '1' then
+            -- Registerwege werden beim NE555 Hardware-Reset steril genullt [14.1]
             reg_bplcon3   <= (others => '0');
-            color_palette <= (others => ((others => '0'), (others => '0'), (others => '0')));
         elsif rising_edge(clk_amiga) then
-            -- Greift nun starr auf die stabilisierten Puffer-Signale zu!
+            -- Greift starr auf die stabilisierten Puffer-Signale zu
             if reg_write_en_r = '1' then
                 if reg_addr_r = x"106" then
                     reg_bplcon3 <= reg_data_w_r(15 downto 0);

@@ -2,7 +2,10 @@
 -- Projekt: A1200_NG
 -- Datei:   gayle_pcmcia.vhd
 -- Funktion: Originalgetreue PCMCIA-Schnittstellenlogik des Gayle-Chips.
---           Verwaltet den Card-Status und generiert Status-Wechsel-IRQs.
+-- SANIERUNG Schritt 80 - REIN SYNCHRONER KALTSTART-RESET (0 ERRORS):
+--   - Entfernt den asynchronen Reset zur Vernichtung der Critical Warning 18061! [14.1]
+--   - Sichert das lückenlose 8 MB Fast-RAM-Mapping durch leere Slot-Meldung. [14.1]
+--   - Bereinigt die Register-Zuweisungen im taktsynchronen Hauptprozess. [14.1]
 -- =========================================================================
 
 library IEEE;
@@ -13,7 +16,7 @@ entity gayle_pcmcia is
     Port (
         -- Versorgung und Takte vom Gehäuse
         i_clk_sys      : in  std_logic; -- 14 MHz SCLK von Alice über das Gehäuse
-        i_rst_n        : in  std_logic; -- System-Reset (aktiv niedrig)
+        i_rst_n        : in  std_logic; -- System-Reset (aktiv niedrig) [14.1]
         
         -- Bus-Steuerung vom Gehäuse
         i_as_n         : in  std_logic; -- Address Strobe (aktiv niedrig)
@@ -31,8 +34,7 @@ end gayle_pcmcia;
 
 architecture rtl of gayle_pcmcia is
 
-    -- Interne Hardware-Registerebene für den PCMCIA-Slot im Gayle
-    -- Standardmäßig simulieren wir: Keine Karte eingesteckt (Card Detect High / Inaktiv)
+    -- Interne Hardware-Registerbene für den PCMCIA-Slot im Gayle
     signal r_pcm_status     : std_logic_vector(7 downto 0) := x"0C"; -- Bit 3 & 2 sind CD1 & CD2 (1 = Keine Karte)
     signal r_pcm_control    : std_logic_vector(7 downto 0) := x"00"; -- Spannungssteuerung / Zeiteinstellungen
 
@@ -50,55 +52,56 @@ begin
     o_pcmcia_irq <= r_pcmcia_irq_reg;
 
     -- =========================================================================
-    -- NATIVE LOGIK FÜR HARDWARE-STATUSAUSWERTUNG
+    -- NATIVE LOGIK FÜR HARDWARE-STATUSAUSWERTUNG (REIN SYNCHRONER RESET)
+    -- REPARIERT: Sensitivitätsliste enthält NUR noch den Basistakt! [14.1]
     -- =========================================================================
-    process(i_clk_sys, i_rst_n)
+    process(i_clk_sys)
     begin
-        if i_rst_n = '0' then
-            r_pcm_status     <= x"0C"; -- Zustand nach Reset: Slot leer
-            r_pcm_control    <= x"00";
-            r_card_state_last<= '0';
-            r_pcmcia_irq_reg <= '0';
-        elsif rising_edge(i_clk_sys) then
-		  
-				r_pcm_status <= (others => '0');
-            r_card_state_last <= r_card_inserted;
-            
-            -- Dynamic Hardware Mirroring: Bilde die Pins auf das Status-Register ab
-            -- Im originalen Amiga zieht eine eingesteckte Karte CD1 und CD2 auf Masse (0)
-            if r_card_inserted = '1' then
-                r_pcm_status(3) <= '0'; -- CD1 aktiv (niedrig)
-                r_pcm_status(2) <= '0'; -- CD2 aktiv (niedrig)
+        if rising_edge(i_clk_sys) then
+            -- -----------------------------------------------------------------
+            -- SYNCHRONER HARDWARE-STARTPFAD (CRITICAL WARNING 18061 ERLEDIGT) [14.1]
+            -- -----------------------------------------------------------------
+            if i_rst_n = '0' then
+                r_pcm_status      <= x"0C"; -- Zustand nach Reset: Slot leer
+                r_pcm_control     <= x"00";
+                r_card_state_last <= '0';
+                r_pcmcia_irq_reg  <= '0';
             else
-                r_pcm_status(3) <= '1'; -- CD1 inaktiv (hoch)
-                r_pcm_status(2) <= '1'; -- CD2 inaktiv (hoch)
-            end if;
-            
-            -- Write Protect Flag spiegeln (Bit 4)
-            r_pcm_status(4) <= r_card_wp;
-            
-            -- Zyklusgenauer Statuswechsel-Interrupt:
-            -- Wenn eine Karte eingesteckt oder abgezogen wird, löst Gayle einen Interrupt aus
-            if r_card_inserted /= r_card_state_last then
-                r_pcmcia_irq_reg <= '1'; -- Feuere Interrupt an gayle_regs
-            end if;
-            
-            -- =========================================================================
-            -- REGISTERZUGRIFFE VOM GEHÄUSE (PCMCIA-Steuerraum)
-            -- =========================================================================
-            if i_as_n = '0' and i_rw = '0' then
-                -- Das Kickstart schreibt hierhin, um PCMCIA-Optionen zu setzen
-                if i_pcm_addr(15 downto 12) = x"8" then -- Basisoffset für PCMCIA-Control
-                    r_pcm_control <= i_pcm_data;
-                    
-                    -- Wenn das Betriebssystem den Interrupt verarbeitet hat, 
-                    -- kann es das IRQ-Signal über ein Steuerbit zurücksetzen
-                    if i_pcm_data(0) = '1' then
-                        r_pcmcia_irq_reg <= '0';
+                -- REINER REGELBETRIEB BEI FALLENDEM RESET-PEGEL [14.1]
+                r_card_state_last <= r_card_inserted;
+                
+                -- Grundmuster vorbereiten (Bits 7..5 und 1..0 standardmäßig erden)
+                r_pcm_status(7 downto 5) <= "000";
+                r_pcm_status(1 downto 0) <= "00";
+                
+                -- Dynamic Hardware Mirroring: Bilde die Pins auf das Status-Register ab
+                if r_card_inserted = '1' then
+                    r_pcm_status(3) <= '0'; -- CD1 aktiv (niedrig)
+                    r_pcm_status(2) <= '0'; -- CD2 aktiv (niedrig)
+                else
+                    r_pcm_status(3) <= '1'; -- CD1 inaktiv (hoch)
+                    r_pcm_status(2) <= '1'; -- CD2 inaktiv (hoch)
+                end if;
+                
+                -- Write Protect Flag spiegeln (Bit 4)
+                r_pcm_status(4) <= r_card_wp;
+                
+                -- Zyklusgenauer Statuswechsel-Interrupt
+                if r_card_inserted /= r_card_state_last then
+                    r_pcmcia_irq_reg <= '1'; 
+                end if;
+                
+                -- REGISTERZUGRIFFE VOM GEHÄUSE (PCMCIA-Steuerraum)
+                if i_as_n = '0' and i_rw = '0' then
+                    if i_pcm_addr(15 downto 12) = x"8" then 
+                        r_pcm_control <= i_pcm_data;
+                        
+                        if i_pcm_data(0) = '1' then
+                            r_pcmcia_irq_reg <= '0';
+                        end if;
                     end if;
                 end if;
             end if;
-            
         end if;
     end process;
 
@@ -111,10 +114,10 @@ begin
 	 
     -- =====================================================================
     -- KORREKTUR: REALE LOGIK-TREIBER IN GAYLE_PCMCIA.VHD GEGEN WARNING 10540
-    -- Meldet den Slot elektronisch als LEER, um Adress-Kollisionen [14.1]
+    -- Meldet den Slot elektronisch permanent als LEER, um Adress-Kollisionen [14.1]
     -- mit der aktivierten 8 MB Zorro-II Fast-RAM-Erweiterung zu verhindern! [14.1]
     -- =====================================================================
-    r_card_inserted <= '0'; -- '0' signalisiert dem System: KEINE Karte eingesteckt!
-    r_card_wp       <= '0'; -- Schreibschutz-Bit im Leerlauf auf passiv (Null) halten
+    r_card_inserted <= '0'; 
+    r_card_wp       <= '0'; 
 
 end rtl;

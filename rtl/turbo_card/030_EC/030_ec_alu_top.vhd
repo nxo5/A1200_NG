@@ -114,7 +114,7 @@ begin
     alu_ready <= '1';
 
     -- =====================================================================
-    -- KOMBINAOTORISCHE AKTIVIERUNGSWEICHE: WRITE-BACK-STEUERUNG
+    -- KOMBINATORISCHE AKTIVIERUNGSWEICHE: WRITE-BACK-STEUERUNG
     -- =====================================================================
     process(alu_opcode)
     begin

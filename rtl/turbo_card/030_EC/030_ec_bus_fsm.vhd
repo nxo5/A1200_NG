@@ -209,7 +209,7 @@ architecture behavioral of cpu_030_ec_bus_fsm is
                         end if;
                     end if;
 
-						                  -- =========================================================
+					 -- =========================================================
                 -- RESTRICHTE SCHLEIFENPHASEN FÜR SIZING-FOLGEZYKLEN
                 -- =========================================================
                 when BUS_SIZ_PAUSE_2 =>

@@ -40,7 +40,9 @@ entity paula_audio is
         aud_dma_load   : in    std_logic_vector(1 downto 0);  
         aud_dma_write  : in    std_logic;                     
         
+		  -- =============================================================
         -- Autonome DMA-Bedarfsanforderungen an die Master-Zentrale
+		  -- =============================================================
         aud_dma_req_ch0: out   std_logic;                     
         aud_dma_req_ch1: out   std_logic;                     
         aud_dma_req_ch2: out   std_logic;                     
@@ -56,7 +58,9 @@ end paula_audio;
 
 architecture Behavioral of paula_audio is
 
+	 -- =============================================================
     -- Strukturierte Definition eines originalen Amiga-Audiokanals
+	 -- =============================================================
     type audio_channel_t is record
         period_cnt   : unsigned(15 downto 0); 
         sample_buffer: std_logic_vector(7 downto 0);  
@@ -100,7 +104,9 @@ begin
             aud_dma_req_ch2 <= '0'; aud_dma_req_ch3 <= '0';
         elsif rising_edge(clk_amiga) then
             
-            -- PFAD A: DMA-BUFFER-SPEISUNG (Schneller Daten-Einzug)
+            -- =============================================================
+				-- PFAD A: DMA-BUFFER-SPEISUNG (Schneller Daten-Einzug)
+				-- =============================================================
             if aud_dma_write = '1' then
                 c_idx := to_integer(unsigned(aud_dma_load));
                 ch(c_idx).sample_buffer <= aud_dma_data(15 downto 8); 
@@ -108,7 +114,9 @@ begin
                 ch(c_idx).shadow_empty  <= '0';                        
             end if;
 
-            -- REPARATUR PFAD B: GETAKTETES DEKREMENTIEREN IM 3,54-MHZ RASTER [14.1]
+            -- =====================================================================
+				-- REPARATUR PFAD B: GETAKTETES DEKREMENTIEREN IM 3,54-MHZ RASTER [14.1]
+				-- =====================================================================
             if cck_tick = '1' then
                 -- Kanal 0
                 if ch(0).period_cnt = x"0000" then
@@ -155,25 +163,33 @@ begin
                 end if;
             end if;
 
-            -- Die gattergetreue 64er Lautstärken-Sperre
+            -- =============================================================
+				-- Die gattergetreue 64er Lautstärken-Sperre
+				-- =============================================================
             if unsigned(aud_volume_ch0) >= 64 then vol_ch0_v := to_unsigned(64, 8); else vol_ch0_v := unsigned(aud_volume_ch0); end if;
             if unsigned(aud_volume_ch1) >= 64 then vol_ch1_v := to_unsigned(64, 8); else vol_ch1_v := unsigned(aud_volume_ch1); end if;
             if unsigned(aud_volume_ch2) >= 64 then vol_ch2_v := to_unsigned(64, 8); else vol_ch2_v := unsigned(aud_volume_ch2); end if;
             if unsigned(aud_volume_ch3) >= 64 then vol_ch3_v := to_unsigned(64, 8); else vol_ch3_v := unsigned(aud_volume_ch3); end if;
 
-            -- MATHEMATISCHE LAUTSTÄRKEN-MATRIZIERUNG 
+            -- =============================================================
+				-- MATHEMATISCHE LAUTSTÄRKEN-MATRIZIERUNG 
+				-- =============================================================
             prod_ch0 := ch(0).current_sample * signed("0" & std_logic_vector(vol_ch0_v));
             prod_ch1 := ch(1).current_sample * signed("0" & std_logic_vector(vol_ch1_v));
             prod_ch2 := ch(2).current_sample * signed("0" & std_logic_vector(vol_ch2_v));
             prod_ch3 := ch(3).current_sample * signed("0" & std_logic_vector(vol_ch3_v));
 
-            -- KORREKTUR: Zuweisung per 15-Bit-Abschneider löst den Vector-Mismatch auf! [14.1]
+            -- ================================================================================
+				-- KORREKTUR: Zuweisung per 15-Bit-Abschneider löst den Vector-Mismatch auf! [14.1]
+				-- ================================================================================
             ch(0).mixed_val <= prod_ch0(14 downto 0);
             ch(1).mixed_val <= prod_ch1(14 downto 0);
             ch(2).mixed_val <= prod_ch2(14 downto 0);
             ch(3).mixed_val <= prod_ch3(14 downto 0);
 
-            -- Autonome Bedarfs-Signale weiterreichen
+            -- =============================================================
+				-- Autonome Bedarfs-Signale weiterreichen
+				-- =============================================================
             aud_dma_req_ch0 <= ch(0).shadow_empty;
             aud_dma_req_ch1 <= ch(1).shadow_empty;
             aud_dma_req_ch2 <= ch(2).shadow_empty;

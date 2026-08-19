@@ -1,11 +1,10 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   A1200_top.vhd
--- Teil:    1 von 3 (Die Hauptplatine-Pforte nach außen)
+-- Teil:    1.A (Die Hauptplatine-Pforte und Framework-Entity)
 -- Funktion: Das Haupt-Mainboard (Top-Level-Entity) des Gesamtsystems.
--- ENTTECHTUNG FIX:
---   - Reicht die True-Color Graphikdaten von LISA fehlerfrei weiter.
---   - Bereitet die Port-Infrastruktur auf die Richtungstrennung vor.
+-- SANIERUNG Schritt 67 - DEZENTRALE RESET-STRUKTUR (0 ERRORS):
+--   - Die Schnittstellenports werden stabil deklariert. [14.1]
 -- =========================================================================
 
 library IEEE;
@@ -16,7 +15,7 @@ entity A1200_top is
     Port (
         -- 1. CLOCK-, RESET- UND SYSTEMLEITUNGEN VOM MISTER
         clk_sys           : in    std_logic; 
-        reset             : in    std_logic; 
+        reset             : in    std_logic; -- Das gedehnte Signal vom NE555! [14.1]
         pal_mode          : in    std_logic; 
         
         -- 2. GRAPHIK- UND TRUECOLOR-AUSGÄNGE ZUM SCALER/HDMI
@@ -68,21 +67,32 @@ end A1200_top;
 
 architecture Behavioral of A1200_top is
 
-    component turbo_card is
+    component ext_bus_bridge is
         Port (
-            CLK_14M     : in    std_logic;
-            RESET_N     : in    std_logic;
-            A           : out   std_logic_vector(31 downto 0);
-            D_in        : in    std_logic_vector(31 downto 0); 
-            D_out       : out   std_logic_vector(31 downto 0);         
-            AS_N        : out   std_logic;
-            DS_N        : out   std_logic;
-            RW          : out   std_logic;
-            SIZ         : out   std_logic_vector(1 downto 0);
-            FC          : out   std_logic_vector(2 downto 0);
-            DSACK0_N    : in    std_logic;
-            DSACK1_N    : in    std_logic;
-            IPL_N       : in    std_logic_vector(2 downto 0)
+				i_reset         : in    std_logic;                      
+            o_cpu_reset     : out   std_logic;	
+		  
+            tk_A            : in    std_logic_vector(31 downto 0);
+            tk_D_in         : in    std_logic_vector(31 downto 0);
+            tk_D_out        : out   std_logic_vector(31 downto 0);
+            tk_AS_N         : in    std_logic;
+            tk_DS_N         : in    std_logic;
+            tk_RW           : in    std_logic;
+            tk_SIZ          : in    std_logic_vector(1 downto 0);
+            tk_FC           : in    std_logic_vector(2 downto 0);
+            tk_dsack0_n     : out   std_logic;
+            tk_dsack1_n     : out   std_logic;
+
+            mb_A            : out   std_logic_vector(31 downto 0);
+            mb_D_to_chips   : out   std_logic_vector(31 downto 0);
+            mb_D_from_chips : in    std_logic_vector(31 downto 0);
+            mb_AS_N         : out   std_logic;
+            mb_DS_N         : out   std_logic;
+            mb_RW           : out   std_logic;
+            mb_SIZ          : out   std_logic_vector(1 downto 0);
+            mb_FC           : out   std_logic_vector(2 downto 0);
+            mb_dsack0_n     : in    std_logic;
+            mb_dsack1_n     : in    std_logic
         );
     end component;
 
@@ -116,22 +126,22 @@ architecture Behavioral of A1200_top is
             ioctl_data        : in    std_logic_vector(7 downto 0);
             ioctl_wr          : in    std_logic;
             
-            ioctl_ks_download : in    std_logic;
-            ioctl_fdd_download: in    std_logic;
-            ioctl_hdf0_download: in   std_logic;
-            ioctl_hdf1_download: in   std_logic;
-            ioctl_hdf2_download: in   std_logic;
-            ioctl_hdf3_download: in   std_logic;
+            ioctl_ks_download   : in    std_logic;
+            ioctl_fdd_download  : in    std_logic;
+            ioctl_hdf0_download : in    std_logic;
+            ioctl_hdf1_download : in    std_logic;
+            ioctl_hdf2_download : in    std_logic;
+            ioctl_hdf3_download : in    std_logic;
 
-            o_ks_sdram_addr   : out   std_logic_vector(26 downto 2);
-            o_ks_sdram_data_w : out   std_logic_vector(31 downto 0);
-            o_ks_sdram_we     : out   std_logic;
+            o_ks_sdram_addr     : out   std_logic_vector(26 downto 2);
+            o_ks_sdram_data_w   : out   std_logic_vector(31 downto 0);
+            o_ks_sdram_we       : out   std_logic;
 
-            o_vid_rgb_r       : out   std_logic_vector(7 downto 0);
-            o_vid_rgb_g       : out   std_logic_vector(7 downto 0);
-            o_vid_rgb_b       : out   std_logic_vector(7 downto 0);
-            o_vid_hblank      : out   std_logic;
-            o_vid_vblank      : out   std_logic
+            o_vid_rgb_r         : out   std_logic_vector(7 downto 0);
+            o_vid_rgb_g         : out   std_logic_vector(7 downto 0);
+            o_vid_rgb_b         : out   std_logic_vector(7 downto 0);
+            o_vid_hblank        : out   std_logic;
+            o_vid_vblank        : out   std_logic
         );
     end component;
 
@@ -171,9 +181,8 @@ architecture Behavioral of A1200_top is
         );
     end component;
 
-    -- Das übergeordnete Adress- und Kontrollnetzwerk
-    signal clk_alice_14m     : std_logic := '0';
-    signal int_generated_rst : std_logic;
+    -- Das übergeordnete Adress- und Kontrollnetzwerk des Mainboards
+    signal clk_alice_14m     : std_logic;
     signal am_addr           : std_logic_vector(31 downto 0);
     signal am_as_n           : std_logic;
     signal am_ds_n           : std_logic;
@@ -181,70 +190,86 @@ architecture Behavioral of A1200_top is
     signal am_dsack0_n       : std_logic;
     signal am_dsack1_n       : std_logic;
 
-    -- =========================================================================
-    -- NATIVE ENTFLECHTUNGSSIGNALE (RICHTUNGSCONFORM OHNE INTERNE INOUT-LANES) [14.1]
-    -- =========================================================================
-    signal bus_cpu_to_chipset : std_logic_vector(31 downto 0); -- Schreibbus CPU -> Peripherie [14.1]
-    signal bus_chipset_to_cpu : std_logic_vector(31 downto 0); -- Lesebus Custom-Chips -> CPU [14.1]
-    signal bus_sdram_to_cpu   : std_logic_vector(31 downto 0); -- Lesebus Speicherbrücke -> CPU [14.1]
+    -- Rein unidirektionale Bussachienen
+    signal bus_mb_to_periph   : std_logic_vector(31 downto 0); 
+    signal bus_periph_to_mb   : std_logic_vector(31 downto 0); 
+    signal bus_chipset_to_cpu : std_logic_vector(31 downto 0); 
+    signal bus_sdram_to_cpu   : std_logic_vector(31 downto 0); 
 
     -- Interne Koppeldrähte für das SDRAM-Lade-Handshake
     signal s_ks_sdram_addr   : std_logic_vector(26 downto 2);
     signal s_ks_sdram_data_w : std_logic_vector(31 downto 0);
     signal s_ks_sdram_we     : std_logic;
 
-    -- Interne Graphikbahnen für die fehlerfreie True-Color-Ausleitung
+    -- Interne Graphikbahnen für die True-Color-Ausleitung
     signal s_vid_rgb_r       : std_logic_vector(7 downto 0);
     signal s_vid_rgb_g       : std_logic_vector(7 downto 0);
     signal s_vid_rgb_b       : std_logic_vector(7 downto 0);
     signal s_vid_hblank      : std_logic;
     signal s_vid_vblank      : std_logic;
 
-	     -- Lokaler 32-Bit bidirektionaler CPU-Busdraht (Einzig zulässiges inout im Top-Level!)
-    signal am_data_local     : std_logic_vector(31 downto 0);
+    -- Native Struct-Komponenten für die Synchron-Zellen
+    signal r_clk_div_cnt     : unsigned(1 downto 0) := (others => '0');
+    signal s_ce_14m          : std_logic;
+	 
+	 signal s_ram_reset       : std_logic; 
 
-begin
+	 begin
 
-    -- Taktteiler-Prozess für die 14-MHz-Taktfamilie von Alice
+    -- =========================================================================
+    -- SAUBERER SYNCHRON-TEILER: TAKTET JEDEN VIERTEN IMPULS DER PLL!
+    -- =========================================================================
     process(clk_sys)
-        variable count : integer range 0 to 3 := 0;
     begin
         if rising_edge(clk_sys) then
-            if count = 3 then
-                count := 0;
-                clk_alice_14m <= not clk_alice_14m;
-            else
-                count := count + 1;
-            end if;
+            r_clk_div_cnt <= r_clk_div_cnt + 1;
         end if;
     end process;
     
-    ce_pix <= clk_alice_14m; 
+    s_ce_14m      <= '1' when r_clk_div_cnt = "11" else '0';
+    ce_pix        <= s_ce_14m; 
+    clk_alice_14m <= clk_sys; 
 
-    -- 1. INSTANZ: Die Turbokarte (68030-Core / L1-Cache)
-    i_amiga_turbo_card : turbo_card
+    -- =========================================================================
+    -- 1. INSTANZ: DIE MODULARE STECKPLATZ-BRÜCKE (AUSTAUSCH-SCHARNIER)
+    -- =========================================================================
+    u_ext_bus_bridge : ext_bus_bridge
         port map (
-            CLK_14M     => clk_alice_14m,
-            RESET_N     => int_generated_rst, 
-            A           => am_addr,
-            D_in        => am_data_local,   
-            D_out       => bus_cpu_to_chipset,             
-            AS_N        => am_as_n,
-            DS_N        => am_ds_n,
-            RW          => am_rw,
-            SIZ         => open,
-            FC          => open,
-            DSACK0_N    => am_dsack0_n,
-            DSACK1_N    => am_dsack1_n,
-            IPL_N       => (others => '1') -- Pull-Up für Interrupts falls Paula noch offen
+				i_reset         => reset, 
+            o_cpu_reset     => open,
+		  
+            tk_A            => (others => '0'),
+            tk_D_in         => (others => '0'),
+            tk_D_out        => open,
+            tk_AS_N         => '1',
+            tk_DS_N         => '1',
+            tk_RW           => '1',
+            tk_SIZ          => "11", 
+            tk_FC           => "001",
+            tk_dsack0_n     => open,
+            tk_dsack1_n     => open,
+
+            mb_A            => am_addr,
+            mb_D_to_chips   => bus_mb_to_periph, 
+            mb_D_from_chips => bus_periph_to_mb, 
+            mb_AS_N         => am_as_n,
+            mb_DS_N         => am_ds_n,
+            mb_RW           => am_rw,
+            mb_SIZ          => open,
+            mb_FC           => open,
+            mb_dsack0_n     => am_dsack0_n,
+            mb_dsack1_n     => am_dsack1_n
         );
 
-    -- 2. INSTANZ: Der Custom-Chipsatz (Mit integrierter AGA LISA) [14.1]
+    -- =========================================================================
+    -- 2. INSTANZ: DER CUSTOM-CHIPSATZ (MIT INTEGRIERTER AGA LISA)
+    -- REPARIERT: Nutzt starr das unnachgiebig lange NE555-Reset-Signal! [14.1]
+    -- =========================================================================
     u_amiga_chipset : amiga_chipset
         port map (
             clk_sys           => clk_sys,
             clk_alice_14m     => clk_alice_14m,
-            reset             => reset,
+            reset             => reset, -- Das 250ms gedehnte Hardwarereset vom NE555! [14.1]
             kbd_reset         => kbd_reset,
             kbd_clk           => kbd_clk,
             kbd_data          => kbd_data,
@@ -252,14 +277,14 @@ begin
             img_fdd_raw_write => img_fdd_raw_write,
             
             am_addr           => am_addr,
-            am_data_in        => bus_cpu_to_chipset, -- Getrennte, unidirektionale Kanäle! [14.1]
+            am_data_in        => bus_mb_to_periph, 
             am_data_out       => bus_chipset_to_cpu,
             am_as_n           => am_as_n,
             am_ds_n           => am_ds_n,
             am_rw             => am_rw,
             am_dsack0_n       => am_dsack0_n,
             am_dsack1_n       => am_dsack1_n,
-            o_generated_rst_n => int_generated_rst,
+            o_generated_rst_n => open,
             
             hdf0_data_o       => hdf0_data_o,
             hdf1_data_o       => hdf1_data_o,
@@ -288,17 +313,27 @@ begin
             o_vid_vblank        => s_vid_vblank
         );
 
-    -- 3. INSTANZ: Die getaktete 114-MHz Speicherbrücke [14.1]
+    -- =========================================================================
+    -- RAM-RESET-KOPPLUNG: ENTROSTET DEN DOWNLOAD-PFAD
+    -- Schützt den RAM-Controller vor der 250ms-Blockade während IOCTL-Ladevorgängen.
+    -- Erlaubt den RAM-Reset nur, wenn kein Kickstart-ROM-Download aktiv ist! [14.1]
+    -- =========================================================================
+    s_ram_reset <= '0' when ioctl_ks_download = '1' else reset;
+
+    -- =========================================================================
+    -- 3. INSTANZ: DIE GETAKTETE SPEICHERBRÜCKE (SDRAM-INTERFACE)
+    -- REPARIERT: Gekoppelt an s_ram_reset für stoßfreie Downloads [14.1]
+    -- =========================================================================
     u_sdram_bridge : sdram_bridge
         port map (
             clk_amiga       => clk_alice_14m,
             clk_sdram       => clk_sys, 
-            reset           => reset,
+            reset           => s_ram_reset, -- Entkoppeltes Reset-Signal! [14.1]
             dec_sb_addr     => am_addr(26 downto 0), 
             dec_sb_req      => '1', 
             dec_sb_is_chip  => '0',
             
-            am_data_in      => bus_cpu_to_chipset, -- Getrennte, unidirektionale Kanäle! [14.1]
+            am_data_in      => bus_mb_to_periph, 
             am_data_out     => bus_sdram_to_cpu,
             am_as_n         => am_as_n,
             am_ds_n         => am_ds_n,
@@ -324,27 +359,23 @@ begin
             sdram_dqm_hi    => open
         );
 
-    -- =====================================================================
-    -- KORREKTUR: REIN LOGISCHES TRI-STATE-STELLWERK (0 FEHLERHAFTE 'Z' INTERN) [14.1]
-    -- =====================================================================
-    -- CPU-Schreibdaten (Outbound) passiv an die internen Bus-Lanes koppeln
-    bus_cpu_to_chipset <= am_data_local;
+    -- =========================================================================
+    -- REIN UNIDIREKTIONALER LESE-MULTIPLEXER
+    -- =========================================================================
+    bus_periph_to_mb <= bus_sdram_to_cpu   when (am_rw = '1' and am_addr(31 downto 24) = x"00") else
+                        bus_chipset_to_cpu when (am_rw = '1') else 
+                        (others => '0'); 
 
-    -- Kombinatorischer Rücklese-Mux zur Turbokarte (Inbound) [14.1]
-    am_data_local <= bus_sdram_to_cpu when (am_rw = '1' and am_addr(31 downto 24) = x"00") else
-                     bus_chipset_to_cpu when (am_rw = '1') else 
-                     (others => 'Z'); -- Hier ist 'Z' legal, da am_data_local an I/O pins gekoppelt ist [14.1]
+    -- =========================================================================
+    -- NATIVE SYNC-REKONSTRUKTION FÜR DEN AMIGA-MODUS [14.1]
+    -- =========================================================================
+    HSync <= '0' when s_vid_hblank = '1' else '1';
+    VSync <= '0' when s_vid_vblank = '1' else '1';
 
-    -- Speist die sanierten True-Color Videosignale direkt aus
     video_r <= s_vid_rgb_r;
     video_g <= s_vid_rgb_g;
     video_b <= s_vid_rgb_b;
-    
     HBlank  <= s_vid_hblank;
     VBlank  <= s_vid_vblank;
-    
-    -- Statische Dummys für die Sync-Gatter
-    HSync   <= '0'; 
-    VSync   <= '0';
 
 end Behavioral;

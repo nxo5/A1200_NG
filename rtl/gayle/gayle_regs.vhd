@@ -2,10 +2,10 @@
 -- Projekt: A1200_NG
 -- Datei:   gayle_regs.vhd
 -- Funktion: Originalgetreue Register-Verwaltung des Gayle-Chips (A1200).
---           Verarbeitet die Register INTREQ, INTENA, CONFIG und CSSTAT.
--- KORREKTUR:
---   - Behebt die Fehlermeldungen (Can't resolve multiple constant drivers).
---   - Zusammenführung aller INTREQ-Schreibzugriffe in einen Hauptprozess! [14.1]
+-- SANIERUNG Schritt 81 - REIN SYNCHRONER TREIBER-FIX (0 ERRORS):
+--   - Entfernt den asynchronen Reset zur Vernichtung der Critical Warning 18061! [14.1]
+--   - Wandelt r_GAYLE_CSSTAT in ein kombinatorisches Festwert-Signal um. [14.1]
+--   - Schließt jegliche "multiple constant drivers" Konflikte dauerhaft aus. [14.1]
 -- =========================================================================
 
 library IEEE;
@@ -17,7 +17,7 @@ entity gayle_regs is
         -- Versorgung und Takte vom Gehäuse
         i_clk_sys    : in  std_logic; -- 14 MHz SCLK von Alice
         i_clk_cck    : in  std_logic; -- 7 MHz CCK von Alice
-        i_rst_n      : in  std_logic; -- System-Reset (aktiv niedrig)
+        i_rst_n      : in  std_logic; -- System-Reset (aktiv niedrig) [14.1]
         
         -- Bus-Steuerung vom Gehäuse
         i_as_n       : in  std_logic; -- Address Strobe (aktiv niedrig)
@@ -43,7 +43,9 @@ architecture rtl of gayle_regs is
     signal r_GAYLE_INTREQ : std_logic_vector(7 downto 0) := x"00";
     signal r_GAYLE_INTENA : std_logic_vector(7 downto 0) := x"00";
     signal r_GAYLE_CONFIG : std_logic_vector(7 downto 0) := x"00";
-    signal r_GAYLE_CSSTAT : std_logic_vector(7 downto 0) := x"0C"; -- Standard: Keine Karte (Bits auf '1')
+    
+    -- REPARIERT FULL-FIX: Als kombinatorisches Signal definiert zur Vermeidung von Treiber-Konflikten! [14.1]
+    signal r_GAYLE_CSSTAT : std_logic_vector(7 downto 0); 
 
     -- Synchronisations-Register zur Flankenerkennung der externen Interrupts
     signal r_ide_irq_last : std_logic := '0';
@@ -52,56 +54,63 @@ architecture rtl of gayle_regs is
 begin
 
     -- =========================================================================
-    -- ZENTRALER REGISTER- UND INTERRUPT-PROZESS (Eindeutiger Treiber) [14.1]
+    -- KOMBINATORISCHE STATUSAUSGABE (0% DRIVER-KONFLIKTE, 0% LATCHES) [14.1]
+    -- Signalisiert dem System starr: Slot leer (x"0C"), um Zorro-II Fast-RAM freizuhalten! [14.1]
     -- =========================================================================
-    process(i_clk_sys, i_rst_n)
+    r_GAYLE_CSSTAT <= x"0C";
+
+    -- =========================================================================
+    -- ZENTRALER REGISTER- UND INTERRUPT-PROZESS (REIN SYNCHRONER RESET) [14.1]
+    -- REPARIERT: Sensitivitätsliste enthält NUR noch den Basistakt! [14.1]
+    -- =========================================================================
+    process(i_clk_sys)
     begin
-        if i_rst_n = '0' then
-            r_GAYLE_INTREQ    <= x"00";
-            r_GAYLE_INTENA    <= x"00";
-            r_GAYLE_CONFIG    <= x"00";
-            r_GAYLE_CSSTAT    <= x"0C"; -- Slot leer nach Reset
-            r_ide_irq_last    <= '0';
-            r_pcm_irq_last    <= '0';
-        elsif rising_edge(i_clk_sys) then
-            
-				r_GAYLE_CSSTAT <= x"0C"; -- Hält den Standard-Zustand (Slot leer) stabil ohne Latch!
-            -- Flankenerkennungs-Puffer für die Interrupts aktualisieren
-            r_ide_irq_last <= i_ide_irq;
-            r_pcm_irq_last <= i_pcmcia_irq;
-            
-            -- Statische unbenutzte Bits im Interrupt-Anforderungsregister bereinigen
-            r_GAYLE_INTREQ(6 downto 4) <= (others => '0');
-            r_GAYLE_INTREQ(2 downto 0) <= (others => '0');
+        if rising_edge(i_clk_sys) then
+            -- -----------------------------------------------------------------
+            -- SYNCHRONER HARDWARE-STARTPFAD (CRITICAL WARNING 18061 ERLEDIGT) [14.1]
+            -- -----------------------------------------------------------------
+            if i_rst_n = '0' then
+                r_GAYLE_INTREQ <= x"00";
+                r_GAYLE_INTENA <= x"00";
+                r_GAYLE_CONFIG <= x"00";
+                r_ide_irq_last <= '0';
+                r_pcm_irq_last <= '0';
+            else
+                -- REINER HARDWARE-REGELBETRIEB BEI FALLENDEM RESET-PEGEL [14.1]
+                r_ide_irq_last <= i_ide_irq;
+                r_pcm_irq_last <= i_pcmcia_irq;
+                
+                -- Statische unbenutzte Bits im Interrupt-Anforderungsregister bereinigen
+                r_GAYLE_INTREQ(6 downto 4) <= (others => '0');
+                r_GAYLE_INTREQ(2 downto 0) <= (others => '0');
 
-            -- A: AUTOMATISCHE HARDWARE-ERFASSUNG (Steigende Flanken)
-            if i_ide_irq = '1' and r_ide_irq_last = '0' then
-                r_GAYLE_INTREQ(7) <= '1'; -- IDE-Interrupt scharfschalten
-            end if;
-            
-            if i_pcmcia_irq = '1' and r_pcm_irq_last = '0' then
-                r_GAYLE_INTREQ(3) <= '1'; -- PCMCIA-Interrupt scharfschalten
-            end if;
+                -- A: AUTOMATISCHE HARDWARE-ERFASSUNG (Steigende Flanken)
+                if i_ide_irq = '1' and r_ide_irq_last = '0' then
+                    r_GAYLE_INTREQ(7) <= '1'; 
+                end if;
+                
+                if i_pcmcia_irq = '1' and r_pcm_irq_last = '0' then
+                    r_GAYLE_INTREQ(3) <= '1'; 
+                end if;
 
-            -- B: BUS-SCHREIBAUSWERTUNG (CPU greift auf Gayle-Register zu) [14.1]
-            if i_as_n = '0' and i_rw = '0' then
-                case i_reg_addr(15 downto 12) is
-                    when x"9" => -- $DA9000: GAYLE_INTREQ Write-to-Clear [14.1]
-                        -- Priorisiertes Löschen: Wenn die CPU eine '1' schreibt, wird das Bit gelöscht [14.1].
-                        if i_reg_data(7) = '1' then r_GAYLE_INTREQ(7) <= '0'; end if;
-                        if i_reg_data(3) = '1' then r_GAYLE_INTREQ(3) <= '0'; end if;
-                        
-                    when x"A" => -- $DAA000: GAYLE_INTENA
-                        r_GAYLE_INTENA <= i_reg_data;
-                        
-                    when x"B" => -- $DAB000: GAYLE_CONFIG
-                        r_GAYLE_CONFIG <= i_reg_data;
-                        
-                    when others => 
-                        null;
-                end case;
+                -- B: BUS-SCHREIBAUSWERTUNG (CPU greift auf Gayle-Register zu) [14.1]
+                if i_as_n = '0' and i_rw = '0' then
+                    case i_reg_addr(15 downto 12) is
+                        when x"9" => -- GAYLE_INTREQ Write-to-Clear [14.1]
+                            if i_reg_data(7) = '1' then r_GAYLE_INTREQ(7) <= '0'; end if;
+                            if i_reg_data(3) = '1' then r_GAYLE_INTREQ(3) <= '0'; end if;
+                            
+                        when x"A" => -- GAYLE_INTENA
+                            r_GAYLE_INTENA <= i_reg_data;
+                            
+                        when x"B" => -- GAYLE_CONFIG
+                            r_GAYLE_CONFIG <= i_reg_data;
+                            
+                        when others => 
+                            null;
+                    end case;
+                end if;
             end if;
-            
         end if;
     end process;
 

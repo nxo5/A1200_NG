@@ -1,6 +1,6 @@
 -- =========================================================================
 -- Projekt: A1200_NG
--- Datei:   cpu_030_ec.vhd
+-- Datei:   030_ec.vhd
 -- Teil:    1 von 3 (Die echte, unidirektionale Entity & Bus-Schablone)
 -- Funktion: Das hochintegrierte Hauptgehäuse des 68EC030 CPU-Kerns.
 -- KORREKTUR RICHTUNGSTRENNUNG:

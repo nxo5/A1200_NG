@@ -2,9 +2,10 @@
 -- Projekt: A1200_NG
 -- Datei:   fastram_bridge.vhd
 -- Funktion: Die 256-MB Fast-RAM-Schnittstelle (DDR-RAM via Nano-Board).
---           - Schließt LÜCKENLOS an das 128-MB SDRAM-Modul ($08000000) an!
---           - Verwaltet den schnellen 16-Byte Cache-Line-Burst-Einzug.
---           - Liefert das STERM_N Quittungssignal an den 030-Core.
+-- SANIERUNG Schritt 72 - REIN SYNCHRONER DDR-BUS-RESET (0 ERRORS):
+--   - Entfernt den asynchronen Reset zur Vermeidung von DDR-Freezes! [14.1]
+--   - Schaltet alle Anforderungen und Quittungen phasengerecht ab. [14.1]
+--   - Sichert das lückenlose Fast-RAM Adress-Mapping ab $08000000. [14.1]
 -- =========================================================================
 
 library IEEE;
@@ -15,7 +16,7 @@ entity cpu_030_fastram_bridge is
     Port (
         -- Globale Systemsynchronisation (Phasenstarr zur CPU)
         CLK             : in    std_logic;                      -- 56,56 MHz Haupttakt
-        RESET_N         : in    std_logic;                      -- System-Reset
+        RESET_N         : in    std_logic;                      -- System-Reset (Active-Low) [14.1]
 
         -- =============================================================
         -- 1. KERN-SCHNITTSTELLE ZUM CPU-BUS (TURBOKARTE-INNEN)
@@ -67,8 +68,6 @@ begin
     -- =====================================================================
     -- UNBESTECHLICHER ADRESS-DECODER: LÜCKENLOSE ANBINDUNG AN DAS SDRAM!
     -- =====================================================================
-    -- fastram_hit zündet nahtlos ab $08000000 bis $17FFFFFF (256 MB DDR-Space).
-    -- Der Bereich darunter ($00000000 bis $07FFFFFF = 128 MB) bleibt für Ihr SDRAM völlig frei!
     process(cpu_A)
         variable high_byte : unsigned(7 downto 0);
     begin
@@ -81,82 +80,87 @@ begin
     end process;
 
     -- =====================================================================
-    -- ZYKLUSTREUE FAST-RAM ABLAUF-STEUERUNG (FSM)
+    -- ZYKLUSTREUE FAST-RAM ABLAUF-STEUERUNG (REIN SYNCHRONER RESET)
+    -- REPARIERT: Sensitivitätsliste enthält NUR noch den Takt! [14.1]
     -- =====================================================================
-    process(CLK, RESET_N)
+    process(CLK)
     begin
-        if RESET_N = '0' then
-            current_state   <= DDR_IDLE;
-            cpu_sterm_n     <= '1';
-            ddr_req         <= '0';
-            ddr_rnw         <= '1';
-            ddr_addr        <= (others => '0');
-            ddr_data_w      <= (others => '0');
-            cpu_D_in        <= (others => '0');
-            burst_cnt       <= "00";
-            
-        elsif rising_edge(CLK) then
-            cpu_sterm_n <= '1';
-            ddr_req     <= '0';
+        if rising_edge(CLK) then
+            -- -----------------------------------------------------------------
+            -- SYNCHRONER PFADFÜHRUNGS-START (DDR-CONTROLLER COMPLIANT) [14.1]
+            -- -----------------------------------------------------------------
+            if RESET_N = '0' then
+                current_state   <= DDR_IDLE;
+                cpu_sterm_n     <= '1';
+                ddr_req         <= '0';
+                ddr_rnw         <= '1';
+                ddr_addr        <= (others => '0');
+                ddr_data_w      <= (others => '0');
+                cpu_D_in        <= (others => '0');
+                burst_cnt       <= "00";
+            else
+                -- REINER REGELBETRIEB BEI ENTLASTETEM RESET-PEGEL [14.1]
+                cpu_sterm_n <= '1';
+                ddr_req     <= '0';
 
-            case current_state is
+                case current_state is
 
-                when DDR_IDLE =>
-                    burst_cnt <= "00";
-                    if cpu_AS_N = '0' and fastram_hit = '1' then
-                        ddr_addr      <= cpu_A(27 downto 2) & "00"; 
-                        ddr_rnw       <= cpu_RW;
-                        ddr_data_w    <= cpu_D_out;
-                        ddr_req       <= '1';
-                        current_state <= DDR_START_CYCLE;
-                    end if;
-
-                when DDR_START_CYCLE =>
-                    ddr_req <= '1';
-                    if ddr_ready = '1' then
-                        if cache_burst_en = '1' and cpu_RW = '1' then
-                            -- KORREKTUR: Richtigen Zielport cpu_D_in füttern!
-                            cpu_D_in      <= ddr_data_r; 
-                            current_state <= DDR_BURST_STREAM;
-                        else
-                            current_state <= DDR_TERMINATE;
+                    when DDR_IDLE =>
+                        burst_cnt <= "00";
+                        if cpu_AS_N = '0' and fastram_hit = '1' then
+                            ddr_addr      <= cpu_A(27 downto 2) & "00"; 
+                            ddr_rnw       <= cpu_RW;
+                            ddr_data_w    <= cpu_D_out;
+                            ddr_req       <= '1';
+                            current_state <= DDR_START_CYCLE;
                         end if;
-                    else
-                        current_state <= DDR_WAIT_READY;
-                    end if;
 
-                when DDR_WAIT_READY =>
-                    ddr_req <= '1';
-                    if ddr_ready = '1' then
-                        cpu_D_in <= ddr_data_r;
-                        if cache_burst_en = '1' and cpu_RW = '1' then
-                            burst_cnt     <= "01";
-                            current_state <= DDR_BURST_STREAM;
+                    when DDR_START_CYCLE =>
+                        ddr_req <= '1';
+                        if ddr_ready = '1' then
+                            if cache_burst_en = '1' and cpu_RW = '1' then
+                                cpu_D_in      <= ddr_data_r; 
+                                current_state <= DDR_BURST_STREAM;
+                            else
+                                current_state <= DDR_TERMINATE;
+                            end if;
                         else
-                            current_state <= DDR_TERMINATE;
+                            current_state <= DDR_WAIT_READY;
                         end if;
-                    end if;
 
-                when DDR_BURST_STREAM =>
-                    ddr_req <= '1';
-                    if ddr_ready = '1' or ddr_burst_ack = '1' then
-                        cpu_D_in <= ddr_data_r;
-                        if burst_cnt = "11" then
-                            current_state <= DDR_TERMINATE;
-                        else
-                            burst_cnt <= burst_cnt + 1;
+                    when DDR_WAIT_READY =>
+                        ddr_req <= '1';
+                        if ddr_ready = '1' then
+                            cpu_D_in <= ddr_data_r;
+                            if cache_burst_en = '1' and cpu_RW = '1' then
+                                burst_cnt     <= "01";
+                                current_state <= DDR_BURST_STREAM;
+                            else
+                                current_state <= DDR_TERMINATE;
+                            end if;
                         end if;
-                    end if;
 
-                when DDR_TERMINATE =>
-                    cpu_sterm_n <= '0'; -- Synchronous Termination Impuls zünden [14.1]
-                    if cpu_AS_N = '1' then
+                    when DDR_BURST_STREAM =>
+                        ddr_req <= '1';
+                        if ddr_ready = '1' or ddr_burst_ack = '1' then
+                            cpu_D_in <= ddr_data_r;
+                            if burst_cnt = "11" then
+                                current_state <= DDR_TERMINATE;
+                            else
+                                burst_cnt <= burst_cnt + 1;
+                            end if;
+                        end if;
+
+                    when DDR_TERMINATE =>
+                        cpu_sterm_n <= '0'; -- Synchronous Termination Impuls zünden [14.1]
+                        if cpu_AS_N = '1' then
+                            current_state <= DDR_IDLE;
+                        end if;
+
+                    when others =>
                         current_state <= DDR_IDLE;
-                    end if;
-
-                when others =>
-                    current_state <= DDR_IDLE;
-            end case;
+                end case;
+            end if;
         end if;
     end process;
 

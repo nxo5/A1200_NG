@@ -99,8 +99,6 @@ architecture Behavioral of alice is
 
     component alice_dma is
         Port (
-            clk_amiga     : in    std_logic;
-            reset         : in    std_logic;
             dma_enable_reg: in    std_logic_vector(15 downto 0);
             h_pos_tick    : in    unsigned(8 downto 0);
             v_pos_tick    : in    unsigned(8 downto 0);
@@ -317,8 +315,6 @@ begin
     -- Kern 4: Der Speicher-Zuteiler
     u_alice_dma : alice_dma
     port map (
-        clk_amiga         => int_clk_amiga,
-        reset             => reset,
         dma_enable_reg    => int_dma_enable,
         h_pos_tick        => int_h_pos,
         v_pos_tick        => int_v_pos,

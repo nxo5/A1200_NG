@@ -1,3 +1,6 @@
 set_global_assignment -name QIP_FILE rtl/A1200.qip
 set_global_assignment -name SDC_FILE Template.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE Template.sv
+
+
+

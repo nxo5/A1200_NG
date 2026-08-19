@@ -104,6 +104,7 @@ architecture Behavioral of lisa is
         Port (
             -- REPARATUR: clk_amiga in der Komponentenschablone nachgerüstet! [14.1]
             clk_amiga        : in    std_logic;
+				reset            : in    std_logic;
             reg_addr         : in    std_logic_vector(11 downto 0);
             reg_data_w       : in    std_logic_vector(31 downto 0);
             reg_write_en     : in    std_logic;
@@ -170,6 +171,7 @@ begin
     port map (
         -- REPARATUR: Taktader hier absolut fehlerfrei festgelötet! [14.1]
         clk_amiga          => clk_amiga,
+		  reset              => reset,
         reg_addr           => am_addr,
         reg_data_w         => am_data_w,
         reg_write_en       => am_reg_write,

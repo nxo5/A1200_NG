@@ -1,6 +1,6 @@
 -- =========================================================================
 -- Projekt: A1200_NG
--- Datei:   cpu_030_ec_cache_top.vhd
+-- Datei:   030_ec_cache_top.vhd
 -- Teil:    1 von 2 (Schnittstelle, 4-Wege-Matrix & Komponenten)
 -- Funktion: Das 32-KB L1-Cache-Subsystem (4-Way Associative).
 -- REFRESH-REPARATUR:

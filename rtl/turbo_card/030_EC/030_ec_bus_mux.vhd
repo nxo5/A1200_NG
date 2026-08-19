@@ -73,7 +73,7 @@ begin
     ext_RW <= '0' when (fsm_write_en = '1') else '1';
 
     -- =====================================================================
-    -- 3. TAKT- UND STROBE-AUSGABE (REINES SYSTEMTIEMING)
+    -- 3. TAKT- UND STROBE-AUSGABE (REINES SYSTEMTIMING)
     -- =====================================================================
     -- Das Address Strobe (AS_N) wird exklusiv von der Bus-FSM freigegeben
     ext_AS_N <= '0' when (fsm_strobe_en = '1') else '1';

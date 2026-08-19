@@ -1,6 +1,6 @@
 -- =========================================================================
 -- Projekt: A1200_NG
--- Datei:   cpu_030_ec_bus.vhd
+-- Datei:   030_ec_bus.vhd
 -- Teil:    1 von 2 (Entity und Komponentendeklarationen)
 -- Funktion: Die übergeordnete Bus Interface Unit (BIU-Wrapper) des 68EC030.
 --           Verdrahtet die Bus-FSM, den MUX und den separaten Daten-Sizer.

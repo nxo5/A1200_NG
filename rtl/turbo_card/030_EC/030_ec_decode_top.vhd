@@ -162,7 +162,7 @@ architecture behavioral of cpu_030_ec_decode_top is
     signal s_extension_word     : std_logic_vector(15 downto 0);
     signal s_sync_ipl_n         : std_logic_vector(2 downto 0);
 
-	     -- =====================================================================
+	 -- =====================================================================
     -- SCHABLONE: MASTER-BOOT-FSM (KALKSTART-EINZUG)
     -- =====================================================================
     component cpu_030_ec_dec_boot_fsm
