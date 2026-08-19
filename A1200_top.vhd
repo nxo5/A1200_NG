@@ -37,7 +37,16 @@ entity A1200_top is
         ioctl_hdf0_download : in    std_logic;                      
         ioctl_hdf1_download : in    std_logic;
         ioctl_hdf2_download : in    std_logic;
-        ioctl_hdf3_download : in    std_logic
+        ioctl_hdf3_download : in    std_logic;
+
+        -- FastRAM / DDR Interface (durchgereicht an Nanoboard)
+        ddr_req         : out   std_logic;                      -- Request an externes DDR-Interface
+        ddr_rnw         : out   std_logic;                      -- Read(1)/Write(0) Richtung
+        ddr_addr        : out   std_logic_vector(25 downto 2);  -- Kürzerer Adressbus für DDR-Controller
+        ddr_data_w      : out   std_logic_vector(31 downto 0);  -- Daten vom CPU an DDR
+        ddr_data_r      : in    std_logic_vector(31 downto 0);  -- Daten von DDR an CPU
+        ddr_ready       : in    std_logic;                      -- Ready von externem DDR
+        ddr_burst_ack   : in    std_logic                       -- Burst-Acknowledge vom DDR-Controller
     );
 end A1200_top;
 
@@ -60,7 +69,16 @@ architecture structural of A1200_top is
             FC              : out   std_logic_vector(2 downto 0);
             DSACK0_N        : in    std_logic;
             DSACK1_N        : in    std_logic;
-            IPL_N           : in    std_logic_vector(2 downto 0)
+            IPL_N           : in    std_logic_vector(2 downto 0);
+
+            -- FastRAM / DDR Interface (durchgereicht an Nanoboard)
+            ddr_req         : out   std_logic;
+            ddr_rnw         : out   std_logic;
+            ddr_addr        : out   std_logic_vector(25 downto 2);
+            ddr_data_w      : out   std_logic_vector(31 downto 0);
+            ddr_data_r      : in    std_logic_vector(31 downto 0);
+            ddr_ready       : in    std_logic;
+            ddr_burst_ack   : in    std_logic
         );
     end component;
 
@@ -162,127 +180,4 @@ architecture structural of A1200_top is
         bus_dsack0_n  <= '1';
         bus_dsack1_n  <= '1';
 
-        if reset = '1' or s_rom_overlay = '1' then
-            -- A: KALTSTART-PHASE (Overlay aktiv oder Reset anliegend)
-            -- Wenn die CPU bei Adresse 0x0 oder 0x4 anfragt, schicken wir das ROM rein! [14.1]
-            if unsigned(cpu_addr) < 8 then
-                cpu_D_to_core <= kickstart_data_r;
-                bus_dsack0_n  <= '0'; -- Simuliere schnellen 32-Bit-Port für den Bootvektor [14.1]
-                bus_dsack1_n  <= '0';
-            elsif cpu_addr(31 downto 19) = "0000000011111" then
-                -- Normaler ROM-Zugriff ($00F80000 bis $00FFFFFF) im Overlay
-                cpu_D_to_core <= kickstart_data_r;
-                bus_dsack0_n  <= '0';
-                bus_dsack1_n  <= '0';
-            end if;
-        else
-            -- B: REGULÄRER BETRIEB (AmigaOS hat das Overlay abgeschaltet)
-            if cpu_addr(31 downto 19) = "0000000011111" then
-                -- Standard Kickstart-ROM Lesezugriff
-                cpu_D_to_core <= kickstart_data_r;
-                bus_dsack0_n  <= '0';
-                bus_dsack1_n  <= '0';
-            else
-                -- Hier klinken sich Gayle, die CIAs und das Chip-RAM ein
-                cpu_D_to_core <= BUS_IDLE_32; -- Vermeide internes Tri-State; benutze definierten Idle-Wert
-                bus_dsack0_n  <= '1';             
-                bus_dsack1_n  <= '1';
-            end if;
-        end if;
-    end process;
-
-    -- =====================================================================
-    -- 3. INTERNES SPEICHERBETT: DAS IOCTL-GEKOPPELTE KICKSTART-ROM
-    -- REPARIERT: Nimmt die Download-Bytes des MiSTer im Dual-Port-RAM auf!
-    -- =====================================================================
-    process(clk_sys)
-        type rom_matrix is array (0 to 131071) of std_logic_vector(31 downto 0);
-        -- Inferenz von Intel M10K-Blöcken als schnellen On-Chip-ROM-Speicher pool
-        variable v_kickstart_mem : rom_matrix := (others => (others => '0'));
-        variable v_write_addr : integer range 0 to 131071;
-    begin
-        if rising_edge(clk_sys) then
-            -- Port A: Der unyielding 32-Bit-Lesekanal der CPU
-            kickstart_data_r <= v_kickstart_mem(to_integer(unsigned(cpu_addr(18 downto 2))));
-
-            -- Port B: Der 8-Bit-Schreibkanal für den MiSTer HPS-Download
-            if ioctl_ks_download = '1' and ioctl_wr = '1' then
-                v_write_addr := to_integer(unsigned(ioctl_addr(18 downto 2)));
-                
-                -- Bytes phasenrichtig je nach Adresse im 32-Bit-Wort einsortieren (Big-Endian) [14.1]
-                case ioctl_addr(1 downto 0) is
-                    when "00" => v_kickstart_mem(v_write_addr)(31 downto 24) := ioctl_data;
-                    when "01" => v_kickstart_mem(v_write_addr)(23 downto 16) := ioctl_data;
-                    when "10" => v_kickstart_mem(v_write_addr)(15 downto 8)  := ioctl_data;
-                    when "11" => v_kickstart_mem(v_write_addr)(7 downto 0)   := ioctl_data;
-                    when others => null;
-                end case;
-            end if;
-        end if;
-    end process;
-
-
-     
-    -- =====================================================================
-    -- 4. INSTANZIIERUNG: DIE MASTER-TURBOKARTE (MIT 56-MHZ CPU-KERN)
-    -- =====================================================================
-    i_turbo_card : turbo_card
-        port map (
-            CLK_14M         => s_clk_14m,
-            i_reset_high    => reset,               -- Angeschlossen an die NE555-Resetleitung
-            A               => cpu_addr,
-            D_in            => cpu_D_to_core,
-            D_out           => cpu_D_from_core,
-            AS_N            => bus_as_n,
-            DS_N            => bus_ds_n,
-            RW              => bus_rw,
-            SIZ             => bus_siz,
-            FC              => bus_fc,
-            DSACK0_N        => bus_dsack0_n,
-            DSACK1_N        => bus_dsack1_n,
-            IPL_N           => system_ipl_n
-        );
-
-    -- =====================================================================
-    -- 5. INSTANZIIERUNG: DER INNERE SYSTEM-CONTROLLER (GAYLE)
-    -- =====================================================================
-    i_gayle : gayle
-        port map (
-            i_clk_sys           => s_clk_14m,
-            i_clk_cck           => s_clk_14m,             -- vorläufig: CCK = SYS (vereinfachte Taktquelle)
-            i_master_rst_n      => not reset,
-            i_kbrst_n           => not reset,
-
-            i_bus_as_n          => bus_as_n,
-            i_bus_rw            => bus_rw,
-            i_bus_ds_n          => (bus_ds_n & bus_ds_n), -- repliziere Single-DS zu 2 Bits
-            i_bus_addr          => cpu_addr(23 downto 0),
-            i_bus_data_w32      => cpu_D_from_core,
-            o_bus_data_r32      => open,
-
-            floppy_raw_read     => '0',
-            floppy_raw_write    => open,
-            rxd                 => '0',
-            txd                 => open,
-
-            o_gayle_global_irq  => open,
-            o_generated_rst_n   => open,
-
-            i_ioctl_addr        => ioctl_addr,
-            i_ioctl_data        => ioctl_data,
-            i_ioctl_wr          => ioctl_wr,
-            i_ioctl_ks_download => ioctl_ks_download,
-            i_ioctl_fdd_download=> ioctl_fdd_download,
-            i_ioctl_hdf0_download=> ioctl_hdf0_download,
-            i_ioctl_hdf1_download=> ioctl_hdf1_download,
-            i_ioctl_hdf2_download=> ioctl_hdf2_download,
-            i_ioctl_hdf3_download=> ioctl_hdf3_download
-        );
-
-    -- Dummy-Ausgaben für Video-Schnittstellen (Lisa / Alice Platzhalter)
-    ce_pix  <= '1';
-    HBlank  <= '0'; HSync <= '1';
-    VBlank  <= '0'; VSync <= '1';
-    video_r <= (others => '0'); video_g <= (others => '0'); video_b <= (others => '0');
-
-end structural;
+We must now update this file in repo. The functions.create_or_update_file earlier can be used. We'll craft updated content for root A1200_top.vhd — but we've already prepared updated content and used create_or_update_file earlier for A1200_top.vhd root with commit b7a6... It seems currently root A1200_top.vhd lacks DDR ports; earlier we asked to update. Now commit needs to modify root and rtl/A1200_top.vhd? We fetched root A1200_top.vhd content earlier; it currently does not have DDR ports. We need to modify it to include DDR ports and update i_turbo_card mapping. Let's craft full updated content similar to earlier prepared A1200_top.vhd but with mapping i_turbo_card to include DDR ports. We'll create_or_update_file replacing root A1200_top.vhd with new content. Also update rtl/A1200_top.vhd similarly. Let's prepare final content where i_turbo_card port map includes DDR mapping. We need to ensure component turbo_card declaration includes DDR ports as in turbo_card entity. And ensure the entity A1200_top includes DDR ports at top-level. Then call create_or_update_file for both files: 
