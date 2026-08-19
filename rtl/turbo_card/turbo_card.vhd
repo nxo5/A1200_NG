@@ -80,6 +80,30 @@ architecture structural of turbo_card is
         );
     end component;
 
+    -- FastRAM bridge (lokaler, CPU-seitiger Zugang zur Nanoboard-DDR)
+    component cpu_030_fastram_bridge is
+        Port (
+            CLK             : in    std_logic;
+            RESET_N         : in    std_logic;
+            cpu_A           : in    std_logic_vector(31 downto 0);
+            cpu_D_out       : in    std_logic_vector(31 downto 0);
+            cpu_D_in        : out   std_logic_vector(31 downto 0);
+            cpu_AS_N        : in    std_logic;
+            cpu_DS_N        : in    std_logic;
+            cpu_RW          : in    std_logic;
+            cache_req       : in    std_logic;
+            cache_burst_en  : in    std_logic;
+            cpu_sterm_n     : out   std_logic;
+            ddr_req         : out   std_logic;
+            ddr_rnw         : out   std_logic;
+            ddr_addr        : out   std_logic_vector(25 downto 2);
+            ddr_data_w      : out   std_logic_vector(31 downto 0);
+            ddr_data_r      : in    std_logic_vector(31 downto 0);
+            ddr_ready       : in    std_logic;
+            ddr_burst_ack   : in    std_logic
+        );
+    end component;
+
     -- Interne Verbindungssignale (Die Kupferbahnen auf der Turbokarte)
     signal local_cpu_clk   : std_logic;                     
     signal local_addr      : std_logic_vector(31 downto 0);
@@ -93,6 +117,16 @@ architecture structural of turbo_card is
 
     -- Interner Invertierungskanal zur CPU
     signal s_cpu_reset_n   : std_logic;
+
+    -- FastRAM interne Signale
+    signal fastram_cpu_sterm_n : std_logic := '1';
+    signal f_ddr_req           : std_logic := '0';
+    signal f_ddr_rnw           : std_logic := '1';
+    signal f_ddr_addr          : std_logic_vector(25 downto 2) := (others => '0');
+    signal f_ddr_data_w        : std_logic_vector(31 downto 0) := (others => '0');
+    signal f_ddr_data_r        : std_logic_vector(31 downto 0) := (others => '0');
+    signal f_ddr_ready         : std_logic := '0';
+    signal f_ddr_burst_ack     : std_logic := '0';
 
 begin
 
@@ -143,7 +177,7 @@ begin
             CIOUT_N     => open,
             DSACK0_N    => DSACK0_N,        
             DSACK1_N    => DSACK1_N,
-            STERM_N     => '1',             
+            STERM_N     => fastram_cpu_sterm_n,  -- Verbunden mit FastRAM-Bridge
             CIIN_N      => '1',             
             HALT_N      => '1',             
             BERR_N      => '1',             
@@ -153,6 +187,32 @@ begin
             BR_N        => '1',             
             BG_N        => open,
             BGACK_N     => '1'
+        );
+
+    -- =====================================================================
+    -- 4. INSTANZIIERUNG: DIE FASTRAM-BRIDGE (LOKAL IN DER TURBOKARTE)
+    -- Diese Bridge beobachtet den CPU-Bus und liefert cpu_sterm_n Signale.
+    -- =====================================================================
+    i_fastram : cpu_030_fastram_bridge
+        port map (
+            CLK            => local_cpu_clk,
+            RESET_N        => s_cpu_reset_n,
+            cpu_A          => local_addr,
+            cpu_D_out      => D_out,
+            cpu_D_in       => D_in,
+            cpu_AS_N       => local_as_n,
+            cpu_DS_N       => local_ds_n,
+            cpu_RW         => local_rw,
+            cache_req      => open,
+            cache_burst_en => open,
+            cpu_sterm_n    => fastram_cpu_sterm_n,
+            ddr_req        => f_ddr_req,
+            ddr_rnw        => f_ddr_rnw,
+            ddr_addr       => f_ddr_addr,
+            ddr_data_w     => f_ddr_data_w,
+            ddr_data_r     => f_ddr_data_r,
+            ddr_ready      => f_ddr_ready,
+            ddr_burst_ack  => f_ddr_burst_ack
         );
 
 end structural;
