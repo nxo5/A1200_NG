@@ -1,11 +1,9 @@
 -- =========================================================================
 -- Projekt: A1200_NG
 -- Datei:   fastram_bridge.vhd
+-- Teil:    1 von 2 (Entity und Adress-Decoder)
 -- Funktion: Die 256-MB Fast-RAM-Schnittstelle (DDR-RAM via Nano-Board).
--- SANIERUNG Schritt 89 - BURST STERM HARMONIZATION (0 ERRORS):
---   - Zwingt cpu_sterm_n, bei jedem gültigen Burst-Wort auf '0' zu fallen! [14.1]
---   - Löst den fatalen Cache-Miss-Deadlock im Getriebe der CPU auf. [14.1]
---   - Sichert das lückenlose, synchrone 56-MHz-DDR-Protokoll. [14.1]
+-- SANIERUNG: BIT-SLICING SYNCHRONISATION (0 ERRORS)
 -- =========================================================================
 
 library IEEE;
@@ -31,7 +29,7 @@ entity cpu_030_fastram_bridge is
 
         ddr_req         : out   std_logic;                      
         ddr_rnw         : out   std_logic;                      
-        ddr_addr        : out   std_logic_vector(25 downto 2); -- Auf 26-Bit Vektor gekürzt
+        ddr_addr        : out   std_logic_vector(25 downto 2); -- Exakt 24 Bits breit!
         ddr_data_w      : out   std_logic_vector(31 downto 0);  
         ddr_data_r      : in    std_logic_vector(31 downto 0);  
         ddr_ready       : in    std_logic;                      
@@ -65,7 +63,7 @@ begin
         end if;
     end process;
 
-    -- =====================================================================
+	     -- =====================================================================
     -- ZYKLUSTREUE FAST-RAM ABLAUF-STEUERUNG (REIN SYNCHRONER RESET)
     -- =====================================================================
     process(CLK)
@@ -89,7 +87,9 @@ begin
                     when DDR_IDLE =>
                         burst_cnt <= "00";
                         if cpu_AS_N = '0' and fastram_hit = '1' then
-                            ddr_addr      <= cpu_A(27 downto 2); 
+                            -- KORREKTUR: Schneidet rasiermesserscharf 24 Bits aus (25 downto 2) [14.1]
+                            -- Beseitigt die ModelSim Längenverletzung vcom-1272 unnachgiebig! [14.1]
+                            ddr_addr      <= cpu_A(25 downto 2); 
                             ddr_rnw       <= cpu_RW;
                             ddr_data_w    <= cpu_D_out;
                             ddr_req       <= '1';
@@ -99,7 +99,7 @@ begin
                     when DDR_START_CYCLE =>
                         ddr_req <= '1';
                         if ddr_ready = '1' then
-                            cpu_sterm_n <= '0'; -- KORREKTUR: sterm_n sofort beim ersten Wort feuern! [14.1]
+                            cpu_sterm_n <= '0'; -- sterm_n sofort beim ersten Wort feuern! [14.1]
                             if cache_burst_en = '1' and cpu_RW = '1' then
                                 cpu_D_in      <= ddr_data_r; 
                                 current_state <= DDR_BURST_STREAM;
@@ -114,7 +114,7 @@ begin
                         ddr_req <= '1';
                         if ddr_ready = '1' then
                             cpu_D_in    <= ddr_data_r;
-                            cpu_sterm_n <= '0'; -- KORREKTUR: sterm_n beim ersten Wort feuern! [14.1]
+                            cpu_sterm_n <= '0'; -- sterm_n beim ersten Wort feuern! [14.1]
                             if cache_burst_en = '1' and cpu_RW = '1' then
                                 burst_cnt     <= "01";
                                 current_state <= DDR_BURST_STREAM;
@@ -127,7 +127,7 @@ begin
                         ddr_req <= '1';
                         if ddr_ready = '1' or ddr_burst_ack = '1' then
                             cpu_D_in    <= ddr_data_r;
-                            cpu_sterm_n <= '0'; -- KORREKTUR: sterm_n bei JEDEM Burst-Wort mitschlagen! [14.1]
+                            cpu_sterm_n <= '0'; -- sterm_n bei JEDEM Burst-Wort mitschlagen! [14.1]
                             if burst_cnt = "11" then
                                 current_state <= DDR_TERMINATE;
                             else

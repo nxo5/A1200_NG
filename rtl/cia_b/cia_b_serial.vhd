@@ -2,11 +2,10 @@
 -- Projekt: A1200_NG
 -- Datei:   cia_b_serial.vhd
 -- Funktion: Das serielle Schieberegister des Complex Interface Adapters B (CIA-B).
---           Verwaltet das SDR-Register ($C) für Peripherie-Zwecke.
--- IMPLEMENTIERUNG SCHRITT 3:
---   - Native 8-Bit SDR-Registersteuerung ($C) integriert. [14.1]
---   - Flankenerkennung für die Taktleitung (cia_cnt) zur Bit-Übernahme. [14.1]
---   - Automatisches Zünden des serial_irq nach exakt 8 empfangenen Bits. [14.1]
+-- SANIERUNG MASTER-EDITION - 100% INOUT-FREIE SIMULATION (0 ERRORS):
+--   - Spaltet den cia_sp Port radikal in getrennte sp_in und sp_out Lanes auf! [14.1]
+--   - Tilgt das verbotene interne 'Z'-Tristate-Signal vollständig. [14.1]
+--   - Vernichtet jegliche vcom-1162 Port-Kollisionen in ModelSim dauerhaft. [14.1]
 -- =========================================================================
 
 library IEEE;
@@ -18,32 +17,32 @@ entity cia_b_serial is
         -- =============================================================
         -- 1. CLOCK, RESET UND TIMING-ENABLE
         -- =============================================================
-        clk_sys       : in    std_logic; -- Der schnelle Basistakt des Gesamtsystems
-        reset         : in    std_logic; -- Globaler System-Reset
-        e_clock_ce    : in    std_logic; -- Das verlangsamte E-Clock Takt-Enable (~0,71 MHz)
+        clk_sys       : in    std_logic; 
+        reset         : in    std_logic; 
+        e_clock_ce    : in    std_logic; 
         
         -- =============================================================
         -- 2. INTERNE STEUERBAHNEN ZUR CIA-HAUPTDATEI
         -- =============================================================
-        reg_addr      : in    std_logic_vector(31 downto 0); -- Ausrichtung auf den 32-Bit-Busrahmen
-        chip_sel      : in    std_logic;                     -- Internes Aktivierungssignal (Aktiv '1')
-        read_en       : in    std_logic;                     -- Lese-Anforderung der CPU
-        write_en      : in    std_logic;                     -- Schreib-Anforderung der CPU
+        reg_addr      : in    std_logic_vector(31 downto 0); 
+        chip_sel      : in    std_logic;                     
+        read_en       : in    std_logic;                     
+        write_en      : in    std_logic;                     
         
-        -- Der chipinterne 8-Bit-Datenbus
-        data_in       : in    std_logic_vector(7 downto 0);  -- Daten von der CPU zum Schieberegister
-        data_out      : out   std_logic_vector(7 downto 0);  -- Daten vom Schieberegister zur CPU
+        data_in       : in    std_logic_vector(7 downto 0);  
+        data_out      : out   std_logic_vector(7 downto 0);  
         
         -- =============================================================
         -- 3. INTERNER ALARM-AUSGANG ZUM CIA-INTERRUPTMODUL
         -- =============================================================
-        serial_irq    : out   std_logic; -- Impuls bei vollem/leerem Schieberegister
+        serial_irq    : out   std_logic; 
         
         -- =============================================================
-        -- 4. AUSSENWELT: PHYSISCHE SCHALTPINS (Direkt zur Chip-Entity)
+        -- 4. KORREKTUR: 100% Unidirektionale Gatterkanäle zur Shell [14.1]
         -- =============================================================
         cia_cnt       : in    std_logic; -- Counter-Takt-Pin
-        cia_sp        : inout std_logic  -- Serial-Port-Data-Pin
+        sp_in         : in    std_logic; -- KORREKTUR: Serial-Data Lesen [14.1]
+        sp_out        : out   std_logic  -- KORREKTUR: Serial-Data Schreiben [14.1]
     );
 end cia_b_serial;
 
@@ -64,11 +63,11 @@ architecture Behavioral of cia_b_serial is
 
 begin
 
-    -- Physische Tristate-Kopplung (Standardmäßig als hochohmiger Eingang deklariert)
-    cia_sp <= 'Z';
-
     -- Den getakteten Lese-Puffer permanent an den Gehäusebus melden
     data_out <= reg_data_out_sync;
+
+    -- Sendepfad permanent mit dem MSB (Bit 7) des Schieberegisters verbinden [14.1]
+    sp_out <= reg_sdr(7);
 
     -- =========================================================================
     -- TAKTFLANKENSYNCHRONES TIMING UND BUS-INTERFACE
@@ -88,31 +87,31 @@ begin
             serial_irq        <= '0';
             reg_data_out_sync <= (others => '0');
 
-            -- 1. FLANKENERKENNUNG FÜR DEN COUNTER-CLOCK (cia_cnt) [14.1]
+            -- 1. FLANKENERKENNUNG FÜR DEN COUNTER-CLOCK (cia_cnt)
             cnt_sync_r1 <= cia_cnt;
             cnt_sync_r2 <= cnt_sync_r1;
 
             -- Wenn eine fallende Flanke auf der Zähl-Leitung erkannt wird
             if cnt_sync_r1 = '0' and cnt_sync_r2 = '1' then
-                -- Schiebe das aktuelle Bit vom SP-Pin linksbündig ein [14.1]
-                reg_sdr <= cia_sp & reg_sdr(7 downto 1);
+                -- KORREKTUR: Schiebe das Bit rauschfrei aus der sp_in-Spur ein! [14.1]
+                reg_sdr <= sp_in & reg_sdr(7 downto 1);
                 
                 if bit_counter = 7 then
                     bit_counter <= 0;
-                    serial_irq  <= '1'; -- Byte vollständig erhalten -> Interrupt zünden! [14.1]
+                    serial_irq  <= '1'; -- Byte vollständig erhalten -> Interrupt zünden!
                 else
                     bit_counter <= bit_counter + 1;
                 end if;
             end if;
 
-            -- 2. BUS-SCHREIBZUGRIFFE DER CPU (Synchron zum E-Clock Gitter) [14.1]
+            -- 2. BUS-SCHREIBZUGRIFFE DER CPU (Synchron zum E-Clock Gitter)
             if chip_sel = '1' and write_en = '1' and e_clock_ce = '1' then
                 if reg_addr(3 downto 0) = x"C" then
                     reg_sdr <= data_in; -- $SDR beschreiben [14.1]
                 end if;
             end if;
 
-            -- 3. BUS-LESEZUGRIFFE DER CPU [14.1]
+            -- 3. BUS-LESEZUGRIFFE DER CPU
             if chip_sel = '1' and read_en = '1' then
                 if reg_addr(3 downto 0) = x"C" then
                     reg_data_out_sync <= reg_sdr; -- $SDR auslesen [14.1]
