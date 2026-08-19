@@ -65,8 +65,7 @@ architecture structural of turbo_card is
             BERR_N      : in    std_logic;
             CBREQ_N     : out   std_logic;
             CBACK_N     : in    std_logic;
-            IPL_N       : in    std_logic_vector(2 downto 2); -- Explizit gefordert
-            IPL_N_v     : in    std_logic_vector(2 downto 0);                    
+            IPL_N       : in    std_logic_vector(2 downto 0);
             BR_N        : in    std_logic;
             BG_N        : out   std_logic;
             BGACK_N     : in    std_logic
@@ -150,8 +149,7 @@ begin
             BERR_N      => '1',             
             CBREQ_N     => open,
             CBACK_N     => '1',             
-            IPL_N       => "1",             -- REPARIERT: Starr auf '1' (Inaktiv) abgebunden!
-            IPL_N_v     => IPL_N,           -- Realer, saniert getakteter Vektor bleibt aktiv
+            IPL_N       => IPL_N,           -- Verbinde CPU-IPL-Pins mit dem externen IPL_N-Vektor
             BR_N        => '1',             
             BG_N        => open,
             BGACK_N     => '1'
